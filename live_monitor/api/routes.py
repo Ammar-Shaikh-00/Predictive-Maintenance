@@ -66,6 +66,9 @@ def get_current_evaluation():
             "drift_score": row.drift_score,
             "anomaly_score": row.anomaly_score,
             "explanation_text": row.explanation_text,
+            "ml_anomaly_score": row.ml_anomaly_score,
+            "ml_is_anomaly": row.ml_is_anomaly,
+            "ml_model_status": row.ml_model_status,
             "created_at": row.created_at,
         }
 

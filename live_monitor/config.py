@@ -35,6 +35,10 @@ FIELD_TEMPERATURE_ZONES = [
 # State confirmation
 CONFIRMATION_WINDOWS = int(os.getenv("CONFIRMATION_WINDOWS", "3"))  # consecutive windows needed to confirm state
 
+# states that trigger baseline comparison (evaluation guard)
+_evaluable_states_raw = os.getenv("EVALUABLE_STATES", "PRODUCTION,LOW_PRODUCTION")
+EVALUABLE_STATES = [s.strip() for s in _evaluable_states_raw.split(",") if s.strip()]
+
 # Database (stub for now)
 DB_CONNECTION_STRING = os.getenv("DB_CONNECTION_STRING", "sqlite:///live_monitor.db")  # replace with real DB later
 
@@ -74,4 +78,8 @@ ANOMALY_MIN_SAMPLES_HEATING = int(os.getenv("ANOMALY_MIN_SAMPLES_HEATING", "20")
 ANOMALY_MIN_SAMPLES_LOW_PRODUCTION = int(os.getenv("ANOMALY_MIN_SAMPLES_LOW_PRODUCTION", "50"))
 ANOMALY_MIN_SAMPLES_COOLING = int(os.getenv("ANOMALY_MIN_SAMPLES_COOLING", "50"))
 ANOMALY_MIN_SAMPLES_READY = int(os.getenv("ANOMALY_MIN_SAMPLES_READY", "50"))
+
+# background ML retrain scheduler (ml.retrain_scheduler)
+RETRAIN_INTERVAL_HOURS = int(os.getenv("RETRAIN_INTERVAL_HOURS", "24"))  # retrain every 24 hours if new data exists
+RETRAIN_MIN_NEW_ROWS = int(os.getenv("RETRAIN_MIN_NEW_ROWS", "500"))  # minimum new live_api rows before retraining
 

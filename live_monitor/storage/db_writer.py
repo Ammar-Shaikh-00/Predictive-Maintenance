@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 import logging
 
-from sqlalchemy import Column, DateTime, Float, Integer, String, create_engine
+from sqlalchemy import Boolean, Column, DateTime, Float, Integer, String, create_engine
 from sqlalchemy.orm import Session, declarative_base
 
 import config
@@ -178,6 +178,10 @@ class LiveRunEvaluation(Base):
     drift_score = Column(Float, nullable=True)
     anomaly_score = Column(Float, nullable=True)
     explanation_text = Column(String, nullable=True)
+    ml_anomaly_score = Column(Float, nullable=True)
+    ml_is_anomaly = Column(Boolean, nullable=True)
+    ml_model_status = Column(String, nullable=True)
+    # stores ML layer result alongside Layer 1 evaluation
     created_at = Column(DateTime, default=datetime.utcnow)
 
 

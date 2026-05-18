@@ -142,14 +142,13 @@ class OverallEvaluator:
             "created_at": datetime.now(timezone.utc).replace(tzinfo=None),
         }
         # store ML result alongside Layer 1 result
-        if hasattr(LiveRunEvaluation, "ml_anomaly_score"):
-            evaluation_kwargs["ml_anomaly_score"] = (
-                ml_result.get("ml_anomaly_score") if ml_result else None
-            )
-        if hasattr(LiveRunEvaluation, "ml_is_anomaly"):
-            evaluation_kwargs["ml_is_anomaly"] = (
-                ml_result.get("ml_is_anomaly") if ml_result else None
-            )
+        evaluation_kwargs["ml_anomaly_score"] = (
+            ml_result.get("ml_anomaly_score") if ml_result else None
+        )
+        evaluation_kwargs["ml_is_anomaly"] = ml_result.get("ml_is_anomaly") if ml_result else None
+        evaluation_kwargs["ml_model_status"] = (
+            ml_result.get("ml_model_status") if ml_result else None
+        )
         return LiveRunEvaluation(**evaluation_kwargs)
 
     def _build_explanation(
@@ -205,8 +204,12 @@ class OverallEvaluator:
 
         return " ".join(lines)
 
-    def save(self, evaluation) -> LiveRunEvaluation | None:
+    def save(self, evaluation, ml_result=None) -> LiveRunEvaluation | None:
         # saves LiveRunEvaluation to DB and returns saved object with id
+        if ml_result:
+            evaluation.ml_anomaly_score = ml_result.get("ml_anomaly_score")
+            evaluation.ml_is_anomaly = ml_result.get("ml_is_anomaly")
+            evaluation.ml_model_status = ml_result.get("ml_model_status")
         try:
             with Session(engine) as session:
                 session.add(evaluation)

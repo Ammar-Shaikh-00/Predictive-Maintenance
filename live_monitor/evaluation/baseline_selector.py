@@ -5,15 +5,10 @@
 
 import logging
 
+import config
 from sqlalchemy.orm import Session
 
 from storage.db_writer import BaselineRegistry, engine
-
-REGIME_LOW_MAX = 280.0  # pressure < 280 -> LOW
-REGIME_MID_MIN = 280.0  # pressure 280-320 -> MID
-REGIME_MID_MAX = 320.0
-REGIME_HIGH_MIN = 320.0  # pressure > 320 -> HIGH
-# matches pressure_regime_config from historical pipeline exactly
 
 
 class BaselineSelector:
@@ -23,21 +18,19 @@ class BaselineSelector:
         # cache last valid baseline for fallback chain
 
     def detect_regime(self, features) -> str:
-        # determines pressure regime from current live window
-        #               uses avg_pressure (mapped from pressure_mean)
+        # pressure regime from live window — thresholds only in config.py
         avg_pressure = features.get("pressure_mean", None)
 
         if avg_pressure is None:
             return None
             # cannot determine regime without pressure
 
-        if avg_pressure < REGIME_LOW_MAX:
+        if avg_pressure < config.REGIME_LOW_MAX:
             return "LOW"
-        elif REGIME_MID_MIN <= avg_pressure <= REGIME_MID_MAX:
+        if config.REGIME_MID_MIN <= avg_pressure <= config.REGIME_MID_MAX:
             return "MID"
-        else:
-            return "HIGH"
-        # LOW < 280 | MID 280-320 | HIGH > 320
+        return "HIGH"
+        # single source of truth in config (REGIME_* constants)
 
     def select(self, features) -> dict:
         # main entry — returns selected baseline info dict:

@@ -121,11 +121,16 @@ class AnomalyScorer:
         model = self.models[confirmed_state]
         scaler = self.scalers[confirmed_state]
         cols = self._feature_columns_by_state.get(confirmed_state, FEATURE_COLUMNS)
-        feature_values = _row_for_columns(features or {}, cols)
-        x = scaler.transform([feature_values])
+        feature_map = {name: _feature_float(features or {}, name) for name in cols}
+        import pandas as pd
 
-        score = float(model.decision_function(x)[0])
-        is_anomaly = bool(model.predict(x)[0] == -1)
+        X = pd.DataFrame([feature_map], columns=cols)
+        X_scaled = scaler.transform(X)
+        # pass DataFrame to match scaler training format
+        # fixes sklearn feature names warning
+
+        score = float(model.decision_function(X_scaled)[0])
+        is_anomaly = bool(model.predict(X_scaled)[0] == -1)
 
         return {
             "ml_anomaly_score": round(score, 4),

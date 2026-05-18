@@ -16,6 +16,7 @@ from processing.feature_engine import FeatureEngine
 from processing.window_buffer import WindowBuffer
 from storage.db_writer import DBWriter
 from ml.anomaly_scorer import AnomalyScorer
+from ml.retrain_scheduler import start_scheduler
 from state.state_detector import StateDetector
 
 # FastAPI runs in background thread
@@ -231,6 +232,19 @@ def run_cycle() -> None:
 
 if __name__ == "__main__":
     logging.info("Live monitoring pipeline started...")
+
+    # start auto-retraining scheduler in background
+    scheduler_thread = threading.Thread(
+        target=start_scheduler,
+        args=(anomaly_scorer,),
+        daemon=True,
+    )
+    scheduler_thread.start()
+    logging.info(
+        f"Auto-retraining scheduler started "
+        f"(every {config.RETRAIN_INTERVAL_HOURS}h, "
+        f"min {config.RETRAIN_MIN_NEW_ROWS} new rows)"
+    )
 
     # start FastAPI in background thread
     # daemon=True means API stops when pipeline stops

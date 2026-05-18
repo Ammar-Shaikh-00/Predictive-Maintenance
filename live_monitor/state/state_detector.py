@@ -5,12 +5,10 @@ from __future__ import annotations
 import os
 
 import joblib
-import numpy as np  # noqa: F401 — available for feature vector helpers if needed
 
 import config
-from ml.model_registry import MODEL_REGISTRY  # noqa: F401 — registry of per-state anomaly models
 
-# must match columns used in train_state_classifier training exactly
+# feature order must match train_state_classifier.py — no threshold rules here
 _FEATURE_COLUMNS = [
     "mean_Val_1",
     "std_Val_1",
@@ -28,17 +26,17 @@ _FEATURE_COLUMNS = [
 
 
 class StateDetector:
-    """Detect candidate machine states and confirm them over multiple windows."""
+    """Detect candidate and confirmed states via ML classifier (no rule-based thresholds)."""
 
     def __init__(self) -> None:
-        """Initialize confirmation tracking, configuration, and ML classifier."""
+        """Initialize confirmation tracking and load trained state classifier."""
         # stores last 3 candidate states for confirmation logic
         self.candidate_history: list[str] = []
         # we need 3 consecutive matching states to confirm a state change
         self.confirmation_windows = config.CONFIRMATION_WINDOWS
         self.current_confirmed_state: str | None = None
 
-        # ML classifier replaces hardcoded state rules
+        # ML replaces former if/elif blocks (OFF < 5, PRODUCTION >= 50, etc.)
         self.classifier = joblib.load(
             os.path.join(config.ML_OUTPUT_DIR, "state_classifier.pkl")
         )
@@ -47,8 +45,8 @@ class StateDetector:
         )
 
     def detect_candidate(self, features: dict[str, float]) -> str:
-        """Classify the current window into a candidate machine state using the ML model."""
-        # maps live pipeline names to ML training column names
+        """Predict candidate state from window features using the trained classifier."""
+        # maps live FeatureEngine names to ML training column names
         feature_map = {
             "mean_Val_1": features.get("screw_speed_mean", 0),
             "std_Val_1": features.get("screw_speed_std", 0),
@@ -64,9 +62,13 @@ class StateDetector:
             "valid_fraction": features.get("valid_fraction", 1.0),
         }
 
-        x = [[feature_map[f] for f in _FEATURE_COLUMNS]]
-        x_scaled = self.scaler.transform(x)
-        predicted = self.classifier.predict(x_scaled)[0]
+        import pandas as pd
+
+        X = pd.DataFrame([feature_map], columns=_FEATURE_COLUMNS)
+        X_scaled = self.scaler.transform(X)
+        # pass DataFrame to match scaler training format
+        # fixes sklearn feature names warning
+        predicted = self.classifier.predict(X_scaled)[0]
         # ML predicts state, no hardcoded rules
 
         return str(predicted)

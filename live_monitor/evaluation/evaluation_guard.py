@@ -6,9 +6,8 @@ import logging
 
 import config
 
-EVALUABLE_STATES = {"PRODUCTION", "LOW_PRODUCTION"}
-# only these states trigger baseline comparison
-# OFF, COOLING, HEATING, UNKNOWN -> always skipped
+# from config — states that trigger baseline comparison; OFF/COOLING/HEATING skip Layer 1
+EVALUABLE_STATES = set(config.EVALUABLE_STATES)
 
 
 class EvaluationGuard:
