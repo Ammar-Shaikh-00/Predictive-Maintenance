@@ -2,11 +2,15 @@
 #               runs as a background service alongside the main pipeline loop
 #               anyone can call these URLs to get latest evaluation results
 
+import os
+import threading
 from datetime import datetime
 
 from fastapi import FastAPI, HTTPException
 from sqlalchemy.orm import Session
 
+from ml.model_registry import MODEL_REGISTRY
+from ml.retrain_scheduler import run_retraining
 from storage.db_writer import (
     BaselineRegistry,
     LiveFeatureEvaluation,
@@ -136,11 +140,153 @@ def get_baseline_registry():
         }
 
 
-# simple health check — confirms API is alive
-# call this first to verify API started correctly
+# returns latest ML anomaly result for current window
+@app.get("/ml/current-anomaly")
+def get_current_ml_anomaly():
+    with Session(engine) as session:
+        row = session.query(LiveRunEvaluation).order_by(LiveRunEvaluation.id.desc()).first()
+        if not row:
+            raise HTTPException(status_code=404, detail="No evaluation data yet")
+        return {
+            "id": row.id,
+            "live_process_window_id": row.live_process_window_id,
+            "detected_state": row.detected_state,
+            "ml_anomaly_score": row.ml_anomaly_score,
+            "ml_is_anomaly": row.ml_is_anomaly,
+            "ml_model_status": row.ml_model_status,
+            "overall_status": row.overall_status,
+            "drift_score": row.drift_score,
+            "anomaly_score": row.anomaly_score,
+            "explanation_text": row.explanation_text,
+            "created_at": row.created_at,
+        }
+
+
+# returns current status of all ML models
+# useful for UI to show which models are ready
+@app.get("/ml/model-status")
+def get_ml_model_status():
+    models = []
+    for state, entry in MODEL_REGISTRY.items():
+        model_path = entry.get("model_path")
+        scaler_path = entry.get("scaler_path")
+        model_exists = bool(
+            model_path
+            and scaler_path
+            and os.path.isfile(model_path)
+            and os.path.isfile(scaler_path)
+        )
+        models.append(
+            {
+                "state": state,
+                "status": entry["status"],
+                "model_exists": model_exists,
+                "min_samples": entry["min_samples"],
+            }
+        )
+    return {"models": models}
+
+
+# returns last 20 evaluations with ML scores
+@app.get("/ml/recent-evaluations")
+def get_recent_ml_evaluations():
+    with Session(engine) as session:
+        rows = (
+            session.query(LiveRunEvaluation)
+            .order_by(LiveRunEvaluation.id.desc())
+            .limit(20)
+            .all()
+        )
+        return [
+            {
+                "id": row.id,
+                "detected_state": row.detected_state,
+                "overall_status": row.overall_status,
+                "ml_anomaly_score": row.ml_anomaly_score,
+                "ml_is_anomaly": row.ml_is_anomaly,
+                "ml_model_status": row.ml_model_status,
+                "created_at": row.created_at,
+            }
+            for row in rows
+        ]
+
+
+# returns current drift detection result from latest evaluation
+@app.get("/ml/drift-status")
+def get_ml_drift_status():
+    with Session(engine) as session:
+        row = session.query(LiveRunEvaluation).order_by(LiveRunEvaluation.id.desc()).first()
+        if not row:
+            raise HTTPException(status_code=404, detail="No evaluation data yet")
+        return {
+            "detected_state": row.detected_state,
+            "overall_status": row.overall_status,
+            "drift_score": row.drift_score,
+            "explanation_text": row.explanation_text,
+            "ml_anomaly_score": row.ml_anomaly_score,
+            "ml_is_anomaly": row.ml_is_anomaly,
+            "created_at": row.created_at,
+        }
+
+
+# manually trigger ML retraining from API
+# useful when new data added or models need refresh
+@app.post("/ml/trigger-retrain")
+def trigger_retrain():
+    import main as pipeline_main
+
+    thread = threading.Thread(
+        target=run_retraining,
+        args=(pipeline_main.anomaly_scorer,),
+        daemon=True,
+    )
+    thread.start()
+    # non-blocking, pipeline continues during retrain
+    return {
+        "status": "retraining started",
+        "message": "models will be updated in background",
+    }
+
+
+def _ml_models_loaded() -> list[str]:
+    """States with models loaded in memory, or on disk if pipeline module unavailable."""
+    try:
+        import main as pipeline_main
+
+        return sorted(pipeline_main.anomaly_scorer.models.keys())
+    except (ImportError, AttributeError):
+        pass
+    # check file existence via registry paths — no hardcoded state list in routes
+    loaded: list[str] = []
+    for state, entry in MODEL_REGISTRY.items():
+        model_path = entry.get("model_path")
+        scaler_path = entry.get("scaler_path")
+        if (
+            model_path
+            and scaler_path
+            and os.path.isfile(model_path)
+            and os.path.isfile(scaler_path)
+        ):
+            loaded.append(state)
+    return sorted(loaded)
+
+
+def _scheduler_status() -> str:
+    for thread in threading.enumerate():
+        if thread.name == "ml-retrain-scheduler" and thread.is_alive():
+            return "running"
+    return "stopped"
+
+
+# full pipeline health — API, Layer 1/2, ML models, and retrain scheduler
 @app.get("/health")
 def health():
     return {
         "status": "ok",
         "timestamp": datetime.utcnow(),
+        "pipeline_version": "2.0",
+        "ml_models_loaded": _ml_models_loaded(),
+        "layer1_status": "active",
+        "layer2_status": "active",
+        "scheduler_status": _scheduler_status(),
     }

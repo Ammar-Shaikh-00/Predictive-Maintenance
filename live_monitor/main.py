@@ -16,6 +16,7 @@ from processing.feature_engine import FeatureEngine
 from processing.window_buffer import WindowBuffer
 from storage.db_writer import DBWriter
 from ml.anomaly_scorer import AnomalyScorer
+from ml.drift_detector import DriftDetector
 from ml.retrain_scheduler import start_scheduler
 from state.state_detector import StateDetector
 
@@ -48,6 +49,8 @@ evaluator = FeatureEvaluator()
 overall_evaluator = OverallEvaluator()
 # loads all available state-specific anomaly models
 anomaly_scorer = AnomalyScorer()
+# loads baseline stats from ml_labeled_states.csv
+drift_detector = DriftDetector()
 
 
 def start_api():
@@ -123,6 +126,24 @@ def run_cycle() -> None:
     )
     # logged every cycle for monitoring
 
+    # update drift history with current window
+    drift_detector.update(
+        features=features,
+        confirmed_state=confirmed_state,
+    )
+
+    # detect drift every cycle
+    drift_result = drift_detector.detect()
+
+    if drift_result["drift_detected"]:
+        logging.warning(
+            "⚠️ DRIFT DETECTED | features=%s | details=%s",
+            drift_result["drifting_features"],
+            drift_result["drift_details"],
+        )
+    else:
+        logging.info("Drift check | status=%s", drift_result["drift_status"])
+
     # build state_info dict for window storage
     state_info = {
         "candidate_state": candidate_state,
@@ -171,6 +192,7 @@ def run_cycle() -> None:
                 confirmed_state=confirmed_state,
                 live_window_id=live_window.id if live_window else None,
                 ml_result=ml_result,
+                drift_result=drift_result,
             )
 
             saved_evaluation = overall_evaluator.save(run_evaluation)

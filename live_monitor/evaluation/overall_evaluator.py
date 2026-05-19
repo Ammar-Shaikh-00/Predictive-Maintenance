@@ -30,6 +30,7 @@ class OverallEvaluator:
         confirmed_state,
         live_window_id,
         ml_result=None,
+        drift_result=None,
     ) -> LiveRunEvaluation:
         # main entry — builds one LiveRunEvaluation from feature results
         # inputs:
@@ -126,6 +127,15 @@ class OverallEvaluator:
             baseline_result=baseline_result,
         )
         # human-readable summary for UI
+
+        if drift_result and drift_result["drift_detected"]:
+            if overall_status == "NORMAL":
+                overall_status = "WARNING"
+            # sustained drift upgrades status to WARNING
+            drift_features = drift_result["drifting_features"]
+            explanation_text += (
+                f" Drift detected in: {', '.join(drift_features)}."
+            )
 
         # Step 8 — build and return LiveRunEvaluation object:
         evaluation_kwargs = {
