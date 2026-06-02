@@ -109,7 +109,7 @@ def run_retraining(anomaly_scorer_instance: Any) -> None:
 
     current_row_count = _live_api_row_count()
     save_retrain_state(current_row_count)
-    logging.info("✅ ML retraining complete")
+    logging.info("ML retraining complete")
 
 
 def start_scheduler(anomaly_scorer_instance: Any) -> threading.Thread:
@@ -123,7 +123,7 @@ def start_scheduler(anomaly_scorer_instance: Any) -> threading.Thread:
                 try:
                     run_retraining(anomaly_scorer_instance)
                     anomaly_scorer_instance._load_all_models()
-                    logging.info("✅ Models hot-reloaded after retraining")
+                    logging.info("Models hot-reloaded after retraining")
                 except Exception:
                     logging.exception("ML retraining failed")
             else:

@@ -15,34 +15,47 @@ if str(_LIVE_MONITOR_ROOT) not in sys.path:
 
 import config  # noqa: E402
 
+# temperature_direction fixes HEATING/OFF confusion
+FEATURE_COLUMNS = [
+    "mean_Val_1",
+    "std_Val_1",
+    "mean_Val_5",
+    "std_Val_5",
+    "mean_Val_6",
+    "std_Val_6",
+    "temperature_mean",
+    "temp_spread_mean",
+    "slope_Val_1",
+    "slope_Val_6",
+    "slope_temperature",
+    "temperature_direction",
+    "valid_fraction",
+]
+
+
+def _align_live_feature_names(df: pd.DataFrame) -> pd.DataFrame:
+    """Map ml_live_labeled column names to FEATURE_COLUMNS names."""
+    if "temperature_mean" not in df.columns and "mean_temperature_mean" in df.columns:
+        df["temperature_mean"] = df["mean_temperature_mean"]
+    if "temp_spread_mean" not in df.columns and "mean_temp_spread" in df.columns:
+        df["temp_spread_mean"] = df["mean_temp_spread"]
+    if "slope_temperature" not in df.columns and "slope_temperature_mean" in df.columns:
+        df["slope_temperature"] = df["slope_temperature_mean"]
+    return df
+
 
 def main() -> None:
     # step 1: load labeled states and remove unlabeled rows
-    input_path = os.path.join(config.ML_OUTPUT_DIR, "ml_labeled_states.csv")
+    # now uses 5-min windows matching live pipeline scale
+    input_path = os.path.join(config.ML_OUTPUT_DIR, "ml_live_labeled.csv")
     model_path = os.path.join(config.ML_OUTPUT_DIR, "state_classifier.pkl")
     scaler_path = os.path.join(config.ML_OUTPUT_DIR, "state_classifier_scaler.pkl")
     df = pd.read_csv(input_path)
     df = df.dropna(subset=["predicted_state"]).copy()
-
-    # keep expected temperature feature name consistent
-    if "temperature_mean" not in df.columns and "mean_temperature_mean" in df.columns:
-        df["temperature_mean"] = df["mean_temperature_mean"]
+    df = _align_live_feature_names(df)
 
     # step 2: define feature columns for training
-    feature_cols = [
-        "mean_Val_1",
-        "std_Val_1",
-        "mean_Val_5",
-        "std_Val_5",
-        "mean_Val_6",
-        "std_Val_6",
-        "temperature_mean",
-        "temperature_spread_mean",
-        "slope_Val_1",
-        "slope_Val_6",
-        "slope_temperature",
-        "valid_fraction",
-    ]
+    feature_cols = FEATURE_COLUMNS
 
     # step 3: drop rows with nulls in selected features
     df = df.dropna(subset=feature_cols).copy()

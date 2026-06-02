@@ -28,11 +28,57 @@ def _pick_ready(summary: pd.DataFrame, used: set[int]) -> int:
     return int(candidates.iloc[0]["cluster_id"])
 
 
-def _pick_heating(summary: pd.DataFrame, used: set[int]) -> int:
-    # choose highest temperature rising trend cluster
+def _learn_thresholds(df: pd.DataFrame) -> dict[str, float]:
+    """Learn temperature and plateau thresholds from window data distribution."""
+    temp_col = "mean_temperature_mean"
+    # prevents warm machine being labeled OFF
+    cold_threshold = float(df[temp_col].quantile(0.10))
+    non_off = df[df[temp_col] >= cold_threshold]
+    if non_off.empty:
+        non_off = df
+    # threshold learned from data distribution
+    heating_plateau_temp_min = float(non_off[temp_col].quantile(0.25))
+    low_speed_threshold = float(non_off["mean_Val_1"].quantile(0.50))
+    low_pressure_threshold = float(non_off["mean_Val_6"].quantile(0.50))
+    temp_slope_near_zero_max = float(non_off["slope_temperature"].abs().quantile(0.50))
+    return {
+        "cold_threshold": cold_threshold,
+        "heating_plateau_temp_min": heating_plateau_temp_min,
+        "low_speed_threshold": low_speed_threshold,
+        "low_pressure_threshold": low_pressure_threshold,
+        "temp_slope_near_zero_max": temp_slope_near_zero_max,
+    }
+
+
+def _is_heating_plateau(row: pd.Series, thresholds: dict[str, float]) -> bool:
+    # include plateau phase in HEATING
+    # machine is heating even when temp temporarily plateaus
+    return bool(
+        abs(float(row["slope_temperature"])) <= thresholds["temp_slope_near_zero_max"]
+        and float(row["temperature_mean"]) > thresholds["heating_plateau_temp_min"]
+        and float(row["mean_Val_1"]) < thresholds["low_speed_threshold"]
+        and float(row["mean_Val_6"]) < thresholds["low_pressure_threshold"]
+    )
+
+
+def _pick_heating(summary: pd.DataFrame, used: set[int], thresholds: dict[str, float]) -> int:
+    # highest temp_slope_rank OR warm low-speed plateau (data-driven)
     candidates = summary[~summary["cluster_id"].isin(used)].copy()
-    candidates = candidates.sort_values(["temp_slope_rank"], ascending=True)
-    return int(candidates.iloc[0]["cluster_id"])
+    if candidates.empty:
+        return int(summary.iloc[0]["cluster_id"])
+
+    max_slope_rank = float(candidates["temp_slope_rank"].max())
+
+    def _heating_eligible(row: pd.Series) -> bool:
+        rising = float(row["temp_slope_rank"]) >= max_slope_rank
+        return rising or _is_heating_plateau(row, thresholds)
+
+    eligible = candidates[candidates.apply(_heating_eligible, axis=1)]
+    if eligible.empty:
+        eligible = candidates.sort_values(["temp_slope_rank"], ascending=False).head(1)
+    else:
+        eligible = eligible.sort_values(["temp_slope_rank"], ascending=False)
+    return int(eligible.iloc[0]["cluster_id"])
 
 
 def _pick_cooling(summary: pd.DataFrame, used: set[int]) -> int:
@@ -42,12 +88,16 @@ def _pick_cooling(summary: pd.DataFrame, used: set[int]) -> int:
     return int(candidates.iloc[0]["cluster_id"])
 
 
-def _pick_off(summary: pd.DataFrame, used: set[int]) -> int:
-    # choose cluster with lowest valid fraction and lowest speed
+def _pick_off(summary: pd.DataFrame, used: set[int], cold_threshold: float) -> int:
+    # OFF only if cluster mean temperature is below learned cold threshold
     candidates = summary[~summary["cluster_id"].isin(used)].copy()
-    candidates["off_score"] = candidates["valid_rank"] + candidates["speed_low_rank"]
-    candidates = candidates.sort_values(["off_score", "valid_rank", "speed_low_rank"])
-    return int(candidates.iloc[0]["cluster_id"])
+    cold_candidates = candidates[candidates["temperature_mean"] < cold_threshold]
+    if cold_candidates.empty:
+        cold_candidates = candidates.nsmallest(max(1, len(candidates)), "temperature_mean")
+    cold_candidates = cold_candidates.copy()
+    cold_candidates["off_score"] = cold_candidates["valid_rank"] + cold_candidates["speed_low_rank"]
+    cold_candidates = cold_candidates.sort_values(["off_score", "valid_rank", "speed_low_rank"])
+    return int(cold_candidates.iloc[0]["cluster_id"])
 
 
 def main() -> None:
@@ -84,6 +134,16 @@ def main() -> None:
     summary["temp_stable_rank"] = summary["slope_temperature"].abs().rank(ascending=True, method="dense")
     summary["speed_low_rank"] = summary["mean_Val_1"].rank(ascending=True, method="dense")
 
+    thresholds = _learn_thresholds(df)
+    print(
+        "learned thresholds | "
+        f"cold={thresholds['cold_threshold']:.2f} | "
+        f"heating_plateau_temp={thresholds['heating_plateau_temp_min']:.2f} | "
+        f"low_speed={thresholds['low_speed_threshold']:.2f} | "
+        f"low_pressure={thresholds['low_pressure_threshold']:.2f} | "
+        f"temp_slope_near_zero={thresholds['temp_slope_near_zero_max']:.6f}"
+    )
+
     # step 4: map clusters to states using data-driven ranking logic
     # data-driven mapping, no fixed value thresholds
     cluster_to_state: dict[int, str] = {}
@@ -102,7 +162,7 @@ def main() -> None:
     cluster_to_state[ready_cluster] = "READY"
     used.add(ready_cluster)
 
-    heating_cluster = _pick_heating(summary, used)
+    heating_cluster = _pick_heating(summary, used, thresholds)
     cluster_to_state[heating_cluster] = "HEATING"
     used.add(heating_cluster)
 
@@ -110,14 +170,20 @@ def main() -> None:
     cluster_to_state[cooling_cluster] = "COOLING"
     used.add(cooling_cluster)
 
-    off_cluster = _pick_off(summary, used)
+    off_cluster = _pick_off(summary, used, thresholds["cold_threshold"])
     cluster_to_state[off_cluster] = "OFF"
     used.add(off_cluster)
 
-    # assign any leftover clusters by nearest behavior if cluster count differs from six
+    # assign leftovers: OFF only when below learned cold temperature
     for cluster_id in summary["cluster_id"]:
-        if int(cluster_id) not in cluster_to_state:
-            cluster_to_state[int(cluster_id)] = "OFF"
+        cid = int(cluster_id)
+        if cid in cluster_to_state:
+            continue
+        row = summary.loc[summary["cluster_id"] == cluster_id].iloc[0]
+        if float(row["temperature_mean"]) < thresholds["cold_threshold"]:
+            cluster_to_state[cid] = "OFF"
+        else:
+            cluster_to_state[cid] = "COOLING"
 
     # step 5: add predicted state per row from cluster mapping
     df["predicted_state"] = df["cluster_id"].astype("Int64").map(cluster_to_state)

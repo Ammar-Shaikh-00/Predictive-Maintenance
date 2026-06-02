@@ -36,23 +36,31 @@ MODEL_REGISTRY = {
         "min_samples": config.ANOMALY_MIN_SAMPLES_HEATING,
     },
     "LOW_PRODUCTION": {
-        "model_path": None,
-        "scaler_path": None,
-        "status": "insufficient_data",
+        "model_path": os.path.join(config.ML_OUTPUT_DIR, "anomaly_LOW_PRODUCTION.pkl"),
+        "scaler_path": os.path.join(config.ML_OUTPUT_DIR, "anomaly_LOW_PRODUCTION_scaler.pkl"),
+        "status": "ready"
+        if os.path.exists(os.path.join(config.ML_OUTPUT_DIR, "anomaly_LOW_PRODUCTION.pkl"))
+        else "insufficient_data",
         "min_samples": config.ANOMALY_MIN_SAMPLES_LOW_PRODUCTION,
     },
     "COOLING": {
-        "model_path": None,
-        "scaler_path": None,
-        "status": "insufficient_data",
+        "model_path": os.path.join(config.ML_OUTPUT_DIR, "anomaly_COOLING.pkl"),
+        "scaler_path": os.path.join(config.ML_OUTPUT_DIR, "anomaly_COOLING_scaler.pkl"),
+        "status": "ready"
+        if os.path.exists(os.path.join(config.ML_OUTPUT_DIR, "anomaly_COOLING.pkl"))
+        else "insufficient_data",
         "min_samples": config.ANOMALY_MIN_SAMPLES_COOLING,
     },
     "READY": {
-        "model_path": None,
-        "scaler_path": None,
-        "status": "insufficient_data",
+        "model_path": os.path.join(config.ML_OUTPUT_DIR, "anomaly_READY.pkl"),
+        "scaler_path": os.path.join(config.ML_OUTPUT_DIR, "anomaly_READY_scaler.pkl"),
+        "status": "ready"
+        if os.path.exists(os.path.join(config.ML_OUTPUT_DIR, "anomaly_READY.pkl"))
+        else "insufficient_data",
         "min_samples": config.ANOMALY_MIN_SAMPLES_READY,
     },
+    # status auto-detected from file existence
+    # updates automatically after training scripts run
 }
 
 
@@ -66,7 +74,7 @@ def _model_files_present(entry: dict) -> bool:
 
 
 def get_model_status() -> None:
-    """Print a table of registry entries — called at pipeline startup to show ML readiness."""
+    """Print a table of all six state models — called at pipeline startup to show ML readiness."""
     col_state = "state"
     col_status = "status"
     col_exists = "model_exists"
@@ -75,10 +83,12 @@ def get_model_status() -> None:
     header = f"{col_state:<{w_state}} | {col_status:<{w_status}} | {col_exists:<{w_exists}} | {col_min}"
     print(header)
     print("-" * len(header))
+    # all 6 states: PRODUCTION, OFF, HEATING, LOW_PRODUCTION, COOLING, READY
     for state, entry in MODEL_REGISTRY.items():
         exists = _model_files_present(entry)
+        status = "ready" if exists else "insufficient_data"
         print(
-            f"{state:<{w_state}} | {entry['status']:<{w_status}} | "
+            f"{state:<{w_state}} | {status:<{w_status}} | "
             f"{str(exists):<{w_exists}} | {entry['min_samples']}"
         )
 

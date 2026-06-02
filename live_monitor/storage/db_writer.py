@@ -268,12 +268,14 @@ class DBWriter:
 
     # saves one raw API response every poll cycle
     def save_raw_sensor(self, data_point: dict):
+        source = data_point.get("source", "live_api")
+        # source comes from data_point, not hardcoded
         try:
             with Session(self.engine) as session:
                 row = MachineSensorRaw(
                     trend_date=data_point.get("timestamp"),
                     recorded_at=datetime.now(timezone.utc).replace(tzinfo=None),
-                    source="live_api",
+                    source=source,
                     Val_1=data_point.get("screw_speed"),
                     Val_5=data_point.get("load"),
                     Val_6=data_point.get("pressure"),

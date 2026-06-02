@@ -62,6 +62,18 @@ class FeatureEngine:
         temperature_range = float(temperature_max - temperature_min)
         temperature_trend = _trend_slope(numeric_df["temperature"])
 
+        # temperature_direction = second half mean - first half mean
+        # positive = rising (HEATING), negative = falling (COOLING)
+        # more robust than slope for short 2-3 min windows
+        temp_values = window_df["temperature"].values
+        if len(temp_values) >= 2:
+            mid = len(temp_values) // 2
+            first_half_mean = temp_values[:mid].mean()
+            second_half_mean = temp_values[mid:].mean()
+            temperature_direction = float(second_half_mean - first_half_mean)
+        else:
+            temperature_direction = 0.0
+
         load_mean = float(numeric_df["load"].mean())
         load_std = float(numeric_df["load"].std(ddof=1))
         load_min = float(numeric_df["load"].min())
@@ -73,8 +85,38 @@ class FeatureEngine:
         # indicates how much pressure is generated per unit of screw speed
         pressure_per_rpm = 0.0 if screw_speed_mean == 0 else float(pressure_mean / screw_speed_mean)
 
-        # spread across temperature zones, high spread = instability
-        temp_spread = float(temperature_max - temperature_min)
+        # split temp zones into front and rear groups
+        # matches how historical pipeline calculated temp_spread
+        # front = barrel zones, rear = die zones
+        front_zone_keys = [
+            "temp_zone_7",
+            "temp_zone_8",
+            "temp_zone_9",
+            "temp_zone_10",
+            "temp_zone_11",
+        ]
+        rear_zone_keys = [
+            "temp_zone_27",
+            "temp_zone_28",
+            "temp_zone_29",
+            "temp_zone_30",
+            "temp_zone_31",
+            "temp_zone_32",
+        ]
+        # get values from window_df columns
+        # window_df has raw zone columns from buffer
+        front_cols = [c for c in front_zone_keys if c in window_df.columns]
+        rear_cols = [c for c in rear_zone_keys if c in window_df.columns]
+        if front_cols and rear_cols:
+            front_mean = window_df[front_cols].mean().mean()
+            rear_mean = window_df[rear_cols].mean().mean()
+            temp_spread = abs(front_mean - rear_mean)
+        else:
+            temp_spread = 0.0
+        # temp_spread = difference between front and rear zone means
+        # matches historical pipeline definition exactly
+        # fixes z=-44 CRITICAL issue caused by calculation mismatch
+        temp_spread = float(temp_spread)
 
         # ratio of load to pressure, useful for detecting abnormal states
         load_per_pressure = 0.0 if pressure_mean == 0 else float(load_mean / pressure_mean)
@@ -110,6 +152,7 @@ class FeatureEngine:
             "temperature_max": temperature_max,
             "temperature_range": temperature_range,
             "temperature_trend": temperature_trend,
+            "temperature_direction": temperature_direction,
             "load_mean": load_mean,
             "load_std": load_std,
             "load_min": load_min,

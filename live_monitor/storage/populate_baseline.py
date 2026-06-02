@@ -45,10 +45,10 @@ def build_low_regime_baseline():
 
     # calculate derived features
     df["pressure_per_rpm"] = df["pressure"] / df["speed"]
-    df["temp_spread"] = (
-        df[["temp1", "temp2", "temp3", "temp4"]].max(axis=1)
-        - df[["temp1", "temp2", "temp3", "temp4"]].min(axis=1)
-    )
+    front_cols = ["temp1", "temp2"]  # first 2 zones = front
+    rear_cols = ["temp3", "temp4"]  # last 2 zones = rear
+    df["temp_spread"] = abs(df[front_cols].mean(axis=1) - df[rear_cols].mean(axis=1))
+    # front/rear split for 4-column LOW regime data
     df["load_per_pressure"] = df["load"] / df["pressure"]
     # same derived features as historical and live pipeline
 
@@ -120,6 +120,24 @@ def main() -> None:
     df = pd.read_csv(STABLE_RUNS_CSV)
     # each row = one stable run with aggregated features + regime label
 
+    front_cols = [
+        "mean_Val_7",
+        "mean_Val_8",
+        "mean_Val_9",
+        "mean_Val_10",
+        "mean_Val_11",
+    ]
+    rear_cols = [
+        "mean_Val_27",
+        "mean_Val_28",
+        "mean_Val_29",
+        "mean_Val_30",
+        "mean_Val_31",
+        "mean_Val_32",
+    ]
+    df["temp_spread_fixed"] = abs(df[front_cols].mean(axis=1) - df[rear_cols].mean(axis=1))
+    # abs(front_mean - rear_mean) per stable run
+
     # maps live pipeline feature names -> historical CSV column names
     FEATURE_MAP = {
         "screw_speed_mean": "mean_Val_1",
@@ -129,7 +147,7 @@ def main() -> None:
         "load_mean": "mean_Val_5",
         "temperature_mean": "temperature_mean",
         "pressure_per_rpm": "mean_pressure_per_rpm",
-        "temp_spread": "temperature_spread_mean",
+        "temp_spread": "temp_spread_fixed",
         "load_per_pressure": "mean_load_per_pressure",
     }
 

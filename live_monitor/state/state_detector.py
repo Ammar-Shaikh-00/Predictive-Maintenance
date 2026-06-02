@@ -17,10 +17,11 @@ _FEATURE_COLUMNS = [
     "mean_Val_6",
     "std_Val_6",
     "temperature_mean",
-    "temperature_spread_mean",
+    "temp_spread_mean",
     "slope_Val_1",
     "slope_Val_6",
     "slope_temperature",
+    "temperature_direction",
     "valid_fraction",
 ]
 
@@ -35,6 +36,8 @@ class StateDetector:
         # we need 3 consecutive matching states to confirm a state change
         self.confirmation_windows = config.CONFIRMATION_WINDOWS
         self.current_confirmed_state: str | None = None
+        self.state_window_count = 0
+        # tracks how long we've been in current state
 
         # ML replaces former if/elif blocks (OFF < 5, PRODUCTION >= 50, etc.)
         self.classifier = joblib.load(
@@ -55,10 +58,11 @@ class StateDetector:
             "mean_Val_6": features.get("pressure_mean", 0),
             "std_Val_6": features.get("pressure_std", 0),
             "temperature_mean": features.get("temperature_mean", 0),
-            "temperature_spread_mean": features.get("temp_spread", 0),
+            "temp_spread_mean": features.get("temp_spread", 0),
             "slope_Val_1": features.get("screw_speed_trend", 0),
             "slope_Val_6": features.get("pressure_trend", 0),
             "slope_temperature": features.get("temperature_trend", 0),
+            "temperature_direction": features.get("temperature_direction", 0),
             "valid_fraction": features.get("valid_fraction", 1.0),
         }
 
@@ -77,19 +81,39 @@ class StateDetector:
         """Confirm a state only when recent candidate windows agree."""
         # 3-window confirmation still applies on ML predictions
         self.candidate_history.append(candidate_state)
-        # we only look at last 3 windows
         self.candidate_history = self.candidate_history[-self.confirmation_windows :]
 
         if (
             len(self.candidate_history) == self.confirmation_windows
             and all(state == self.candidate_history[0] for state in self.candidate_history)
         ):
-            # 3 consecutive matching windows = confirmed state change
-            self.current_confirmed_state = self.candidate_history[0]
+            new_confirmed = self.candidate_history[0]
+        else:
+            new_confirmed = None
+
+        if new_confirmed is None:
+            # keep current state if no new consensus
             return self.current_confirmed_state
 
-        # not enough consecutive agreement yet, no confirmed state
-        return None
+        # first state ever confirmed:
+        if self.current_confirmed_state is None:
+            self.current_confirmed_state = new_confirmed
+            self.state_window_count = 0
+            return self.current_confirmed_state
+
+        if new_confirmed == self.current_confirmed_state:
+            self.state_window_count += 1
+            return self.current_confirmed_state
+            # staying in same state
+
+        if self.state_window_count >= config.MIN_STATE_WINDOWS:
+            # enough time in current state, allow transition
+            self.current_confirmed_state = new_confirmed
+            self.state_window_count = 0
+            return self.current_confirmed_state
+
+        # too soon to transition, stay in current state
+        return self.current_confirmed_state
 
     def get_current_confirmed(self) -> str | None:
         """Return the last confirmed machine state, if available."""

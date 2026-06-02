@@ -33,6 +33,9 @@ TEMP_COLS = [
     "Val_32",
 ]
 
+FRONT_TEMP_COLS = ["Val_7", "Val_8", "Val_9", "Val_10", "Val_11"]
+REAR_TEMP_COLS = ["Val_27", "Val_28", "Val_29", "Val_30", "Val_31", "Val_32"]
+
 RAW_COLS = [
     "trend_date",
     "Val_1",
@@ -135,10 +138,17 @@ def _aggregate_bucket(sub: pd.DataFrame) -> dict[str, object]:
         row["slope_Val_6"] = _linear_slope_from_seconds(seconds, val_6)
         row["slope_temperature"] = _linear_slope_from_seconds(seconds, temp)
 
+    # temperature_spread_mean = mean of per-row front/rear spread over bucket
+    # matches live feature engine calculation exactly
     row["temperature_spread_mean"] = float(sub["temperature_spread"].mean(skipna=True))
     row["row_count"] = int(len(sub))
     row["valid_fraction"] = float((sub["Val_1"].fillna(0) > 0).sum() / max(len(sub), 1))
-    row["source"] = "live" if (sub["source"] == "live_api").any() else "historical"
+    if (sub["source"] == "live_api").any():
+        row["source"] = "live"
+    elif (sub["source"] == "simulation").any():
+        row["source"] = "simulation"
+    else:
+        row["source"] = "historical"
     row["window_start"] = sub["trend_date"].iloc[0]
     row["window_end"] = sub["trend_date"].iloc[-1]
     return row
@@ -172,6 +182,10 @@ def main() -> pd.DataFrame:
                 MachineSensorRaw.Val_33,
                 MachineSensorRaw.source,
             )
+            .where(
+                MachineSensorRaw.source.in_(["historical_import", "live_api", "simulation"])
+            )
+            # include all data sources in window building
             .order_by(MachineSensorRaw.trend_date.asc())
         )
         df = pd.DataFrame(session.execute(stmt).all(), columns=RAW_COLS)
@@ -195,7 +209,10 @@ def main() -> pd.DataFrame:
 
     # step 2: per-row derived features
     df["temperature_mean"] = df[TEMP_COLS].mean(axis=1, skipna=True)
-    df["temperature_spread"] = df[TEMP_COLS].max(axis=1, skipna=True) - df[TEMP_COLS].min(axis=1, skipna=True)
+    front_mean = df[FRONT_TEMP_COLS].mean(axis=1, skipna=True)
+    rear_mean = df[REAR_TEMP_COLS].mean(axis=1, skipna=True)
+    df["temperature_spread"] = (front_mean - rear_mean).abs()
+    # matches live feature engine calculation exactly
     df["pressure_per_rpm"] = _safe_ratio(df["Val_6"], df["Val_1"])
     df["load_per_pressure"] = _safe_ratio(df["Val_5"], df["Val_6"])
     df["load_per_rpm"] = _safe_ratio(df["Val_5"], df["Val_1"])

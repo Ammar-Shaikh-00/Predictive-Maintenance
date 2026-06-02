@@ -255,6 +255,13 @@ def run_cycle() -> None:
 if __name__ == "__main__":
     logging.info("Live monitoring pipeline started...")
 
+    if config.SIMULATION_MODE:
+        logging.info(
+            f"SIMULATION MODE | speed={config.SIMULATION_SPEED}x | "
+            f"file={config.SIMULATION_CSV}"
+        )
+        # clear indicator that pipeline is in simulation mode
+
     # start auto-retraining scheduler in background
     scheduler_thread = threading.Thread(
         target=start_scheduler,
@@ -279,6 +286,8 @@ if __name__ == "__main__":
     try:
         while True:
             run_cycle()
-            time.sleep(config.POLL_INTERVAL_SECONDS)
+            effective_interval = config.POLL_INTERVAL_SECONDS / config.SIMULATION_SPEED
+            time.sleep(effective_interval)
+            # faster replay controlled by SIMULATION_SPEED in config
     except KeyboardInterrupt:
         logging.info("Live monitoring pipeline stopped by user.")

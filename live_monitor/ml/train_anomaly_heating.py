@@ -16,18 +16,40 @@ if str(_LIVE_MONITOR_ROOT) not in sys.path:
 
 import config  # noqa: E402
 
+# matches state classifier features exactly
+FEATURE_COLUMNS = [
+    "mean_Val_1",
+    "std_Val_1",
+    "mean_Val_5",
+    "std_Val_5",
+    "mean_Val_6",
+    "std_Val_6",
+    "temperature_mean",
+    "temp_spread_mean",
+    "slope_Val_1",
+    "slope_Val_6",
+    "slope_temperature",
+    "temperature_direction",
+    "valid_fraction",
+]
+
 
 def _align_feature_columns(df: pd.DataFrame) -> pd.DataFrame:
     # map CSV column to training name used in feature list
     out = df.copy()
     if "temperature_mean" not in out.columns and "mean_temperature_mean" in out.columns:
         out["temperature_mean"] = out["mean_temperature_mean"]
+    if "temp_spread_mean" not in out.columns and "mean_temp_spread" in out.columns:
+        out["temp_spread_mean"] = out["mean_temp_spread"]
+    if "slope_temperature" not in out.columns and "slope_temperature_mean" in out.columns:
+        out["slope_temperature"] = out["slope_temperature_mean"]
     return out
 
 
 def main() -> None:
     # step 1: load labeled windows from clustering pipeline
-    input_path = os.path.join(config.ML_OUTPUT_DIR, "ml_labeled_states.csv")
+    # retrain on 5-min windows matching live scale
+    input_path = os.path.join(os.path.dirname(config.LIVE_WINDOWS_CSV), "ml_live_labeled.csv")
     model_path = os.path.join(config.ML_OUTPUT_DIR, "anomaly_HEATING.pkl")
     scaler_path = os.path.join(config.ML_OUTPUT_DIR, "anomaly_HEATING_scaler.pkl")
 
@@ -40,18 +62,8 @@ def main() -> None:
     train_mask = df["predicted_state"] == "HEATING"
     train_df = df.loc[train_mask].copy()
 
-    # step 3: heating-focused features — pressure/speed context + temperature trend
-    # slope_temperature is most critical for heating detection
-    feature_cols = [
-        "mean_Val_1",
-        "std_Val_1",
-        "mean_Val_6",
-        "std_Val_6",
-        "temperature_mean",
-        "slope_temperature",
-        "slope_Val_6",
-        "valid_fraction",
-    ]
+    # step 3: heating-focused features — matches state classifier feature set
+    feature_cols = FEATURE_COLUMNS
 
     # step 4: drop rows with missing features
     train_df = train_df.dropna(subset=feature_cols)

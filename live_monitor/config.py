@@ -34,6 +34,8 @@ FIELD_TEMPERATURE_ZONES = [
 
 # State confirmation
 CONFIRMATION_WINDOWS = int(os.getenv("CONFIRMATION_WINDOWS", "3"))  # consecutive windows needed to confirm state
+MIN_STATE_WINDOWS = int(os.getenv("MIN_STATE_WINDOWS", "5"))  # minimum windows before allowing state transition
+# prevents rapid flickering between similar states
 
 # states that trigger baseline comparison (evaluation guard)
 _evaluable_states_raw = os.getenv("EVALUABLE_STATES", "PRODUCTION,LOW_PRODUCTION")
@@ -61,6 +63,13 @@ ML_WINDOW_MINUTES = int(os.getenv("ML_WINDOW_MINUTES", "30"))
 ML_WINDOW_MIN_ROWS = int(os.getenv("ML_WINDOW_MIN_ROWS", "10"))
 ML_30MIN_MATRIX_CSV = os.path.join(ML_OUTPUT_DIR, "ml_feature_matrix_30min.csv")
 
+# 5-min windows for live-scale classifier training (storage.build_live_windows)
+LIVE_WINDOW_MINUTES = int(os.getenv("LIVE_WINDOW_MINUTES", "5"))
+LIVE_WINDOW_MIN_ROWS = int(os.getenv("LIVE_WINDOW_MIN_ROWS", "3"))
+LIVE_WINDOWS_CSV = os.path.join(ML_OUTPUT_DIR, "ml_live_windows.csv")
+# 5-min windows match live pipeline scale
+# historical data has 1 row/min so 5 rows per window
+
 # historical stable run thresholds (align with offline segmentation gates)
 STABLE_SPEED_MEAN_MIN = float(os.getenv("STABLE_SPEED_MEAN_MIN", "20.0"))
 STABLE_SPEED_DELTA_MAX = float(os.getenv("STABLE_SPEED_DELTA_MAX", "8.0"))
@@ -86,4 +95,12 @@ RETRAIN_MIN_NEW_ROWS = int(os.getenv("RETRAIN_MIN_NEW_ROWS", "500"))  # minimum 
 # drift detection (ml.drift_detector)
 DRIFT_WINDOW_COUNT = int(os.getenv("DRIFT_WINDOW_COUNT", "10"))  # number of recent windows to compare against baseline mean
 DRIFT_ALERT_ZSCORE = float(os.getenv("DRIFT_ALERT_ZSCORE", "2.5"))  # z-score threshold for drift alert, learned from data spread
+
+# simulation replay (simulation.data_replay)
+SIMULATION_MODE = False  # True = replay historical data, False = live API
+SIMULATION_SPEED = 2  # reduced for better slope calculation accuracy
+SIMULATION_CSV = (
+    r"C:\Users\AbdulRauf(AIEngineer\OneDrive - Standardverzeichnis\Desktop\PM-Project - Copy"
+    r"\timeSeriesDB\time-series-database\process_segmentation_outputs\results\Raw_Extruder_data.csv"
+)  # historical Raw_Extruder_data (.csv or .xlsx)
 

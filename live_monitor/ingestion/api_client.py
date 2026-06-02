@@ -18,12 +18,34 @@ class APIClient:
         # no auth needed, just URL + timeout
         self.api_url = config.API_URL
         self.api_timeout_seconds = config.API_TIMEOUT_SECONDS
+        # simulation mode controlled from config
+        self.simulation_mode = config.SIMULATION_MODE
+        self.replay = None
+        if self.simulation_mode:
+            from simulation.data_replay import DataReplayService
+
+            self.replay = DataReplayService()
+            self.replay.load()
+            logging.info("Simulation mode ON - replaying historical data")
 
     def fetch_latest(self) -> dict[str, object] | None:
         """Fetch latest live sensor values and normalize for pipeline usage."""
         # calls live API and returns normalized sensor dict
         # returns None if call fails, pipeline will skip that cycle
         # pipeline must never crash due to API failure
+        if self.simulation_mode:
+            data_point = self.replay.get_next()
+            if data_point is None:
+                logging.info("Simulation complete - restarting from beginning")
+                self.replay.reset()
+                data_point = self.replay.get_next()
+            if data_point is not None:
+                data_point["source"] = "simulation"
+                # ensures all replayed rows tagged as simulation
+            return data_point
+            # returns historical row instead of live API call
+
+        # set SIMULATION_MODE=False in config for live API
         try:
             response = requests.get(
                 config.API_URL,

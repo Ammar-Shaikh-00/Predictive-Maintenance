@@ -14,9 +14,8 @@ if str(_LIVE_MONITOR_ROOT) not in sys.path:
 import config  # noqa: E402
 from ml.model_registry import MODEL_REGISTRY, load_model  # noqa: E402
 
-# step 2: feature column order for PRODUCTION/OFF models (matches train_anomaly_production / train_anomaly_off).
-# HEATING uses HEATING_FEATURE_COLUMNS only — subset handled in score().
-# subset used for HEATING model handled automatically
+# step 2: feature column order for all state anomaly models (matches train_anomaly_*.py).
+# must match anomaly model training features exactly
 FEATURE_COLUMNS = [
     "mean_Val_1",
     "std_Val_1",
@@ -25,24 +24,11 @@ FEATURE_COLUMNS = [
     "mean_Val_6",
     "std_Val_6",
     "temperature_mean",
-    "temperature_spread_mean",
+    "temp_spread_mean",
     "slope_Val_1",
     "slope_Val_6",
     "slope_temperature",
-    "pressure_per_rpm_mean",
-    "load_per_pressure_mean",
-    "valid_fraction",
-]
-
-# column order for HEATING model (matches train_anomaly_heating.py)
-HEATING_FEATURE_COLUMNS = [
-    "mean_Val_1",
-    "std_Val_1",
-    "mean_Val_6",
-    "std_Val_6",
-    "temperature_mean",
-    "slope_temperature",
-    "slope_Val_6",
+    "temperature_direction",
     "valid_fraction",
 ]
 
@@ -55,12 +41,11 @@ _LIVE_FEATURE_ALIASES: dict[str, tuple[str, ...]] = {
     "mean_Val_6": ("mean_Val_6", "pressure_mean"),
     "std_Val_6": ("std_Val_6", "pressure_std"),
     "temperature_mean": ("temperature_mean",),
-    "temperature_spread_mean": ("temperature_spread_mean", "temp_spread", "temperature_range"),
+    "temp_spread_mean": ("temp_spread_mean", "temp_spread", "temperature_spread_mean"),
     "slope_Val_1": ("slope_Val_1", "screw_speed_trend"),
     "slope_Val_6": ("slope_Val_6", "pressure_trend"),
     "slope_temperature": ("slope_temperature", "temperature_trend"),
-    "pressure_per_rpm_mean": ("pressure_per_rpm_mean", "pressure_per_rpm"),
-    "load_per_pressure_mean": ("load_per_pressure_mean", "load_per_pressure"),
+    "temperature_direction": ("temperature_direction",),
     "valid_fraction": ("valid_fraction",),
 }
 
@@ -96,10 +81,7 @@ class AnomalyScorer:
             if model is not None and scaler is not None:
                 self.models[state] = model
                 self.scalers[state] = scaler
-                if state == "HEATING":
-                    self._feature_columns_by_state[state] = list(HEATING_FEATURE_COLUMNS)
-                else:
-                    self._feature_columns_by_state[state] = list(FEATURE_COLUMNS)
+                self._feature_columns_by_state[state] = list(FEATURE_COLUMNS)
         logging.info(
             "AnomalyScorer ML_OUTPUT_DIR=%s | loaded states=%s",
             config.ML_OUTPUT_DIR,
@@ -121,7 +103,24 @@ class AnomalyScorer:
         model = self.models[confirmed_state]
         scaler = self.scalers[confirmed_state]
         cols = self._feature_columns_by_state.get(confirmed_state, FEATURE_COLUMNS)
-        feature_map = {name: _feature_float(features or {}, name) for name in cols}
+        live = features or {}
+        # maps live FeatureEngine names to ML training column names
+        feature_map = {
+            "mean_Val_1": live.get("screw_speed_mean", 0),
+            "std_Val_1": live.get("screw_speed_std", 0),
+            "mean_Val_5": live.get("load_mean", 0),
+            "std_Val_5": live.get("load_std", 0),
+            "mean_Val_6": live.get("pressure_mean", 0),
+            "std_Val_6": live.get("pressure_std", 0),
+            "temperature_mean": live.get("temperature_mean", 0),
+            # temp_spread from live engine maps to temp_spread_mean
+            "temp_spread_mean": live.get("temp_spread", 0),
+            "slope_Val_1": live.get("screw_speed_trend", 0),
+            "slope_Val_6": live.get("pressure_trend", 0),
+            "slope_temperature": live.get("temperature_trend", 0),
+            "temperature_direction": live.get("temperature_direction", 0),
+            "valid_fraction": live.get("valid_fraction", 1.0),
+        }
         import pandas as pd
 
         X = pd.DataFrame([feature_map], columns=cols)
