@@ -47,7 +47,7 @@ def _align_live_feature_names(df: pd.DataFrame) -> pd.DataFrame:
 def main() -> None:
     # step 1: load labeled states and remove unlabeled rows
     # now uses 5-min windows matching live pipeline scale
-    input_path = os.path.join(config.ML_OUTPUT_DIR, "ml_live_labeled.csv")
+    input_path = config.LIVE_LABELED_CSV
     model_path = os.path.join(config.ML_OUTPUT_DIR, "state_classifier.pkl")
     scaler_path = os.path.join(config.ML_OUTPUT_DIR, "state_classifier_scaler.pkl")
     df = pd.read_csv(input_path)

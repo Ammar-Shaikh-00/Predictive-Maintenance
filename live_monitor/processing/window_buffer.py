@@ -30,9 +30,9 @@ class WindowBuffer:
 
     def __init__(self) -> None:
         """Initialize an empty buffer and load window duration configuration."""
-        # holds last 2-3 minutes of raw data points
-        self.buffer: deque[dict] = deque(maxlen=10)
+        self.buffer: deque[dict] = deque(maxlen=config.BUFFER_MAX_POINTS)
         self.window_duration_seconds = config.WINDOW_DURATION_SECONDS
+        self.min_points = config.BUFFER_MIN_POINTS
 
     def add(self, data_point: dict) -> None:
         """Add a new data point to the buffer and trim old entries."""
@@ -45,7 +45,7 @@ class WindowBuffer:
 
     def _trim(self) -> None:
         """Remove readings that are older than the configured rolling window."""
-        # keeps buffer clean, only last 2-3 min of data stays
+        # keeps buffer clean, only data within WINDOW_DURATION_SECONDS stays
         cutoff = datetime.now(timezone.utc) - timedelta(seconds=self.window_duration_seconds)
         trimmed_buffer: list[dict] = []
 
@@ -74,5 +74,4 @@ class WindowBuffer:
 
     def is_ready(self) -> bool:
         """Check whether the buffer has enough points for feature calculation."""
-        # we need minimum data before we start calculating features
-        return len(self.buffer) >= 10
+        return len(self.buffer) >= self.min_points

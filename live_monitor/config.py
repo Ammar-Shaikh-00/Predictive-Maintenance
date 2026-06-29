@@ -2,6 +2,15 @@
 
 import os
 
+_PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+_TSDB_RESULTS = os.path.join(
+    _PROJECT_ROOT,
+    "timeSeriesDB",
+    "time-series-database",
+    "process_segmentation_outputs",
+    "results",
+)
+
 # Real API settings
 API_URL = os.getenv("API_URL", "http://100.119.197.81:8002/dashboard/extruder-latest-values")
 API_TIMEOUT_SECONDS = int(os.getenv("API_TIMEOUT_SECONDS", "5"))
@@ -9,8 +18,13 @@ API_TIMEOUT_SECONDS = int(os.getenv("API_TIMEOUT_SECONDS", "5"))
 # polls live extruder data every POLL_INTERVAL_SECONDS
 POLL_INTERVAL_SECONDS = int(os.getenv("POLL_INTERVAL_SECONDS", "10"))  # how often we poll the API
 
-# Rolling window settings
-WINDOW_DURATION_SECONDS = int(os.getenv("WINDOW_DURATION_SECONDS", "180"))  # 3 minutes of data in buffer
+# Rolling window settings — aligned with LIVE_WINDOW_MINUTES (5-min training scale)
+WINDOW_DURATION_SECONDS = int(os.getenv("WINDOW_DURATION_SECONDS", "300"))  # 5 minutes of data in buffer
+BUFFER_MAX_POINTS = max(
+    1,
+    (WINDOW_DURATION_SECONDS + POLL_INTERVAL_SECONDS - 1) // POLL_INTERVAL_SECONDS,
+)
+BUFFER_MIN_POINTS = int(os.getenv("BUFFER_MIN_POINTS", str(BUFFER_MAX_POINTS)))
 
 # Sensor field mapping (based on machine sensor mapping table)
 FIELD_TIMESTAMP = "TrendDate"
@@ -50,13 +64,10 @@ REGIME_MID_MIN = 280.0
 REGIME_MID_MAX = 320.0
 REGIME_HIGH_MIN = 320.0
 
-# ML data paths
-WINDOWED_FEATURES_CSV = r"C:\Users\AbdulRauf(AIEngineer\OneDrive - Standardverzeichnis\Desktop\PM-Project - Copy\timeSeriesDB\time-series-database\process_segmentation_outputs\results\windowed_features.csv"
-STABLE_RUNS_CSV = r"C:\Users\AbdulRauf(AIEngineer\OneDrive - Standardverzeichnis\Desktop\PM-Project - Copy\timeSeriesDB\time-series-database\process_segmentation_outputs\results\stable_runs.csv"
-ML_OUTPUT_DIR = r"C:\Users\AbdulRauf(AIEngineer\OneDrive - Standardverzeichnis\Desktop\PM-Project - Copy\live_monitor\ml_data"
-# ML data paths — update if project directory changes
-# update these paths to match your project directory
-# ML_OUTPUT_DIR will be created automatically if not exists
+# ML data paths (relative to project root)
+WINDOWED_FEATURES_CSV = os.path.join(_TSDB_RESULTS, "windowed_features.csv")
+STABLE_RUNS_CSV = os.path.join(_TSDB_RESULTS, "stable_runs.csv")
+ML_OUTPUT_DIR = os.path.join(_PROJECT_ROOT, "live_monitor", "ml_data")
 
 # 30-min windows for ML Layer 2 (anomaly detection, clustering, LSTM)
 ML_WINDOW_MINUTES = int(os.getenv("ML_WINDOW_MINUTES", "30"))
@@ -67,8 +78,8 @@ ML_30MIN_MATRIX_CSV = os.path.join(ML_OUTPUT_DIR, "ml_feature_matrix_30min.csv")
 LIVE_WINDOW_MINUTES = int(os.getenv("LIVE_WINDOW_MINUTES", "5"))
 LIVE_WINDOW_MIN_ROWS = int(os.getenv("LIVE_WINDOW_MIN_ROWS", "3"))
 LIVE_WINDOWS_CSV = os.path.join(ML_OUTPUT_DIR, "ml_live_windows.csv")
-# 5-min windows match live pipeline scale
-# historical data has 1 row/min so 5 rows per window
+LIVE_LABELED_CSV = os.path.join(ML_OUTPUT_DIR, "ml_live_labeled.csv")
+# 5-min windows match live pipeline scale (BUFFER_MAX_POINTS polls at POLL_INTERVAL_SECONDS)
 
 # historical stable run thresholds (align with offline segmentation gates)
 STABLE_SPEED_MEAN_MIN = float(os.getenv("STABLE_SPEED_MEAN_MIN", "20.0"))
@@ -99,8 +110,5 @@ DRIFT_ALERT_ZSCORE = float(os.getenv("DRIFT_ALERT_ZSCORE", "2.5"))  # z-score th
 # simulation replay (simulation.data_replay)
 SIMULATION_MODE = False  # True = replay historical data, False = live API
 SIMULATION_SPEED = 2  # reduced for better slope calculation accuracy
-SIMULATION_CSV = (
-    r"C:\Users\AbdulRauf(AIEngineer\OneDrive - Standardverzeichnis\Desktop\PM-Project - Copy"
-    r"\timeSeriesDB\time-series-database\process_segmentation_outputs\results\Raw_Extruder_data.csv"
-)  # historical Raw_Extruder_data (.csv or .xlsx)
+SIMULATION_CSV = os.path.join(_TSDB_RESULTS, "Raw_Extruder_data.csv")
 

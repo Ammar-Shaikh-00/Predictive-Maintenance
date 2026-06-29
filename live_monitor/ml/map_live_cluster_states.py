@@ -16,7 +16,7 @@ if str(_LIVE_MONITOR_ROOT) not in sys.path:
 import config  # noqa: E402
 
 INPUT_CLUSTERED_CSV = os.path.join(config.ML_OUTPUT_DIR, "ml_live_clustered.csv")
-OUTPUT_LABELED_CSV = os.path.join(config.ML_OUTPUT_DIR, "ml_live_labeled.csv")
+OUTPUT_LABELED_CSV = config.LIVE_LABELED_CSV
 
 
 def _pick_production(summary: pd.DataFrame, used: set[int]) -> int:

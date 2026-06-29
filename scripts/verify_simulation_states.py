@@ -13,13 +13,13 @@ sys.path.insert(0, str(_ROOT))
 sys.path.insert(0, str(_ROOT / "live_monitor"))
 
 import config  # noqa: E402
-from ingestion.api_client import APIClient  # noqa: E402
 from ml.anomaly_scorer import AnomalyScorer  # noqa: E402
+from simulation.data_replay import DataReplayService  # noqa: E402
 from processing.feature_engine import FeatureEngine  # noqa: E402
 from processing.window_buffer import WindowBuffer  # noqa: E402
 from state.state_detector import StateDetector  # noqa: E402
 
-LABELED_PATH = os.path.join(os.path.dirname(config.LIVE_WINDOWS_CSV), "ml_live_labeled.csv")
+LABELED_PATH = config.LIVE_LABELED_CSV
 CYCLES_PER_SEGMENT = 15
 TEMP_COLS = [
     "Val_7", "Val_8", "Val_9", "Val_10", "Val_11",
@@ -27,7 +27,7 @@ TEMP_COLS = [
 ]
 
 
-def _temperature_direction_10_rows(temp_series: pd.Series) -> float:
+def _temperature_direction_window(temp_series: pd.Series) -> float:
     values = pd.to_numeric(temp_series, errors="coerce").dropna().to_numpy()
     if len(values) < 2:
         return 0.0
@@ -36,23 +36,24 @@ def _temperature_direction_10_rows(temp_series: pd.Series) -> float:
 
 
 def _find_segment_starts(replay_df: pd.DataFrame) -> dict[str, int]:
-    """Pick CSV indices where 10-row live-style features match each state."""
+    """Pick CSV indices where buffer-sized live-style features match each state."""
+    window_size = config.BUFFER_MIN_POINTS
     temp = replay_df[TEMP_COLS].mean(axis=1)
     speed = pd.to_numeric(replay_df["Val_1"], errors="coerce")
     pressure = pd.to_numeric(replay_df["Val_6"], errors="coerce")
 
     directions: list[float] = []
     row_indices: list[int] = []
-    for i in range(10, len(replay_df)):
-        directions.append(_temperature_direction_10_rows(temp.iloc[i - 10 : i]))
+    for i in range(window_size, len(replay_df)):
+        directions.append(_temperature_direction_window(temp.iloc[i - window_size : i]))
         row_indices.append(i)
 
     scan = pd.DataFrame(
         {
             "row_idx": row_indices,
             "temp_direction": directions,
-            "speed": speed.iloc[10:].to_numpy(),
-            "pressure": pressure.iloc[10:].to_numpy(),
+            "speed": speed.iloc[window_size:].to_numpy(),
+            "pressure": pressure.iloc[window_size:].to_numpy(),
         }
     )
 
@@ -78,19 +79,18 @@ def _find_segment_starts(replay_df: pd.DataFrame) -> dict[str, int]:
 def _run_segment(
     state_name: str,
     start_idx: int,
-    client: APIClient,
+    replay: DataReplayService,
     engine: FeatureEngine,
     detector: StateDetector,
     scorer: AnomalyScorer,
 ) -> dict:
-    replay = client.replay
     buffer = WindowBuffer()
     detector.candidate_history.clear()
     detector.current_confirmed_state = None
     detector.state_window_count = 0
 
     replay.current_index = start_idx
-    for _ in range(10):
+    for _ in range(config.BUFFER_MIN_POINTS):
         point = replay.get_next()
         if point:
             buffer.add(point)
@@ -124,15 +124,16 @@ def _run_segment(
 
 
 def main() -> None:
-    client = APIClient()
+    replay = DataReplayService()
+    replay.load()
     engine = FeatureEngine()
     scorer = AnomalyScorer()
-    starts = _find_segment_starts(client.replay.df)
+    starts = _find_segment_starts(replay.df)
     print("Replay segment indices:", starts)
     results = []
     for state, idx in starts.items():
         detector = StateDetector()
-        results.append(_run_segment(state, idx, client, engine, detector, scorer))
+        results.append(_run_segment(state, idx, replay, engine, detector, scorer))
 
     print("\n=== Simulation verification ===")
     all_ok = True

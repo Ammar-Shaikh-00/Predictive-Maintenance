@@ -66,7 +66,7 @@ def check_windows_per_state() -> None:
     out_df = build_live_windows_main()
     print(f"  total windows (live feature matrix): {len(out_df)}")
 
-    labeled_path = os.path.join(os.path.dirname(config.LIVE_WINDOWS_CSV), "ml_live_labeled.csv")
+    labeled_path = config.LIVE_LABELED_CSV
     if os.path.isfile(labeled_path):
         labeled = pd.read_csv(labeled_path)
         if "predicted_state" in labeled.columns:

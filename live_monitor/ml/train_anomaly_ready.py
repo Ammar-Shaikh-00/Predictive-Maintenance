@@ -49,7 +49,7 @@ def _align_feature_columns(df: pd.DataFrame) -> pd.DataFrame:
 def main() -> None:
     # step 1: load labeled windows from clustering pipeline
     # retrain on 5-min windows matching live scale
-    input_path = os.path.join(os.path.dirname(config.LIVE_WINDOWS_CSV), "ml_live_labeled.csv")
+    input_path = config.LIVE_LABELED_CSV
     model_path = os.path.join(config.ML_OUTPUT_DIR, "anomaly_READY.pkl")
     scaler_path = os.path.join(config.ML_OUTPUT_DIR, "anomaly_READY_scaler.pkl")
     # trains when enough READY simulation data exists

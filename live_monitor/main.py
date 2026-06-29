@@ -31,7 +31,7 @@ logging.basicConfig(
 
 # handles API polling
 client = APIClient()
-# holds rolling 2-3 min window of data
+# holds rolling window of data (default 5 min @ 10s polls)
 buffer = WindowBuffer()
 # calculates features from window
 engine = FeatureEngine()
@@ -87,7 +87,7 @@ def run_cycle() -> None:
     # never crashes pipeline, just logs if save fails
 
     # Step 3 — Wait until buffer has enough data for stable calculations.
-    # we need minimum 10 points before calculating features
+    # wait until buffer has enough points for a full window
     if not buffer.is_ready():
         logging.info("Buffer filling up, waiting for minimum data...")
         return
