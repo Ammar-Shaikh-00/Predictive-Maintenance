@@ -1,0 +1,14 @@
+tsql -H 10.1.61.252 -p 1433 -U edge_reader -D HISTORISCH  ## to connect with mssql server
+SELECT name FROM sysobjects WHERE xtype = 'U';
+
+
+docker exec -it timescaledb psql -U tsdb_user -d timeseries -c "COPY (SELECT * FROM \"Tab_Actual\") TO STDOUT WITH (FORMAT CSV, HEADER)" | cat > Tab_Actual_Export.csv
+
+
+
+docker exec -t pm-updated-db pg_dump -U pm_user -d pm_db > pm_db_backup.sql
+
+to restore db:
+docker exec -it pm-updated-db psql -U pm_user -d postgres -c "DROP DATABASE pm_db;"
+docker exec -it pm-updated-db psql -U pm_user -d postgres -c "CREATE DATABASE pm_db;"
+docker exec -i pm-updated-db psql -U pm_user -d pm_db < pm_db_backup.sql

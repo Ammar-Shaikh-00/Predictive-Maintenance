@@ -6,7 +6,7 @@ import logging
 
 import config
 
-# from config — states that trigger baseline comparison; OFF/COOLING/HEATING skip Layer 1
+# from config — states that trigger baseline + run evaluation (incl. ML fields)
 EVALUABLE_STATES = set(config.EVALUABLE_STATES)
 
 
@@ -31,13 +31,12 @@ class EvaluationGuard:
             }
             # 3-window confirmation not reached yet
 
-        # Case 2 — non-production state:
+        # Case 2 — state not in evaluable list:
         if confirmed_state not in EVALUABLE_STATES:
             return {
                 "should_evaluate": False,
                 "skip_reason": "SKIPPED",
             }
-            # OFF/COOLING/HEATING/UNKNOWN — no baseline comparison
 
         # Case 3 — insufficient data:
         if features is None:

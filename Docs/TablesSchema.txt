@@ -1,0 +1,26 @@
+Baseline:
+ id (pk)
+ Name
+
+DefaultMachineState:
+ id (pk)
+ Name
+ Priority (integer)
+
+default_sensor: (alreay exists, no need to create)
+ id (pk)
+ Name
+
+BaslineMap: ( context: one baseline will map with 0 or more machineStates and one machineState will map with 0 or more sensors)
+ id (pk)
+ Basline.id (fk)
+ DefaultMachineState.id (fk)
+ default_sensor.id (fk)
+ MinValue: (integer)
+ MaxValue: (integer)
+
+StateSensorPriority:
+ id (pk)
+ DefaultMachineState.id (fk)
+ default_sensor.id (fk)
+ priority (integer)

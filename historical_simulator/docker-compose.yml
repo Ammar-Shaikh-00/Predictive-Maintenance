@@ -1,0 +1,24 @@
+services:
+
+  historical-simulator:
+
+    container_name: historical-simulator
+
+    build: .
+
+    ports:
+      - "8010:8000"
+
+    volumes:
+      - ./Tab_Actual.csv:/app/Tab_Actual.csv
+
+    restart: unless-stopped
+
+    networks:
+      - pm-network
+
+
+networks:
+
+  pm-network:
+    external: true

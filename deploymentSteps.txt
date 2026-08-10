@@ -1,0 +1,22 @@
+steps to deploy the application in individual container.
+
+1) update the configuration
+ - BaseApiURL ---> http://container-name:port
+ - paths
+2) move project folder to edge server.
+3) stop if previous version of application is running.
+4) run the docker compose (to build) for each individual application separately.
+5) connect the applications container with the same network for connectivity.
+
+
+
+for production:
+1) postgres db
+
+2) backend
+
+3) frontend
+
+4) machine State Service
+
+5) alert Service

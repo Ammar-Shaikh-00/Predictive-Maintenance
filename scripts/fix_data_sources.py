@@ -1,4 +1,4 @@
-"""Fix incorrectly tagged live_api rows that contain historical/simulation data."""
+"""Fix incorrectly tagged live_api rows that contain historical data."""
 
 from __future__ import annotations
 
@@ -38,32 +38,37 @@ def _print_counts(title: str) -> dict[str, int]:
 
 
 def main() -> None:
-    # step 1: show current counts before fix
     before = _print_counts("Before fix")
     live_before = before.get("live_api", 0)
 
-    # step 2: re-tag contaminated rows
-    # pipeline started Apr 28
-    # anything before that tagged as live_api is simulation data
+    # Pipeline started Apr 28 — anything earlier tagged as live_api is historical.
+    # Also migrate legacy 'simulation' tags to historical_import.
     with engine.begin() as conn:
-        result = conn.execute(
+        result_live = conn.execute(
             text(
                 """
                 UPDATE machine_sensor_raw
-                SET source = 'simulation'
+                SET source = 'historical_import'
                 WHERE source = 'live_api'
                 AND trend_date < :cutoff
                 """
             ),
             {"cutoff": CUTOFF},
         )
-        rows_retagged = int(result.rowcount)
+        result_sim = conn.execute(
+            text(
+                """
+                UPDATE machine_sensor_raw
+                SET source = 'historical_import'
+                WHERE source = 'simulation'
+                """
+            )
+        )
+        rows_retagged = int(result_live.rowcount) + int(result_sim.rowcount)
 
-    # step 3: show counts after fix
     after = _print_counts("After fix")
     live_after = after.get("live_api", 0)
 
-    # step 4: summary
     print("\n=== Summary ===")
     print(f"  rows retagged: {rows_retagged}")
     print(f"  real live rows remaining (live_api): {live_after}")

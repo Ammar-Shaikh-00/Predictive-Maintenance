@@ -1,0 +1,20 @@
+/* Legacy Vite template styles intentionally removed.
+   App shell uses Tailwind + zittaIndustrialTheme. */
+
+html,
+body,
+#root {
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  overflow-x: hidden;
+  background: #0b0d11;
+}
+
+body {
+  min-height: 100%;
+}
+
+#root {
+  min-height: 100svh;
+}

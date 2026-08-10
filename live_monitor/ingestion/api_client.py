@@ -15,37 +15,12 @@ class APIClient:
 
     def __init__(self) -> None:
         """Initialize endpoint settings from config."""
-        # no auth needed, just URL + timeout
         self.api_url = config.API_URL
         self.api_timeout_seconds = config.API_TIMEOUT_SECONDS
-        # simulation mode controlled from config
-        self.simulation_mode = config.SIMULATION_MODE
-        self.replay = None
-        if self.simulation_mode:
-            from simulation.data_replay import DataReplayService
-
-            self.replay = DataReplayService()
-            self.replay.load()
-            logging.info("Simulation mode ON - replaying historical data")
 
     def fetch_latest(self) -> dict[str, object] | None:
         """Fetch latest live sensor values and normalize for pipeline usage."""
-        # calls live API and returns normalized sensor dict
-        # returns None if call fails, pipeline will skip that cycle
-        # pipeline must never crash due to API failure
-        if self.simulation_mode:
-            data_point = self.replay.get_next()
-            if data_point is None:
-                logging.info("Simulation complete - restarting from beginning")
-                self.replay.reset()
-                data_point = self.replay.get_next()
-            if data_point is not None:
-                data_point["source"] = "simulation"
-                # ensures all replayed rows tagged as simulation
-            return data_point
-            # returns historical row instead of live API call
-
-        # set SIMULATION_MODE=False in config for live API
+        # returns None if call fails; pipeline skips that cycle
         try:
             response = requests.get(
                 config.API_URL,
@@ -56,32 +31,20 @@ class APIClient:
                 logging.warning("API call failed: %s", response.status_code)
                 return None
 
-            # raw response contains wrapper + sensor payload
             raw = response.json()
-            # API wraps all sensor values inside "rows" key
             data = raw.get("rows", None)
             if data is None:
                 logging.warning("API response missing 'rows' key")
                 return None
 
-            # screw speed
-            # Val_1 = screw speed actual (0-138 range)
             screw_speed = data.get(config.FIELD_SCREW_SPEED, None)
-
-            # pressure
-            # Val_6 = melt pressure (2-402 range)
             pressure = data.get(config.FIELD_PRESSURE, None)
-
-            # load
-            # Val_5 = motor load (0-91.7 range)
             load = data.get(config.FIELD_LOAD, None)
 
             temp_values = [
                 data[z] for z in config.FIELD_TEMPERATURE_ZONES if z in data and data[z] is not None
             ]
             temperature = sum(temp_values) / len(temp_values) if temp_values else None
-            # average across 11 temperature zones (Val_7,8,9,10,11,27,28,29,30,31,32)
-            # if some zones missing in response, average only available ones
 
             # Keep the raw machine timestamp for traceability, but use
             # local ingest time for rolling-window buffering stability.
@@ -91,6 +54,7 @@ class APIClient:
             return {
                 "timestamp": source_timestamp,
                 "buffer_timestamp": buffer_timestamp,
+                "source": "live_api",
                 "screw_speed": screw_speed,
                 "pressure": pressure,
                 "load": load,
@@ -112,7 +76,6 @@ class APIClient:
                 "Val_19": data.get("Val_19"),
                 "Val_20": data.get("Val_20"),
                 "Val_33": data.get("Val_33"),
-                # extra fields for raw ML storage, not used in feature engine
             }
         except Exception as exc:  # pragma: no cover - runtime API safety
             logging.warning("API fetch failed: %s", exc)
@@ -120,18 +83,14 @@ class APIClient:
 
     def _parse_timestamp(self, value) -> datetime:
         """Parse API TrendDate value into datetime with safe fallback."""
-        # TrendDate from API parsed safely to datetime
         if value is None:
             logging.warning("Missing TrendDate in API payload; using current UTC time.")
             return datetime.utcnow()
 
         try:
-            # handle timezone-aware ISO format
             dt = datetime.fromisoformat(str(value).replace("Z", "+00:00"))
-            # convert to UTC naive datetime (SQLite compatible)
             if dt.tzinfo is not None:
                 dt = dt.astimezone(timezone.utc).replace(tzinfo=None)
-            # SQLite needs naive datetime (no timezone info)
             return dt
         except Exception:
             logging.warning("Failed to parse TrendDate, using UTC now")

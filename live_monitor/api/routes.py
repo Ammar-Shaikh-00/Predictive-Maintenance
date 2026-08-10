@@ -230,49 +230,6 @@ def get_ml_drift_status():
         }
 
 
-# returns current simulation progress
-@app.get("/simulation/status")
-def get_simulation_status():
-    if not config.SIMULATION_MODE:
-        return {"simulation_mode": False}
-    import main as pipeline_main
-
-    client = pipeline_main.client
-    return {
-        "simulation_mode": True,
-        "speed": config.SIMULATION_SPEED,
-        "progress": client.replay.progress(),
-    }
-
-
-# restart replay from beginning
-@app.post("/simulation/reset")
-def post_simulation_reset():
-    if not config.SIMULATION_MODE:
-        return {"error": "not in simulation mode"}
-    import main as pipeline_main
-
-    client = pipeline_main.client
-    client.replay.reset()
-    return {"status": "reset", "message": "replay restarted from row 0"}
-
-
-# shows what data row is currently being replayed
-@app.get("/simulation/current-row")
-def get_simulation_current_row():
-    if not config.SIMULATION_MODE:
-        return {"simulation_mode": False}
-    import main as pipeline_main
-
-    client = pipeline_main.client
-    progress = client.replay.progress()
-    return {
-        "current_index": progress["current_index"],
-        "total_rows": progress["total_rows"],
-        "percent_done": progress["percent"],
-    }
-
-
 # manually trigger ML retraining from API
 # useful when new data added or models need refresh
 @app.post("/ml/trigger-retrain")

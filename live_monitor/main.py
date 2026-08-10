@@ -14,7 +14,9 @@ from evaluation.overall_evaluator import OverallEvaluator
 from ingestion.api_client import APIClient
 from processing.feature_engine import FeatureEngine
 from processing.window_buffer import WindowBuffer
-from storage.db_writer import DBWriter
+from storage.backend_client import BackendClient
+from storage.backend_writer import BackendWriter
+from storage.context_resolver import ContextResolver
 from ml.anomaly_scorer import AnomalyScorer
 from ml.drift_detector import DriftDetector
 from ml.retrain_scheduler import start_scheduler
@@ -37,16 +39,17 @@ buffer = WindowBuffer()
 engine = FeatureEngine()
 # detects and confirms machine state
 detector = StateDetector()
-# handles saving features and state to database
-writer = DBWriter()
+# persist live outputs to backend Postgres via HTTP APIs (not local SQLite)
+backend_client = BackendClient()
+context_resolver = ContextResolver(backend_client)
+writer = BackendWriter(backend_client, context_resolver)
 # stateless, single instance reused every cycle
 guard = EvaluationGuard()
-# stateful — caches last valid baseline for fallback
-selector = BaselineSelector()
-# stateless, single instance reused every cycle
-evaluator = FeatureEvaluator()
-# stateless, single instance reused every cycle
-overall_evaluator = OverallEvaluator()
+# stateful — caches last valid baseline for fallback (reads backend)
+selector = BaselineSelector(backend_client)
+# evaluation writers post to backend
+evaluator = FeatureEvaluator(writer)
+overall_evaluator = OverallEvaluator(writer)
 # loads all available state-specific anomaly models
 anomaly_scorer = AnomalyScorer()
 # loads baseline stats from ml_labeled_states.csv
@@ -65,7 +68,7 @@ def run_cycle() -> None:
     live_window = None
     # initialize to None so it's always defined even if save fails
 
-    # Step 1 — Fetch latest data from API/mock source.
+    # Step 1 — Fetch latest data from live API.
     # skip this cycle if API call fails
     try:
         data_point = client.fetch_latest()
@@ -79,7 +82,7 @@ def run_cycle() -> None:
     # Step 2 — Add latest reading into the rolling buffer.
     # new data point added to rolling window
     buffer.add(data_point)
-    # save raw reading for ML Layer 2 training data
+    # save raw reading to backend machine_sensor_raw
     try:
         writer.save_raw_sensor(data_point)
     except Exception as e:
@@ -151,16 +154,16 @@ def run_cycle() -> None:
         "confirmation_count": len(detector.candidate_history),
     }
 
-    # save window to LiveProcessWindow table
+    # save window to backend live_process_window
     live_window = writer.save_live_process_window(features, state_info)
 
-    # Step 6b — run evaluation guard
+    # Step 6b — run evaluation guard (data-quality / confirmation)
     guard_result = guard.check(confirmed_state, features)
 
     if guard_result["should_evaluate"]:
         logging.info("Guard passed - proceeding to evaluation")
 
-        # Step 7 — select regime + baseline
+        # Step 7 — select regime + baseline (from backend baseline_registry)
         baseline_result = selector.select(features)
 
         logging.info(
@@ -170,72 +173,61 @@ def run_cycle() -> None:
             baseline_result["baseline_confidence"],
         )
 
-        if baseline_result["baseline_selection_method"] == "NONE":
-            logging.warning("No baseline available - skipping evaluation this cycle")
-            # will be handled properly in evaluation writer (Prompt 6)
-        else:
+        feature_results = []
+        if baseline_result["baseline_selection_method"] != "NONE":
             # Step 8 — evaluate features against selected baseline
             feature_results = evaluator.evaluate(
                 features=features,
                 baseline_records=baseline_result["baseline_records"],
                 live_window_id=live_window.id if live_window else None,
             )
-
-            evaluator.save(feature_results)
-
-            # Step 9 — overall evaluation
-            # overall evaluation includes ML anomaly signal
-            run_evaluation = overall_evaluator.evaluate(
-                feature_results=feature_results,
-                features=features,
-                baseline_result=baseline_result,
-                confirmed_state=confirmed_state,
-                live_window_id=live_window.id if live_window else None,
-                ml_result=ml_result,
-                drift_result=drift_result,
+        else:
+            logging.warning(
+                "No baseline available — still saving run evaluation with ML fields"
             )
 
-            saved_evaluation = overall_evaluator.save(run_evaluation)
+        # Step 9 — overall evaluation always persisted (includes ML anomaly fields)
+        run_evaluation = overall_evaluator.evaluate(
+            feature_results=feature_results,
+            features=features,
+            baseline_result=baseline_result,
+            confirmed_state=confirmed_state,
+            live_window_id=live_window.id if live_window else None,
+            ml_result=ml_result,
+            drift_result=drift_result,
+        )
 
-            # link feature evaluations back to run evaluation
-            if saved_evaluation:
-                evaluator.save(
-                    feature_results,
-                    live_run_evaluation_id=saved_evaluation.id,
-                )
+        saved_evaluation = overall_evaluator.save(run_evaluation)
 
-            logging.info("Explanation: %s", run_evaluation.explanation_text)
+        # Step 10 — save feature evaluations once, linked to run evaluation
+        if saved_evaluation and feature_results:
+            evaluator.save(
+                feature_results,
+                live_run_evaluation_id=saved_evaluation.id,
+            )
 
-            # log per-feature summary for monitoring
-            for r in feature_results:
-                current_value = 0.0 if r.current_value is None else r.current_value
-                baseline_mean = 0.0 if r.baseline_mean is None else r.baseline_mean
-                z_score = 0.0 if r.z_score is None else r.z_score
-                logging.info(
-                    "  %s: value=%.3f | baseline=%.3f | z=%.2f | status=%s",
-                    r.feature_name,
-                    current_value,
-                    baseline_mean,
-                    z_score,
-                    r.feature_status,
-                )
+        logging.info(
+            "RunEvaluation saved | status=%s | ml_anomaly=%s | ml_score=%s | %s",
+            getattr(run_evaluation, "overall_status", None),
+            getattr(run_evaluation, "ml_is_anomaly", None),
+            getattr(run_evaluation, "ml_anomaly_score", None),
+            run_evaluation.explanation_text,
+        )
+
+        for r in feature_results:
+            current_value = 0.0 if r.current_value is None else r.current_value
+            baseline_mean = 0.0 if r.baseline_mean is None else r.baseline_mean
+            z_score = 0.0 if r.z_score is None else r.z_score
+            logging.info(
+                "  %s: value=%.3f | baseline=%.3f | z=%.2f | status=%s",
+                r.feature_name,
+                current_value,
+                baseline_mean,
+                z_score,
+                r.feature_status,
+            )
     else:
         logging.info("Evaluation skipped - reason: %s", guard_result["skip_reason"])
-
-    # store guard result, used in next steps
-    # we will pass this to baseline selector and evaluator in next prompts
-
-    # Step 8 — Save state to DB.
-    # persist state every cycle, confirmed_state may be None
-# try:
-#        writer.save_state(
-   #         window_start=features["window_start"],
-   #         window_end=features["window_end"],
-#            candidate_state=candidate_state,
-#            confirmed_state=confirmed_state,
-#        )
-#    except Exception as exc:  # pragma: no cover - runtime DB safety
-#        logging.warning("Failed to save state to DB: %s", exc)
 
     # Step 9 — Log features summary.
     # quick snapshot of current window values
@@ -254,13 +246,14 @@ def run_cycle() -> None:
 
 if __name__ == "__main__":
     logging.info("Live monitoring pipeline started...")
-
-    if config.SIMULATION_MODE:
-        logging.info(
-            f"SIMULATION MODE | speed={config.SIMULATION_SPEED}x | "
-            f"file={config.SIMULATION_CSV}"
-        )
-        # clear indicator that pipeline is in simulation mode
+    logging.info("Backend persistence URL: %s", config.BACKEND_BASE_URL)
+    ctx = context_resolver.refresh_if_needed(force=True)
+    logging.info(
+        "Backend context | machine_id=%s | line_id=%s | production_run_id=%s",
+        ctx.get("machine_id"),
+        ctx.get("line_id"),
+        ctx.get("production_run_id"),
+    )
 
     # start auto-retraining scheduler in background
     scheduler_thread = threading.Thread(
@@ -286,8 +279,6 @@ if __name__ == "__main__":
     try:
         while True:
             run_cycle()
-            effective_interval = config.POLL_INTERVAL_SECONDS / config.SIMULATION_SPEED
-            time.sleep(effective_interval)
-            # faster replay controlled by SIMULATION_SPEED in config
+            time.sleep(config.POLL_INTERVAL_SECONDS)
     except KeyboardInterrupt:
         logging.info("Live monitoring pipeline stopped by user.")

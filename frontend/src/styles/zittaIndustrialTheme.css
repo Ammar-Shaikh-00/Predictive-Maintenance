@@ -1,0 +1,200 @@
+/**
+ * ZITTA Production Intelligence — global industrial theme.
+ * Scoped under .zitta-app-shell so legacy Tailwind light utilities
+ * render correctly on dark graphite surfaces.
+ */
+
+.zitta-app-shell {
+  --zitta-bg: #0b0d11;
+  --zitta-panel: #141820;
+  --zitta-panel-elevated: #1a1f27;
+  --zitta-border: rgba(255, 255, 255, 0.1);
+  --zitta-text: #e2e8f0;
+  --zitta-text-muted: #94a3b8;
+  --zitta-accent: #10b981;
+  background: var(--zitta-bg);
+  color: var(--zitta-text);
+}
+
+.zitta-app-shell main {
+  background: transparent;
+}
+
+/* Page content area (non-OC routes) */
+.zitta-page-content {
+  color: var(--zitta-text);
+}
+
+/* --- Surfaces --- */
+.zitta-app-shell .bg-white,
+.zitta-app-shell .bg-white\/90,
+.zitta-app-shell .bg-white\/95,
+.zitta-app-shell .bg-white\/80 {
+  background-color: var(--zitta-panel-elevated) !important;
+}
+
+.zitta-app-shell .bg-slate-50,
+.zitta-app-shell .bg-gray-50,
+.zitta-app-shell .bg-\[\#FAFAFF\] {
+  background-color: var(--zitta-panel) !important;
+}
+
+.zitta-app-shell .bg-slate-100 {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+/* --- Typography --- */
+.zitta-app-shell .text-slate-900,
+.zitta-app-shell .text-gray-900 {
+  color: #f1f5f9 !important;
+}
+
+.zitta-app-shell .text-slate-800,
+.zitta-app-shell .text-slate-700,
+.zitta-app-shell .text-gray-700 {
+  color: #cbd5e1 !important;
+}
+
+.zitta-app-shell .text-slate-600,
+.zitta-app-shell .text-gray-600 {
+  color: #94a3b8 !important;
+}
+
+.zitta-app-shell .text-slate-500 {
+  color: #64748b !important;
+}
+
+/* Purple brand headings → emerald on dark */
+.zitta-app-shell h1.text-transparent.bg-clip-text,
+.zitta-app-shell .bg-gradient-to-r.from-purple-700 {
+  background-image: linear-gradient(to right, #34d399, #10b981) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  color: transparent !important;
+}
+
+/* --- Borders & shadows --- */
+.zitta-app-shell .border-slate-200,
+.zitta-app-shell .border-slate-200\/80,
+.zitta-app-shell .border-gray-200 {
+  border-color: var(--zitta-border) !important;
+}
+
+.zitta-app-shell .shadow-sm,
+.zitta-app-shell .shadow-md,
+.zitta-app-shell .shadow-lg,
+.zitta-app-shell .shadow-xl,
+.zitta-app-shell .shadow-2xl {
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35) !important;
+}
+
+/* --- Form controls --- */
+.zitta-app-shell input:not([type="checkbox"]):not([type="radio"]),
+.zitta-app-shell select,
+.zitta-app-shell textarea {
+  background-color: #0f1218 !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  color: #e2e8f0 !important;
+}
+
+.zitta-app-shell input::placeholder,
+.zitta-app-shell textarea::placeholder {
+  color: #64748b !important;
+}
+
+.zitta-app-shell input:focus,
+.zitta-app-shell select:focus,
+.zitta-app-shell textarea:focus {
+  outline: none;
+  border-color: rgba(16, 185, 129, 0.5) !important;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.15) !important;
+}
+
+/* --- Tables --- */
+.zitta-app-shell table {
+  color: #e2e8f0;
+}
+
+.zitta-app-shell thead {
+  background-color: rgba(255, 255, 255, 0.04) !important;
+}
+
+.zitta-app-shell tbody tr:hover {
+  background-color: rgba(255, 255, 255, 0.03) !important;
+}
+
+.zitta-app-shell th,
+.zitta-app-shell td {
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* --- Buttons (primary purple → emerald) --- */
+.zitta-app-shell .bg-purple-600,
+.zitta-app-shell .bg-purple-500 {
+  background-color: #059669 !important;
+}
+
+.zitta-app-shell .bg-purple-600:hover,
+.zitta-app-shell .hover\:bg-purple-700:hover {
+  background-color: #047857 !important;
+}
+
+.zitta-app-shell .text-purple-600,
+.zitta-app-shell .text-purple-700 {
+  color: #34d399 !important;
+}
+
+.zitta-app-shell .border-purple-500 {
+  border-color: rgba(16, 185, 129, 0.45) !important;
+}
+
+.zitta-app-shell .hover\:bg-purple-50:hover {
+  background-color: rgba(16, 185, 129, 0.08) !important;
+}
+
+/* --- Modals / overlays --- */
+.zitta-app-shell .bg-black\/30 {
+  background-color: rgba(0, 0, 0, 0.55) !important;
+}
+
+/* --- Charts / recharts tooltips (common pattern) --- */
+.zitta-app-shell .recharts-default-tooltip {
+  background-color: #141820 !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  color: #e2e8f0 !important;
+}
+
+/* --- Scrollbar --- */
+.zitta-app-shell ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.zitta-app-shell ::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.35);
+  border-radius: 4px;
+}
+
+.zitta-app-shell ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.oc-sidebar-scroll {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge legacy */
+}
+.oc-sidebar-scroll::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
+/* Login page (outside shell but shared class) */
+.zitta-login-shell {
+  --zitta-bg: #0b0d11;
+  background:
+    radial-gradient(1200px 500px at 10% -10%, rgba(16, 185, 129, 0.1), transparent 55%),
+    radial-gradient(900px 400px at 90% 0%, rgba(71, 85, 105, 0.15), transparent 50%),
+    var(--zitta-bg);
+  color: #e2e8f0;
+}

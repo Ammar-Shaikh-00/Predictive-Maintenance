@@ -1,4 +1,4 @@
-"""Manually trigger the full ML retraining pipeline after simulation completes."""
+"""Manually trigger the full ML retraining pipeline."""
 
 from __future__ import annotations
 
@@ -29,7 +29,7 @@ from storage.build_live_windows import main as build_live_windows_main  # noqa: 
 from storage.db_writer import MachineSensorRaw, engine  # noqa: E402
 
 ALL_STATES = ("PRODUCTION", "OFF", "HEATING", "LOW_PRODUCTION", "COOLING", "READY")
-RAW_SOURCES = ("simulation", "live_api", "historical_import")
+RAW_SOURCES = ("live_api", "historical_import")
 MIN_WINDOWS_WARN = 20
 
 ANOMALY_TRAINERS = {
@@ -44,7 +44,7 @@ ANOMALY_TRAINERS = {
 
 def print_source_counts() -> None:
     """Step 1 — print raw row counts per ingestion source."""
-    # verify simulation data collected before retraining
+    # verify raw data available before retraining
     print("\n=== Step 1: machine_sensor_raw counts by source ===")
     with Session(engine) as session:
         total = session.query(MachineSensorRaw).count()

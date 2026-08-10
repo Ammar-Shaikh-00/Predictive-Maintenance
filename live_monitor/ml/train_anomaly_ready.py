@@ -52,7 +52,7 @@ def main() -> None:
     input_path = config.LIVE_LABELED_CSV
     model_path = os.path.join(config.ML_OUTPUT_DIR, "anomaly_READY.pkl")
     scaler_path = os.path.join(config.ML_OUTPUT_DIR, "anomaly_READY_scaler.pkl")
-    # trains when enough READY simulation data exists
+    # trains when enough READY labeled windows exist
 
     df = pd.read_csv(input_path)
     df = _align_feature_columns(df)

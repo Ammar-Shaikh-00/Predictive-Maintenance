@@ -1,0 +1,630 @@
+{
+  "alertService": "Alarmdienst",
+  "active": "Aktiv",
+  "inactive": "Inaktiv",
+  "role": "Rolle",
+  "logout": "Abmelden",
+  "user": "Benutzer",
+  "loading": "Laden...",
+  "kiStatus": "KI: {{status}}",
+  "unknown": "Unbekannt",
+
+  "machines": "Maschinen",
+  "manageMachines": "Verwalten und überwachen Sie alle Maschinen",
+  "addMachine": "Maschine hinzufügen",
+  "loadingMachines": "Maschinen werden geladen...",
+  "noMachines": "Keine Maschinen gefunden",
+
+  "edit": "Bearbeiten",
+  "delete": "Löschen",
+  "deleting": "Wird gelöscht...",
+  "confirmDelete": "Möchten Sie \"{{name}}\" wirklich dauerhaft löschen?",
+  "createdAt": "Erstellt am",
+  "description": "Beschreibung",
+
+  "editMachine": "Maschine bearbeiten",
+  "createMachine": "Maschine hinzufügen",
+  "machineName": "Maschinenname",
+  "location": "Standort",
+  "status": "Status",
+  "criticality": "Kritikalität",
+  "cancel": "Abbrechen",
+  "save": "Speichern",
+  "saving": "Speichert...",
+  "update": "Aktualisieren",
+  "create": "Erstellen",
+  "nameRequired": "Name ist erforderlich",
+
+  "sensors": "Sensoren",
+  "manageSensors": "Überwachen und verwalten Sie alle Sensoren",
+  "addSensor": "Sensor hinzufügen",
+  "selectMachine": "Maschine auswählen",
+  "loadingSensors": "Sensoren werden geladen...",
+  "noSensors": "Keine Sensoren gefunden",
+
+  "sensorName": "Sensorname",
+  "type": "Typ",
+  "unit": "Einheit",
+  "min": "Min",
+  "max": "Max",
+  "warning": "Warnung",
+  "critical": "Kritisch",
+
+  "editSensor": "Sensor bearbeiten",
+  "createSensor": "Sensor hinzufügen",
+
+  "machineRequired": "Maschine ist erforderlich",
+  "confirmDeleteSensor": "Möchten Sie {{name}} löschen?",
+
+  "notifications": "Benachrichtigungen",
+  "manageNotifications": "Testen und verwalten Sie E-Mail-Benachrichtigungen und Webhooks",
+
+  "emailRecipients": "E-Mail-Empfänger",
+  "manageRecipients": "Verwalten Sie E-Mail-Adressen für Benachrichtigungen",
+  "addEmail": "E-Mail hinzufügen",
+  "addEmailRecipient": "E-Mail-Empfänger hinzufügen",
+
+  "emailAddress": "E-Mail-Adresse",
+  "nameOptional": "Name (optional)",
+  "descriptionOptional": "Beschreibung (optional)",
+
+  "loadingRecipients": "Empfänger werden geladen...",
+  "noRecipients": "Keine Empfänger gefunden",
+
+  "enable": "Aktivieren",
+  "disable": "Deaktivieren",
+  "remove": "Entfernen",
+
+  "added": "Hinzugefügt",
+  "confirmDeleteRecipient": "Möchten Sie diesen Empfänger wirklich entfernen?",
+
+  "testEmail": "Test-E-Mail-Benachrichtigungen",
+  "testEmailDesc": "Testen Sie E-Mail-Benachrichtigungen. E-Mails werden automatisch gesendet für:",
+  "testEmailAddress": "Test-E-Mail-Adresse (optional)",
+  "sendTestEmail": "Test-E-Mail senden",
+  "sending": "Wird gesendet...",
+
+  "emptySendAll": "Leer lassen, um an alle aktiven Empfänger zu senden",
+
+  "emailRequired": "Bitte E-Mail-Adresse eingeben",
+  "successSend": "Test-E-Mail erfolgreich gesendet!",
+  "failSend": "Fehler beim Senden der Test-E-Mail",
+
+  "userRegistration": "Benutzerregistrierung (Willkommens-E-Mail)",
+  "aiPredictions": "Kritische/Warnungs-KI-Vorhersagen",
+  "alarmTriggers": "Alarmauslöser",
+
+  "baseline": {
+  "title": "Basislinie",
+  "description": "Baseline-Zuordnungen verwalten",
+  "create": "Basislinie erstellen",
+  "edit": "Basislinie bearbeiten",
+  "no_data": "Keine Basislinien gefunden",
+  "id": "ID",
+  "name_placeholder": "Name der Basislinie",
+  "select_sensor": "Sensor auswählen",
+  "min": "Minimum",
+  "max": "Maximum",
+  "add_sensor": "Sensor hinzufügen"
+  },
+  "common": {
+    "edit": "Bearbeiten",
+    "delete": "Löschen",
+    "save": "Speichern",
+    "saving": "Speichern...",
+    "cancel": "Abbrechen",
+    "loading": "Laden..."
+    },
+  "messages": {
+    "load_failed": "Daten konnten nicht geladen werden",
+    "created": "Erfolgreich erstellt",
+    "updated": "Erfolgreich aktualisiert",
+    "name_required": "Bitte geben Sie einen Namen ein.",
+    "sensor_required": "Bitte fügen Sie mindestens einen Sensor hinzu.",
+    "sensor_invalid": "Bitte alle Sensorfelder ausfüllen (Sensor, Min, Max).",
+    "state_no_sensor": "Status hat keine Sensoren"
+      },
+  "tickets": {
+    "title": "Ticket-Center",
+    "description": "Priorität, Verantwortlicher, Status und geschätzte Stillstandskosten — keine erfundenen Werte.",
+    "create": "Ticket erstellen",
+    "empty": "Keine Tickets für diesen Filter.",
+    "loadFailed": "Tickets konnten nicht geladen werden",
+    "alarms": "Alarme",
+    "maintenance": "Wartung",
+    "kpi": {
+      "open": "Offen / aktiv",
+      "critical": "Kritisch offen",
+      "unassigned": "Ohne Owner",
+      "downtimeCost": "Gesch. Stillstandskosten",
+      "total": "Alle Tickets"
+    },
+    "filters": {
+      "activeOpen": "Aktiv (offen…)",
+      "allStatuses": "Alle Status",
+      "allPriorities": "Alle Prioritäten"
+    },
+    "fields": {
+      "machine": "Maschine",
+      "owner": "Verantwortlicher",
+      "downtimeCost": "Gesch. Stillstandskosten",
+      "created": "Erstellt"
+    },
+    "priority": {
+      "low": "Niedrig",
+      "medium": "Mittel",
+      "high": "Hoch",
+      "critical": "Kritisch"
+    },
+    "status": {
+      "open": "Offen",
+      "assigned": "Zugewiesen",
+      "in_progress": "In Bearbeitung",
+      "resolved": "Gelöst",
+      "cancelled": "Abgebrochen"
+    },
+    "provenance": {
+      "auto": "Aus Alarm",
+      "manual": "Manuell"
+    },
+    "toast": {
+      "created": "Ticket erstellt",
+      "updated": "Ticket aktualisiert",
+      "createFailed": "Ticket konnte nicht erstellt werden",
+      "updateFailed": "Ticket konnte nicht aktualisiert werden"
+    },
+    "modal": {
+      "create": "Ticket erstellen",
+      "edit": "Ticket bearbeiten",
+      "title": "Titel",
+      "machine": "Maschine",
+      "selectMachine": "Maschine wählen",
+      "relatedAlarm": "Zugehöriger Alarm",
+      "none": "Keine",
+      "description": "Beschreibung",
+      "priority": "Priorität",
+      "status": "Status",
+      "owner": "Verantwortlicher",
+      "ownerPlaceholder": "Name oder E-Mail",
+      "dueDate": "Fällig am",
+      "downtimeCost": "Geschätzte Stillstandskosten (€)",
+      "downtimeCostPlaceholder": "Leer lassen wenn unbekannt",
+      "downtimeCostHint": "Zeigt — bis ein realer Wert erfasst ist. Keine erfundenen Zahlen.",
+      "resolutionNotes": "Lösungsnotizen"
+    }
+  },
+  "liveDeviations": {
+    "title": "Live-Abweichungen",
+    "description": "Heatmap der aktuellen Abweichung von der Basislinie — je röter, desto kritischer.",
+    "loading": "Live-Abweichungen werden geladen…",
+    "loadFailed": "Live-Abweichungen konnten nicht geladen werden",
+    "empty": "Noch keine Maschinen registriert.",
+    "noEvaluations": "Keine Basislinien-Bewertungen für die aktuellen Prozessfenster.",
+    "noDataCell": "Keine Bewertung",
+    "noWindow": "Kein Live-Prozessfenster für diese Maschine",
+    "setupBaseline": "Basislinien-Manager öffnen →",
+    "baselines": "Basislinien",
+    "liveEstimations": "Live-Schätzungen",
+    "heatmapTitle": "Abweichungs-Heatmap",
+    "heatmapHint": "Maschine × Parameter gegenüber Basislinie",
+    "machine": "Maschine",
+    "detailTitle": "Maschinendetail",
+    "window": "Fenster",
+    "current": "Aktuell",
+    "baseline": "Basislinie",
+    "kpi": {
+      "critical": "Kritische Maschinen",
+      "warning": "Warnung",
+      "normal": "Im Soll",
+      "noData": "Keine Daten"
+    },
+    "legend": {
+      "ok": "Im Band",
+      "warn": "Warnung",
+      "critical": "Kritisch",
+      "none": "Keine Daten"
+    }
+  },
+  "liveEstimated": {
+    "title": "Live-Sch\u00e4tzwerte",
+    "loading": "Live-Sch\u00e4tzwerte werden geladen...",
+    "lastRefreshedAt": "Zuletzt aktualisiert um",
+    "autoRefreshOn": "Auto-Aktualisierung EIN",
+    "autoRefreshOff": "Auto-Aktualisierung AUS",
+    "processParameters": "Prozessparameter",
+    "std": "Std:",
+    "trend": "Trend:",
+    "parameters": {
+      "screwSpeedRpm": "Schneckendrehzahl (rpm)",
+      "pressureBar": "Druck (bar)",
+      "temperatureC": "Temperatur (\u00b0C)",
+      "loadPercent": "Last (%)",
+      "loadAmp": "Last (amp)",
+      "pressurePerRpm": "Druck pro rpm (bar/rpm)",
+      "temperatureSpreadC": "Temperaturspreizung (\u00b0C)",
+      "loadPerPressure": "Last pro Druck (amp/bar)"
+    },
+    "chart": {
+      "title": "Parametertrends (letzte 5 Minuten)",
+      "footer": "Anzeige des gleitenden 5-Minuten-Fensters (Aktualisierung alle 10 Sekunden)"
+    },
+    "stability": {
+      "title": "Parameterstabilit\u00e4t (gegen\u00fcber Basislinie)",
+      "parameter": "Parameter",
+      "deviation": "Abweichung",
+      "status": "Status"
+    },
+    "summary": {
+      "system": "System",
+      "detectedState": "Erkannter Zustand",
+      "activeRegime": "Aktives Regime",
+      "overallStatus": "Gesamtstatus",
+      "stability": "Stabilit\u00e4t",
+      "driftScore": "Drift-Wert",
+      "anomaly": "Anomalie"
+    },
+    "insights": {
+      "title": "Kurze Einblicke",
+      "processStable": {
+        "title": "Prozess stabil",
+        "stable": "Alle wichtigen Parameter liegen im normalen Betriebsbereich.",
+        "unstable": "Das Prozessverhalten zeigt Instabilit\u00e4t."
+      },
+      "tempSpread": {
+        "title": "Temperaturspreizung",
+        "stable": "Die Temperaturspreizung ist niedrig und stabil.",
+        "increasing": "Die Temperaturspreizung nimmt zu."
+      },
+      "monitorPressure": {
+        "title": "Druck \u00fcberwachen",
+        "warning": "Der Druck zeigt eine leichte Abweichung. Weiter \u00fcberwachen.",
+        "normal": "Der Druck liegt innerhalb der erwarteten Basislinie."
+      },
+      "performance": {
+        "title": "Leistung",
+        "description": "Der Gesamtleistungsindex betr\u00e4gt"
+      }
+    },
+    "featureNames": {
+      "screw_speed": "Schneckendrehzahl (rpm)",
+      "screw_speed_mean": "Schneckendrehzahl (rpm)",
+      "pressure": "Druck (bar)",
+      "pressure_mean": "Druck (bar)",
+      "temperature": "Temperatur (\u00b0C)",
+      "temperature_mean": "Temperatur (\u00b0C)",
+      "load": "Last (%)",
+      "load_mean": "Last (%)",
+      "torque": "Drehmoment (%)",
+      "temp_spread": "Temperaturspreizung (\u00b0C)",
+      "pressure_per_rpm": "Druck / RPM",
+      "load_per_pressure": "Last / Druck"
+    },
+    "status": {
+      "HEALTHY": "Gesund",
+      "STABLE": "Stabil",
+      "UNSTABLE": "Instabil",
+      "NORMAL": "Normal",
+      "WARNING": "Warnung",
+      "CRITICAL": "Kritisch",
+      "IDLE": "Leerlauf",
+      "RUNNING": "L\u00e4uft",
+      "STARTUP": "Start",
+      "SHUTDOWN": "Abschaltung"
+    }
+  },
+  "productionRun": {
+    "empty": "W\u00e4hlen oder erstellen Sie einen Produktionslauf, um die vollst\u00e4ndige Produktionshistorie zu sehen.",
+    "loading": "Produktionslauf wird geladen...",
+    "tabs": {
+      "context": "Kontext",
+      "process": "Prozess",
+      "quality": "Qualit\u00e4t",
+      "ai": "KI-Einblicke",
+      "material": "Material"
+    },
+    "actions": {
+      "edit": "Bearbeiten",
+      "cancel": "Abbrechen",
+      "saving": "Speichern..."
+    },
+    "messages": {
+      "fetchCurrentFailed": "Aktueller Produktionslauf konnte nicht geladen werden",
+      "fetchLiveFailed": "Live-Produktionslaufdaten konnten nicht geladen werden",
+      "completed": "Produktionslauf abgeschlossen",
+      "completeFailed": "Produktionslauf konnte nicht abgeschlossen werden"
+    },
+    "metrics": {
+      "pressure": "Druck (bar)",
+      "screwSpeed": "Schneckendrehzahl (rpm)",
+      "temperature": "Temperatur (\u00b0C)",
+      "load": "Last (%)",
+      "tempSpread": "Temperaturspreizung (\u00b0C)",
+      "pressurePerRpm": "Druck / RPM"
+    },
+    "header": {
+      "title": "Produktionslauf #{{id}}",
+      "started": "Gestartet",
+      "line": "Linie",
+      "machine": "Maschine",
+      "storyTitle": "Ein Lauf = eine vollst\u00e4ndige Produktionshistorie",
+      "storySubtitle": "Kontext + Prozess + Qualit\u00e4t -> KI-Verst\u00e4ndnis",
+      "completeRun": "Lauf abschlie\u00dfen",
+      "completing": "Wird abgeschlossen..."
+    },
+    "context": {
+      "title": "Kontext\u00fcbersicht",
+      "readOnly": "Dieser Produktionslauf ist abgeschlossen. Der Kontext ist schreibgesch\u00fctzt.",
+      "actions": {
+        "save": "Kontext speichern"
+      },
+      "messages": {
+        "saved": "Kontext erfolgreich gespeichert",
+        "saveFailed": "Kontext konnte nicht gespeichert werden"
+      },
+      "fields": {
+        "product": "Produkt",
+        "productCode": "Produktcode",
+        "customerOrder": "Kundenauftrag",
+        "batch": "Charge",
+        "material": "Material",
+        "materialType": "Materialtyp",
+        "materialGrade": "Materialqualit\u00e4t",
+        "supplier": "Lieferant",
+        "siloHopper": "Silo / Trichter"
+      }
+    },
+    "currentState": {
+      "title": "Aktueller Zustand (KI-Auswertung)",
+      "liveEvaluation": "Live-Produktionsauswertung"
+    },
+    "ai": {
+      "detectedState": "Erkannter Zustand",
+      "activeRegime": "Aktives Regime",
+      "stability": "Stabilit\u00e4t",
+      "driftScore": "Drift-Wert",
+      "anomalyScore": "Anomalie-Wert",
+      "confidence": "Konfidenz",
+      "explanation": "Erkl\u00e4rung",
+      "noExplanation": "F\u00fcr diesen Lauf ist noch keine Live-KI-Erkl\u00e4rung verf\u00fcgbar."
+    },
+    "process": {
+      "title": "Live-Prozessdaten (letzte 2-3 Minuten)",
+      "targetRange": "Zielbereich"
+    },
+    "quality": {
+      "title": "Qualit\u00e4ts\u00fcbersicht",
+      "readOnly": "Dieser Produktionslauf ist abgeschlossen. Qualit\u00e4tsdaten sind schreibgesch\u00fctzt.",
+      "noNotes": "F\u00fcr diesen Lauf sind keine zus\u00e4tzlichen Qualit\u00e4tsnotizen erfasst.",
+      "actions": {
+        "save": "Qualit\u00e4t speichern"
+      },
+      "messages": {
+        "saved": "Qualit\u00e4t erfolgreich gespeichert",
+        "saveFailed": "Qualit\u00e4t konnte nicht gespeichert werden"
+      },
+      "fields": {
+        "qualityStatus": "Qualit\u00e4tsstatus",
+        "scrapAmount": "Ausschussmenge",
+        "scrapPercent": "Ausschuss %",
+        "defectType": "Fehlertyp",
+        "defectDescription": "Fehlerbeschreibung",
+        "customerComplaintRef": "Kundenreklamationsnr.",
+        "internalQcResult": "Internes QS-Ergebnis",
+        "labResult": "Laborergebnis",
+        "notes": "Notizen",
+        "totalDefects": "Fehler gesamt",
+        "mainReason": "Hauptgrund",
+        "lastQcCheck": "Letzte QS-Pr\u00fcfung",
+        "internalQc": "Interne QS"
+      },
+      "flags": {
+        "visualDefect": "Sichtfehler",
+        "dimensionalIssue": "Ma\u00dfabweichung",
+        "surfaceIssue": "Oberfl\u00e4chenproblem",
+        "colorDeviation": "Farbabweichung",
+        "densityWeightIssue": "Dichte-/Gewichtsproblem",
+        "rework": "Nacharbeit",
+        "downgrade": "Herabstufung",
+        "shiftIssue": "Schichtproblem",
+        "changeoverIssue": "Umr\u00fcstproblem",
+        "stopStartInstability": "Stopp-/Start-Instabilit\u00e4t"
+      }
+    },
+    "reference": {
+      "title": "Abweichung vs. Referenz ({{regime}}-Regime)",
+      "parameter": "Parameter",
+      "currentValue": "Aktueller Wert",
+      "referenceMean": "Referenz (Mittelwert)",
+      "deviation": "Abweichung",
+      "status": "Status"
+    },
+    "aiUnderstanding": {
+      "title": "KI-Verst\u00e4ndnis",
+      "description": "Dieses Panel kombiniert Produktionskontext, Live-Prozessverhalten und Qualit\u00e4tsergebnisse, damit wiederkehrende Qualit\u00e4ts\u00e4nderungen mit Maschinenzustand und Materialhistorie verglichen werden k\u00f6nnen."
+    }
+  },
+  "productionRunDashboard": {
+    "create": {
+      "title": "Neuer Produktionslauf",
+      "description": "Starten Sie einen neuen Ablauf, indem Sie Linie, Maschine, Produkt und Startzeit verbinden.",
+      "button": "Lauf erstellen"
+    },
+    "fields": {
+      "lineId": "Linien-ID",
+      "machine": "Maschine",
+      "selectMachine": "Maschine ausw\u00e4hlen",
+      "productName": "Produktname",
+      "startTime": "Startzeit"
+    },
+    "errors": {
+      "fetchMachines": "Maschinen konnten nicht geladen werden",
+      "validLineId": "Bitte geben Sie eine g\u00fcltige Linien-ID ein",
+      "machineAndStartTime": "Bitte w\u00e4hlen Sie eine Maschine aus und geben Sie die Startzeit ein",
+      "fetchRuns": "Produktionsl\u00e4ufe konnten nicht geladen werden",
+      "createRun": "Lauf konnte nicht erstellt werden"
+    }
+  },
+  "machineSensorViewer": {
+    "title": "Zeitraum-Datenanzeige",
+    "description": "Analysieren Sie historische Maschinensensordaten f\u00fcr ausgew\u00e4hlte Zeitr\u00e4ume.",
+    "errors": {
+      "failedLoadMachines": "Maschinen konnten nicht geladen werden",
+      "failedLoadSensors": "Sensoren konnten nicht geladen werden",
+      "failedLoadSummary": "Zusammenfassung konnte nicht geladen werden",
+      "failedLoadQualityReport": "Datenqualit\u00e4tsbericht konnte nicht geladen werden",
+      "selectMachine": "Bitte Maschine ausw\u00e4hlen",
+      "selectDateRange": "Bitte Zeitraum ausw\u00e4hlen",
+      "failedLoadSensorData": "Sensordaten konnten nicht geladen werden",
+      "machineRequired": "Maschine erforderlich",
+      "startDateRequired": "Startdatum erforderlich",
+      "endDateRequired": "Enddatum erforderlich",
+      "startAfterEnd": "Das Startdatum darf nicht nach dem Enddatum liegen"
+    },
+    "filters": {
+      "machine": "Maschine",
+      "lineId": "Linien-ID",
+      "from": "Von",
+      "to": "Bis",
+      "selectMachine": "Maschine ausw\u00e4hlen",
+      "loadData": "Daten laden"
+    },
+    "table": {
+      "title": "Sensorwerte",
+      "loading": "Laden...",
+      "noData": "Keine Daten gefunden",
+      "timestamp": "Zeitstempel",
+      "description": "Beschreibung",
+      "unit": "Einheit",
+      "source": "Quelle"
+    },
+    "export": {
+      "button": "CSV exportieren",
+      "preparing": "Export wird vorbereitet...",
+      "noData": "Keine Daten gefunden",
+      "exportedRows": "{{count}} Zeilen exportiert",
+      "failed": "Export fehlgeschlagen"
+    },
+    "pagination": {
+      "previous": "Zur\u00fcck",
+      "next": "Weiter"
+    },
+    "chart": {
+      "liveTrend": "Live-Trend"
+    },
+    "summary": {
+      "title": "Zeitraum-Zusammenfassung",
+      "description": "Aggregierte Maschinenanalysen und Maschinenzustands-Zeitlinienanalyse f\u00fcr die ausgew\u00e4hlte Dauer.",
+      "loading": "Analysezusammenfassung wird geladen...",
+      "metrics": {
+        "totalRecords": "Datens\u00e4tze gesamt",
+        "rowsDetected": "Zeilen erkannt",
+        "timeDuration": "Zeitdauer",
+        "selectedRange": "Ausgew\u00e4hlter Zeitraum",
+        "avgScrewSpeed": "Durchschn. Schneckendrehzahl",
+        "avgPressure": "Durchschn. Druck",
+        "average": "Durchschnitt",
+        "minPressure": "Min. Druck",
+        "minimum": "Minimum",
+        "maxPressure": "Max. Druck",
+        "maximum": "Maximum",
+        "avgTempZone1": "Durchschn. Temp. Zone 1",
+        "avgTempZone2": "Durchschn. Temp. Zone 2",
+        "avgTempZone3": "Durchschn. Temp. Zone 3",
+        "avgTempZone4": "Durchschn. Temp. Zone 4",
+        "temperature": "Temperatur"
+      },
+      "descriptions": {
+        "totalRecords": "Gesamtzahl der Sensordatensätze im ausgewählten Zeitraum. Eine höhere Anzahl weist auf eine bessere Datenabdeckung hin.",
+        "timeDuration": "Gesamtdauer zwischen dem ersten und letzten verfügbaren Datensatz innerhalb des ausgewählten Zeitraums.",
+        "avgScrewSpeed": "Durchschnittliche Drehzahl der Schnecke während des ausgewählten Zeitraums. Wird zur Bewertung der Produktionsleistung und Prozessstabilität verwendet.",
+        "avgPressure": "Durchschnittlicher Prozessdruck im ausgewählten Zeitraum. Abweichungen können auf Prozessinstabilitäten hinweisen.",
+        "minPressure": "Niedrigster aufgezeichneter Druckwert innerhalb des ausgewählten Zeitraums.",
+        "maxPressure": "Höchster aufgezeichneter Druckwert innerhalb des ausgewählten Zeitraums.",
+        "avgTempZone1": "Durchschnittliche Temperatur der Heizzone 1 während des ausgewählten Zeitraums.",
+        "avgTempZone2": "Durchschnittliche Temperatur der Heizzone 2 während des ausgewählten Zeitraums.",
+        "avgTempZone3": "Durchschnittliche Temperatur der Heizzone 3 während des ausgewählten Zeitraums.",
+        "avgTempZone4": "Durchschnittliche Temperatur der Heizzone 4 während des ausgewählten Zeitraums."
+      },
+      "timeline": {
+        "title": "Maschinenzustands-Zeitlinie",
+        "description": "Dieser Abschnitt zeigt die erkannten Betriebszust\u00e4nde der Maschine im ausgew\u00e4hlten Zeitraum. Zust\u00e4nde werden nach Produktionslauf gruppiert und zeigen, wann die Maschine in einen bestimmten Betriebszustand wie Produktion, Aufheizen, K\u00fchlen, Bereitschaft oder Stillstand ein- und ausgetreten ist.",
+        "view": "Zeitlinienansicht",
+        "noStates": "Keine Maschinenzust\u00e4nde im ausgew\u00e4hlten Zeitraum erkannt.",
+        "runDescription": "Erkannte Maschinenbetriebszust\u00e4nde innerhalb dieses Produktionslaufs.",
+        "stateDescription": "Zustandsbeschreibung",
+        "detectedIntervals": "{{count}} erkannte(s) Zeitlinienintervall(e)"
+      },
+      "states": {
+        "labels": {
+          "off": "Aus",
+          "heating": "Aufheizen",
+          "ready": "Bereit",
+          "cooling": "K\u00fchlen",
+          "lowProduction": "Niedrige Produktion",
+          "production": "Produktion"
+        },
+        "descriptions": {
+          "off": "Die Maschine ist ausgeschaltet oder inaktiv. In diesem Intervall wurde keine aktive Produktionsaktivit\u00e4t erkannt.",
+          "heating": "Der Aufheizzyklus der Maschine ist aktiv. Die Temperaturzonen stabilisieren sich vor Produktionsbeginn.",
+          "ready": "Die Maschine ist betriebsbereit, verarbeitet aber aktuell kein Material.",
+          "cooling": "Ein K\u00fchlzyklus wurde erkannt. Die Maschinentemperaturen sinken nach Produktion oder Abschaltung.",
+          "lowProduction": "Produktionsaktivit\u00e4t wurde erkannt, liegt jedoch unter den erwarteten Betriebsschwellen oder Effizienzzielen.",
+          "production": "Normaler Produktionsbetrieb mit aktivem Maschinendurchsatz und stabilem Prozessverhalten erkannt.",
+          "fallback": "Maschinenbetriebszustand."
+        }
+      }
+    },
+    "quality": {
+      "title": "Datenqualit\u00e4ts-Panel",
+      "description": "Sensordatenvalidierung und Anomalieerkennung",
+      "totalRecords": "Datens\u00e4tze gesamt",
+      "loading": "Qualit\u00e4tsbericht wird geladen...",
+      "missingValues": "Fehlende Werte",
+      "constantSensors": "Konstante Sensoren",
+      "unrealisticValues": "Unrealistische Werte",
+      "duplicatedTimestamps": "Doppelte Zeitstempel",
+      "sensorGaps": "Sensorl\u00fccken",
+      "unmappedColumns": "Nicht zugeordnete Spalten",
+      "flatSignals": "Flache Signale",
+      "suspiciouslyFlatSignals": "Verd\u00e4chtig flache Signale",
+      "tooltipTitle": "Beschreibung",
+      "descriptions": {
+        "missingValues": "Zeigt Sensoren mit fehlenden oder nicht verfügbaren Messwerten im ausgewählten Zeitraum an.",
+        "constantSensors": "Sensoren, deren Werte über den gesamten Zeitraum unverändert geblieben sind. Dies kann auf Sensorfehler oder Kommunikationsprobleme hinweisen.",
+        "unrealisticValues": "Sensorwerte außerhalb realistischer oder erwarteter Betriebsgrenzen.",
+        "duplicatedTimestamps": "Anzahl der Datensätze mit identischem Zeitstempel. Doppelte Zeitstempel können Analyseergebnisse verfälschen.",
+        "sensorGaps": "Erkannte Unterbrechungen oder fehlende Messintervalle innerhalb der Sensordaten.",
+        "unmappedColumns": "Datenfelder, die keiner bekannten Sensorzuordnung im System entsprechen.",
+        "flatSignals": "Signale mit ungewöhnlich geringer Variation über längere Zeiträume. Dies kann auf eingefrorene oder fehlerhafte Sensoren hinweisen."
+      }
+    }
+  },
+  "login": {
+    "appTitle": "Prädiktive Wartung",
+    "tagline": "Betriebsleitstand",
+    "signIn": "Anmelden",
+    "signingIn": "Anmeldung läuft…",
+    "email": "E-Mail",
+    "password": "Passwort",
+    "emailPlaceholder": "admin@beispiel.de",
+    "emailRequired": "E-Mail ist erforderlich",
+    "invalidEmail": "Ungültige E-Mail-Adresse",
+    "passwordRequired": "Passwort ist erforderlich",
+    "passwordMinLength": "Mindestens 3 Zeichen erforderlich",
+    "loginFailed": "Anmeldung fehlgeschlagen",
+    "backendNotResponding": "Server antwortet nicht",
+    "invalidCredentials": "Ungültige Zugangsdaten",
+    "backendStatus": "Backend-Status",
+    "status": {
+      "online": "online",
+      "offline": "offline",
+      "unknown": "unbekannt"
+    },
+    "demoCredentials": "Demo-Zugangsdaten",
+    "roles": {
+      "admin": "Administrator",
+      "engineer": "Ingenieur",
+      "viewer": "Betrachter"
+    }
+  }
+}

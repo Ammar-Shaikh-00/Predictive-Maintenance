@@ -51,12 +51,24 @@ CONFIRMATION_WINDOWS = int(os.getenv("CONFIRMATION_WINDOWS", "3"))  # consecutiv
 MIN_STATE_WINDOWS = int(os.getenv("MIN_STATE_WINDOWS", "5"))  # minimum windows before allowing state transition
 # prevents rapid flickering between similar states
 
-# states that trigger baseline comparison (evaluation guard)
-_evaluable_states_raw = os.getenv("EVALUABLE_STATES", "PRODUCTION,LOW_PRODUCTION")
+# states that trigger baseline + run evaluation (include all so ML fields are persisted)
+_evaluable_states_raw = os.getenv(
+    "EVALUABLE_STATES",
+    "PRODUCTION,LOW_PRODUCTION,OFF,HEATING,COOLING,READY",
+)
 EVALUABLE_STATES = [s.strip() for s in _evaluable_states_raw.split(",") if s.strip()]
 
-# Database (stub for now)
-DB_CONNECTION_STRING = os.getenv("DB_CONNECTION_STRING", "sqlite:///live_monitor.db")  # replace with real DB later
+# Backend persistence (live output goes here — not local SQLite)
+BACKEND_BASE_URL = os.getenv("BACKEND_BASE_URL", "http://192.168.100.24:8002").rstrip("/")
+BACKEND_TIMEOUT_SECONDS = float(os.getenv("BACKEND_TIMEOUT_SECONDS", "10"))
+# Optional overrides; if empty, resolved from GET /machines + RUNNING production-run
+MACHINE_ID = os.getenv("MACHINE_ID", "6f37c433-44e9-4a66-b019-cc342a95cc54").strip() or None
+LINE_ID = int(os.getenv("LINE_ID")) if os.getenv("LINE_ID", "").strip() else None  # resolved from run (29)
+MACHINE_NAME = os.getenv("MACHINE_NAME", "Extruder").strip() or None
+CONTEXT_REFRESH_SECONDS = int(os.getenv("CONTEXT_REFRESH_SECONDS", "60"))
+
+# Local SQLite only for offline/legacy ML scripts (not used for live pipeline writes)
+DB_CONNECTION_STRING = os.getenv("DB_CONNECTION_STRING", "sqlite:///live_monitor.db")
 
 # single source of truth for regime thresholds across all modules
 REGIME_LOW_MAX = 280.0
@@ -106,9 +118,4 @@ RETRAIN_MIN_NEW_ROWS = int(os.getenv("RETRAIN_MIN_NEW_ROWS", "500"))  # minimum 
 # drift detection (ml.drift_detector)
 DRIFT_WINDOW_COUNT = int(os.getenv("DRIFT_WINDOW_COUNT", "10"))  # number of recent windows to compare against baseline mean
 DRIFT_ALERT_ZSCORE = float(os.getenv("DRIFT_ALERT_ZSCORE", "2.5"))  # z-score threshold for drift alert, learned from data spread
-
-# simulation replay (simulation.data_replay)
-SIMULATION_MODE = False  # True = replay historical data, False = live API
-SIMULATION_SPEED = 2  # reduced for better slope calculation accuracy
-SIMULATION_CSV = os.path.join(_TSDB_RESULTS, "Raw_Extruder_data.csv")
 

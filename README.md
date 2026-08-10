@@ -14,14 +14,14 @@ This project monitors an extruder in near real time and answers three questions:
 2. **Is current behavior anomalous for that state?** (per-state Isolation Forest models)
 3. **How does live behavior compare to historical baselines?** (z-score evaluation and drift detection)
 
-Data flows from a live API (or CSV simulation replay) through a rolling window buffer, feature engine, ML classifiers, and SQLite storage. Results are exposed via a local FastAPI service on port **8001**.
+Data flows from a live API through a rolling window buffer, feature engine, ML classifiers, and is persisted to the backend Postgres database via HTTP APIs (`BACKEND_BASE_URL`, default `http://192.168.100.24:8002`). ML model files stay local under `live_monitor/ml_data/`. A local FastAPI service on port **8001** remains for pipeline health/debug.
 
 ---
 
 ## Architecture
 
 ```
-Live API / Simulation
+Live API
         │
         ▼
   api_client.fetch_latest()
@@ -38,7 +38,7 @@ Live API / Simulation
         │
         ├──► evaluation_guard / baseline_selector / feature_evaluator
         │
-        └──► db_writer → live_monitor.db
+        └──► backend_writer → backend APIs → Postgres
 ```
 
 **ML training pipeline** (offline, 5-minute windows):
@@ -57,7 +57,7 @@ machine_sensor_raw → build_live_windows → cluster_live_states
 | `live_monitor/` | **Main pipeline** — polling loop, ML inference, FastAPI, SQLite |
 | `live_monitor/ml/` | Training scripts, anomaly scorer, retrain scheduler |
 | `live_monitor/ml_data/` | Trained models (`.pkl`), labeled CSVs, elbow plots |
-| `scripts/` | Data fixes and simulation verification |
+| `scripts/` | Data source fix utilities |
 | `timeSeriesDB/` | Historical extruder data and segmentation outputs |
 | `Dev-AI-PM/` | Full-stack PM application (backend API + frontend) |
 | `Docs/` | Architecture docs, handoff notes, SUNPOR roadmap |
@@ -70,7 +70,7 @@ machine_sensor_raw → build_live_windows → cluster_live_states
 ### Prerequisites
 
 - Python 3.11+
-- Network access to the extruder API (or enable simulation mode)
+- Network access to the extruder API
 
 ### Install dependencies
 
@@ -88,10 +88,6 @@ python -u live_monitor/main.py
 
 - Local API docs: [http://localhost:8001/docs](http://localhost:8001/docs)
 - Live extruder API (default): `http://100.119.197.81:8002/dashboard/extruder-latest-values`
-
-### Simulation mode
-
-In `live_monitor/config.py`, set `SIMULATION_MODE = True` to replay historical CSV data instead of calling the live API.
 
 ### Docker
 
@@ -121,7 +117,8 @@ Individual steps: `build_live_windows.py` → `cluster_live_states.py` → `map_
 
 | Setting | Default | Purpose |
 |---------|---------|---------|
-| `SIMULATION_MODE` | `False` | CSV replay vs live API |
+| `BACKEND_BASE_URL` | `http://192.168.100.24:8002` | Backend API for live persistence |
+| `MACHINE_ID` / `LINE_ID` | (auto from `/machines`) | Optional overrides for context |
 | `POLL_INTERVAL_SECONDS` | `10` | API poll frequency |
 | `WINDOW_DURATION_SECONDS` | `300` | 5-minute live buffer (aligned with training) |
 | `LIVE_WINDOW_MINUTES` | `5` | ML training window size |
@@ -154,17 +151,6 @@ Critical features shared across classifier and anomaly models:
 - Temperature mean, **temp_spread** (front zones Val_7–11 vs rear Val_27–32)
 - **temperature_direction** (second-half mean − first-half mean in window)
 - `valid_fraction` — data quality gate
-
----
-
-## Verification
-
-```powershell
-$env:PYTHONPATH='.;live_monitor'
-python scripts/verify_simulation_states.py
-```
-
-Checks HEATING, COOLING, and PRODUCTION state detection + anomaly scoring on historical CSV segments.
 
 ---
 

@@ -1,0 +1,206 @@
+%% erDiagram
+%%     machine ||--o{ sensor : "machine_id"
+%%     machine ||--o{ sensor_data : "machine_id"
+%%     machine ||--o{ prediction : "machine_id"
+%%     machine ||--o{ alarm : "machine_id"
+%%     machine ||--o{ ticket : "machine_id"
+
+%%     machine ||--o{ machine_state : "machine_uuid"
+%%     machine ||--o{ machine_state_thresholds : "machine_uuid"
+%%     machine ||--o{ machine_state_transition : "machine_uuid"
+%%     machine ||--o{ machine_state_alert : "machine_uuid"
+%%     machine ||--o{ machine_process_evaluation : "machine_uuid"
+
+%%     machine ||--o{ profiles : "machine_id (nullable)"
+%%     machine ||--o{ production_run : "machine_id"
+%%     machine ||--o{ live_process_window : "machine_id"
+
+%%     sensor ||--o{ sensor_data : "sensor_id"
+%%     sensor ||--o{ prediction : "sensor_id"
+%%     sensor ||--o{ alarm : "sensor_id"
+
+%%     sensor_data ||--o{ prediction : "sensor_data_id (nullable)"
+
+%%     prediction ||--o| alarm : "prediction_id"
+%%     alarm ||--o| ticket : "alarm_id"
+
+%%     profiles ||--o{ profile_state_thresholds : "profile_id CASCADE"
+%%     profiles ||--o{ profile_baseline_stats : "profile_id CASCADE"
+%%     profiles ||--o{ profile_baseline_sample : "profile_id CASCADE"
+%%     profiles ||--o{ profile_scoring_band : "profile_id CASCADE"
+%%     profiles ||--o{ profile_message_template : "profile_id CASCADE"
+%%     profiles ||--o{ profile_pressure_config : "profile_id CASCADE"
+
+%%     material_profile ||--o{ production_run : "material_profile_id"
+%%     material_profile ||--o{ profile_threshold : "material_id"
+
+%%     default_sensor ||--o{ profile_threshold : "sensor_id"
+%%     default_sensor ||--o{ baseline_map : "sensor_id CASCADE"
+%%     default_sensor ||--o{ state_sensor_priority : "sensor_id CASCADE"
+%%     default_sensor ||--o{ alert_context : "default_sensor_id"
+
+%%     baseline ||--o{ baseline_map : "baseline_id CASCADE"
+%%     default_machine_state ||--o{ baseline_map : "machine_state_id CASCADE"
+%%     default_machine_state ||--o{ state_sensor_priority : "machine_state_id CASCADE"
+
+%%     production_run ||--o{ quality_record : "production_run_id"
+%%     production_run ||--o{ ai_run_analysis : "production_run_id"
+%%     production_run ||--o{ live_process_window : "production_run_id"
+%%     production_run ||--o{ machine_sensor_raw : "production_run_id"
+
+
+
+
+
+erDiagram
+    %% ========== L0 ==========
+    production_run {
+        int id PK
+        uuid machine_id FK
+        uuid material_profile_id FK
+        int line_id
+        str product_name
+        str product_code
+        str customer_order
+        str batch_no
+        str recipe_id
+        str material_name
+        str material_type
+        str material_grade
+        str supplier
+        str virgin_recycle_mix
+        float recycled_percentage
+        str silo_path
+        str input_source
+        Boolean co_extuder_active
+        str operator_name
+        str shift
+        DateTime start_time
+        DateTime end_time
+        str status
+
+
+    }
+
+    %% ========== L1 ==========
+    machine {
+        uuid id PK
+    }
+    quality_record {
+        int id PK
+        int production_run_id FK
+    }
+    ai_run_analysis {
+        int id PK
+        int production_run_id FK
+    }
+    live_process_window {
+        int id PK
+        int production_run_id FK
+        uuid machine_id FK
+        int line_id
+        DateTime window_start
+        DateTime window_end
+        int row_count
+        float valid_fraction
+        float invalid_fraction
+        float outlier_fraction
+        float avg_pressure
+        float avg_speed
+        float avg_temp
+        float avg_load
+        float min_pressure
+        float max_pressure
+        float min_speed
+        float max_speed
+        float pressure_std
+        float speed_std
+        float temp_std
+        float pressure_range
+        float speed_range
+        float temp_range
+        float pressure_slope
+        float speed_slope
+        float temp_slope
+        float pressure_per_rpm
+        float temp_spread
+        float load_per_pressure
+        str candidate_state
+        str confirmed_state
+        int confirmation_count
+    }
+    machine_sensor_raw {
+        uuid id PK
+        int production_run_id FK
+        uuid machine_id FK
+    }
+    live_run_evaluation {
+        int id PK
+        int production_run_id FK
+        int live_process_window_id FK
+        uuid machine_id FK
+        int line_id
+        str detected_state
+        str active_regime
+        int matched_profile_id
+        int baseline_id
+        str baseline_selectoin_method
+        str evaluation_status
+        str overall_status
+        str stability_status
+        float drift_score
+        float anomaly_score
+        str explanation_text
+        DateTime created_at
+    }
+
+
+    live_feature_evaluation {
+        int id PK
+        int live_process_window_id FK
+        int live_run_evaluation_id FK
+        str feature_name
+        float current_value
+        int baseline_id
+        float baseline_mean
+        float baseline_std
+        float baseline_warning_low
+        float baseline_warning_high
+        float baseline_critical_low
+        float baseline_critical_high
+        float deviation_abs
+        float deviation_pct
+        float z_score
+        str feature_status
+
+    }
+
+
+
+
+    %% --- L0 to L1 ---
+    production_run }o--|| machine : "machine_id"
+    production_run ||--o{ quality_record : "has"
+    production_run ||--o{ ai_run_analysis : "has"
+    production_run ||--o{ live_process_window : "has"
+    production_run ||--o{ machine_sensor_raw : "has"
+    production_run ||--o{ live_run_evaluation : "has"
+
+    %% --- L1 cross-links ---
+    live_process_window }o--o| machine : "machine_id"
+    machine_sensor_raw }o--o| machine : "machine_id"
+    live_run_evaluation }o--o| machine : "machine_id"
+    live_run_evaluation }o--o| live_process_window : "live_process_window_id"
+    live_run_evaluation }o--o| production_run : "production_run_id"
+
+
+
+    %% --- L2 live_process_window / live_run_evaluation to live_feature_evaluation ---
+    live_process_window ||--o{ live_feature_evaluation : "live_process_window_id"
+    live_run_evaluation ||--o{ live_feature_evaluation : "live_run_evaluation_id"
+
+
+
+   
+
+

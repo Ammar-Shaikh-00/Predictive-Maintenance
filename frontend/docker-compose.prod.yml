@@ -1,0 +1,14 @@
+version: "3.9"
+
+services:
+  frontend-prod:
+    build: .
+    container_name: pm-prod-frontend
+    ports:
+      - "3000:80"
+    restart: unless-stopped
+    networks:
+      - pm-prod-network
+networks:
+  pm-prod-network:
+      external: true

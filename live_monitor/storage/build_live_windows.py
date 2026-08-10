@@ -141,8 +141,6 @@ def _aggregate_bucket(sub: pd.DataFrame) -> dict[str, object]:
 
     if (sub["source"] == "live_api").any():
         row["source"] = "live"
-    elif (sub["source"] == "simulation").any():
-        row["source"] = "simulation"
     else:
         row["source"] = "historical"
 
@@ -163,8 +161,7 @@ def _print_empty_summary(output_path: str) -> None:
 def main() -> pd.DataFrame:
     output_path = config.LIVE_WINDOWS_CSV
 
-    # step 1: load all rows from machine_sensor_raw ordered by time
-    # includes historical + simulation + live data
+    # step 1: load historical + live rows from machine_sensor_raw ordered by time
     with Session(engine) as session:
         stmt = (
             select(
@@ -186,7 +183,7 @@ def main() -> pd.DataFrame:
                 MachineSensorRaw.source,
             )
             .where(
-                MachineSensorRaw.source.in_(["historical_import", "live_api", "simulation"])
+                MachineSensorRaw.source.in_(["historical_import", "live_api"])
             )
             .order_by(MachineSensorRaw.trend_date.asc())
         )

@@ -16,6 +16,9 @@ lerna-debug.log*
 
 __pycache__
 node_modules
+**/my-env/
+**/venv/
+**/.venv/
 dist
 dist-ssr
 *.local
@@ -37,7 +40,13 @@ scleraKey.pub
 *.pem
 .env
 .env.*
+**/tailscale_key.txt
+Docs/tailscale_key.txt
 
-# Local logs and chat backups
+# Local logs, DB, backups
 *.log
 Docs/chat-history-backup/
+live_monitor.db
+*.zip
+Docs/*.zip
+pm-updated-db/

@@ -1,0 +1,608 @@
+{
+  "alertService": "Alert Service",
+  "active": "Active",
+  "inactive": "Inactive",
+  "role": "Role",
+  "logout": "Logout",
+  "user": "User",
+  "loading": "Loading...",
+  "kiStatus": "KI: {{status}}",
+  "unknown": "Unknown",
+
+  "machines": "Machines",
+  "manageMachines": "Manage and monitor all machines",
+  "addMachine": "Add Machine",
+  "loadingMachines": "Loading machines...",
+  "noMachines": "No machines found",
+
+  "edit": "Edit",
+  "delete": "Delete",
+  "deleting": "Deleting...",
+  "confirmDelete": "Are you sure you want to permanently delete \"{{name}}\"?",
+  "createdAt": "Created at",
+  "description": "Description",
+
+  "editMachine": "Edit Machine",
+  "createMachine": "Add Machine",
+  "machineName": "Machine Name",
+  "location": "Location",
+  "status": "Status",
+  "criticality": "Criticality",
+  "cancel": "Cancel",
+  "save": "Save",
+  "saving": "Saving...",
+  "update": "Update",
+  "create": "Create",
+  "nameRequired": "Name is required",
+
+  "sensors": "Sensors",
+  "manageSensors": "Monitor and manage all sensors",
+  "addSensor": "Add Sensor",
+  "selectMachine": "Select Machine",
+  "loadingSensors": "Loading sensors...",
+  "noSensors": "No sensors found",
+
+  "sensorName": "Sensor Name",
+  "type": "Type",
+  "unit": "Unit",
+  "min": "Min",
+  "max": "Max",
+  "warning": "Warning",
+  "critical": "Critical",
+
+  "editSensor": "Edit Sensor",
+  "createSensor": "Add Sensor",
+
+  "machineRequired": "Machine is required",
+  "confirmDeleteSensor": "Do you want to delete {{name}}?"
+  ,
+  "notifications": "Notifications",
+  "manageNotifications": "Test and manage email notifications and webhooks",
+
+  "emailRecipients": "Email Recipients",
+  "manageRecipients": "Manage email addresses that receive notifications",
+  "addEmail": "Add Email",
+  "addEmailRecipient": "Add Email Recipient",
+
+  "emailAddress": "Email Address",
+  "nameOptional": "Name (optional)",
+  "descriptionOptional": "Description (optional)",
+
+  "loadingRecipients": "Loading recipients...",
+  "noRecipients": "No recipients found",
+
+  "enable": "Enable",
+  "disable": "Disable",
+  "remove": "Remove",
+
+  "added": "Added",
+  "confirmDeleteRecipient": "Are you sure you want to remove this email recipient?",
+
+  "testEmail": "Test Email Notifications",
+  "testEmailDesc": "Test email notifications. Emails are automatically sent to all active recipients for:",
+  "testEmailAddress": "Test Email Address (optional)",
+  "sendTestEmail": "Send Test Email",
+  "sending": "Sending...",
+
+  "emptySendAll": "Leave empty to send to all active recipients",
+
+  "emailRequired": "Please enter an email address",
+  "successSend": "Test email sent successfully!",
+  "failSend": "Failed to send test email",
+
+   "userRegistration": "User registration (welcome email)",
+  "aiPredictions": "Critical/Warning AI predictions",
+  "alarmTriggers": "Alarm triggers",
+  
+  "baseline": {
+  "title": "Baseline",
+  "description": "Manage baseline mappings",
+  "create": "Create Baseline",
+  "edit": "Edit Baseline",
+  "no_data": "No baselines found",
+  "id": "ID",
+  "name_placeholder": "Baseline Name",
+  "select_sensor": "Select Sensor",
+  "min": "Min",
+  "max": "Max",
+  "add_sensor": "Add Sensor"
+  },
+"common": {
+  "edit": "Edit",
+  "delete": "Delete",
+  "save": "Save",
+  "saving": "Saving...",
+  "cancel": "Cancel",
+  "loading": "Loading..."
+  },
+"messages": {
+  "load_failed": "Failed to load data",
+  "created": "Successfully created",
+  "updated": "Successfully updated",
+  "name_required": "Please enter the name.",
+  "sensor_required": "Please add at least one sensor in a state.",
+  "sensor_invalid": "Please fill all sensor fields (sensor, min, max).",
+  "state_no_sensor": "State has no sensors"
+    },
+  "tickets": {
+    "title": "Ticket Center",
+    "description": "Priority, owner, status, and estimated downtime cost — no invented figures.",
+    "create": "Create ticket",
+    "empty": "No tickets match this filter.",
+    "loadFailed": "Could not load tickets",
+    "alarms": "Alarms",
+    "maintenance": "Maintenance",
+    "kpi": {
+      "open": "Open / active",
+      "critical": "Critical open",
+      "unassigned": "Unassigned",
+      "downtimeCost": "Est. downtime cost",
+      "total": "All tickets"
+    },
+    "filters": {
+      "activeOpen": "Active (open…)",
+      "allStatuses": "All statuses",
+      "allPriorities": "All priorities"
+    },
+    "fields": {
+      "machine": "Machine",
+      "owner": "Owner",
+      "downtimeCost": "Est. downtime cost",
+      "created": "Created"
+    },
+    "priority": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High",
+      "critical": "Critical"
+    },
+    "status": {
+      "open": "Open",
+      "assigned": "Assigned",
+      "in_progress": "In progress",
+      "resolved": "Resolved",
+      "cancelled": "Cancelled"
+    },
+    "provenance": {
+      "auto": "From alarm",
+      "manual": "Manual"
+    },
+    "toast": {
+      "created": "Ticket created",
+      "updated": "Ticket updated",
+      "createFailed": "Could not create ticket",
+      "updateFailed": "Could not update ticket"
+    },
+    "modal": {
+      "create": "Create ticket",
+      "edit": "Edit ticket",
+      "title": "Title",
+      "machine": "Machine",
+      "selectMachine": "Select machine",
+      "relatedAlarm": "Related alarm",
+      "none": "None",
+      "description": "Description",
+      "priority": "Priority",
+      "status": "Status",
+      "owner": "Owner",
+      "ownerPlaceholder": "Name or email",
+      "dueDate": "Due date",
+      "downtimeCost": "Estimated downtime cost (€)",
+      "downtimeCostPlaceholder": "Leave empty if unknown",
+      "downtimeCostHint": "Show — until a real cost is entered. Do not invent values.",
+      "resolutionNotes": "Resolution notes"
+    }
+  },
+  "liveDeviations": {
+    "title": "Live deviations",
+    "description": "Heatmap of current deviation from baseline — redder means more critical.",
+    "loading": "Loading live deviations…",
+    "loadFailed": "Could not load live deviations",
+    "empty": "No machines registered yet.",
+    "noEvaluations": "No baseline evaluations for the latest process windows.",
+    "noDataCell": "No evaluation",
+    "noWindow": "No live process window for this machine",
+    "setupBaseline": "Open baseline manager →",
+    "baselines": "Baselines",
+    "liveEstimations": "Live estimations",
+    "heatmapTitle": "Deviation heatmap",
+    "heatmapHint": "Machine × parameter vs baseline",
+    "machine": "Machine",
+    "detailTitle": "Machine detail",
+    "window": "Window",
+    "current": "Current",
+    "baseline": "Baseline",
+    "kpi": {
+      "critical": "Critical machines",
+      "warning": "Warning",
+      "normal": "Within baseline",
+      "noData": "No data"
+    },
+    "legend": {
+      "ok": "Within band",
+      "warn": "Warning",
+      "critical": "Critical",
+      "none": "No data"
+    }
+  },
+  "liveEstimated": {
+    "title": "Live Estimated Values",
+    "loading": "Loading Live Estimated Values...",
+    "lastRefreshedAt": "Last refreshed at",
+    "autoRefreshOn": "Auto Refresh ON",
+    "autoRefreshOff": "Auto Refresh OFF",
+    "processParameters": "Process Parameters",
+    "std": "Std:",
+    "trend": "Trend:",
+    "parameters": {
+      "screwSpeedRpm": "Screw Speed (rpm)",
+      "pressureBar": "Pressure (bar)",
+      "temperatureC": "Temperature (\u00b0C)",
+      "loadPercent": "Load (%)",
+      "loadAmp": "Load (amp)",
+      "pressurePerRpm": "Pressure per rpm (bar/rpm)",
+      "temperatureSpreadC": "Temperature Spread (\u00b0C)",
+      "loadPerPressure": "Load Per Pressure (amp/bar)"
+    },
+    "chart": {
+      "title": "Parameter Trends (Last 5 Minutes)",
+      "footer": "Showing 5-minute rolling window (updated every 10 seconds)"
+    },
+    "stability": {
+      "title": "Parameter Stability (vs Baseline)",
+      "parameter": "Parameter",
+      "deviation": "Deviation",
+      "status": "Status"
+    },
+    "summary": {
+      "system": "System",
+      "detectedState": "Detected State",
+      "activeRegime": "Active Regime",
+      "overallStatus": "Overall Status",
+      "stability": "Stability",
+      "driftScore": "Drift Score",
+      "anomaly": "Anomaly"
+    },
+    "insights": {
+      "title": "Quick Insights",
+      "processStable": {
+        "title": "Process Stable",
+        "stable": "All key parameters are within normal operating range.",
+        "unstable": "Process behavior is showing instability."
+      },
+      "tempSpread": {
+        "title": "Temp Spread",
+        "stable": "Temperature spread is low and stable.",
+        "increasing": "Temperature spread is increasing."
+      },
+      "monitorPressure": {
+        "title": "Monitor Pressure",
+        "warning": "Pressure showing slight deviation. Continue monitoring.",
+        "normal": "Pressure is operating within expected baseline."
+      },
+      "performance": {
+        "title": "Performance",
+        "description": "Overall performance index is"
+      }
+    },
+    "featureNames": {
+      "screw_speed": "Screw Speed (rpm)",
+      "screw_speed_mean": "Screw Speed (rpm)",
+      "pressure": "Pressure (bar)",
+      "pressure_mean": "Pressure (bar)",
+      "temperature": "Temperature (\u00b0C)",
+      "temperature_mean": "Temperature (\u00b0C)",
+      "load": "Load (%)",
+      "load_mean": "Load (%)",
+      "torque": "Torque (%)",
+      "temp_spread": "Temp Spread (\u00b0C)",
+      "pressure_per_rpm": "Pressure / RPM",
+      "load_per_pressure": "Load / Pressure"
+    },
+    "status": {
+      "HEALTHY": "HEALTHY",
+      "STABLE": "STABLE",
+      "UNSTABLE": "UNSTABLE",
+      "NORMAL": "NORMAL",
+      "WARNING": "WARNING",
+      "CRITICAL": "CRITICAL",
+      "IDLE": "IDLE",
+      "RUNNING": "RUNNING",
+      "STARTUP": "STARTUP",
+      "SHUTDOWN": "SHUTDOWN"
+    }
+  },
+  "productionRun": {
+    "empty": "Select or create a production run to see the complete production story.",
+    "loading": "Loading production run...",
+    "tabs": {
+      "context": "Context",
+      "process": "Process",
+      "quality": "Quality",
+      "ai": "AI Insights",
+      "material": "Material"
+    },
+    "actions": {
+      "edit": "Edit",
+      "cancel": "Cancel",
+      "saving": "Saving..."
+    },
+    "messages": {
+      "fetchCurrentFailed": "Failed to fetch current production run",
+      "fetchLiveFailed": "Failed to fetch live production run data",
+      "completed": "Production run completed",
+      "completeFailed": "Failed to complete production run"
+    },
+    "metrics": {
+      "pressure": "Pressure (bar)",
+      "screwSpeed": "Screw speed (rpm)",
+      "temperature": "Temperature (\u00b0C)",
+      "load": "Load (%)",
+      "tempSpread": "Temp. spread (\u00b0C)",
+      "pressurePerRpm": "Pressure / RPM"
+    },
+    "header": {
+      "title": "Production Run #{{id}}",
+      "started": "Started",
+      "line": "Line",
+      "machine": "Machine",
+      "storyTitle": "One run = one complete production story",
+      "storySubtitle": "Context + Process + Quality -> AI understanding",
+      "completeRun": "Complete Run",
+      "completing": "Completing..."
+    },
+    "context": {
+      "title": "Context Overview",
+      "readOnly": "This production run is completed. Context is read-only.",
+      "actions": {
+        "save": "Save Context"
+      },
+      "messages": {
+        "saved": "Context saved successfully",
+        "saveFailed": "Failed to save context"
+      },
+      "fields": {
+        "product": "Product",
+        "productCode": "Product Code",
+        "customerOrder": "Customer Order",
+        "batch": "Batch",
+        "material": "Material",
+        "materialType": "Material Type",
+        "materialGrade": "Material Grade",
+        "supplier": "Supplier",
+        "siloHopper": "Silo / Hopper"
+      }
+    },
+    "currentState": {
+      "title": "Current State (AI Evaluation)",
+      "liveEvaluation": "Live production evaluation"
+    },
+    "ai": {
+      "detectedState": "Detected State",
+      "activeRegime": "Active Regime",
+      "stability": "Stability",
+      "driftScore": "Drift Score",
+      "anomalyScore": "Anomaly Score",
+      "confidence": "Confidence",
+      "explanation": "Explanation",
+      "noExplanation": "No live AI explanation is available for this run yet."
+    },
+    "process": {
+      "title": "Live Process Data (last 2-3 minutes)",
+      "targetRange": "Target range"
+    },
+    "quality": {
+      "title": "Quality Overview",
+      "readOnly": "This production run is completed. Quality data is read-only.",
+      "noNotes": "No additional quality notes are recorded for this run.",
+      "actions": {
+        "save": "Save Quality"
+      },
+      "messages": {
+        "saved": "Quality saved successfully",
+        "saveFailed": "Failed to save quality"
+      },
+      "fields": {
+        "qualityStatus": "Quality Status",
+        "scrapAmount": "Scrap Amount",
+        "scrapPercent": "Scrap %",
+        "defectType": "Defect Type",
+        "defectDescription": "Defect Description",
+        "customerComplaintRef": "Customer Complaint Ref",
+        "internalQcResult": "Internal QC Result",
+        "labResult": "Lab Result",
+        "notes": "Notes",
+        "totalDefects": "Total Defects",
+        "mainReason": "Main Reason",
+        "lastQcCheck": "Last QC Check",
+        "internalQc": "Internal QC"
+      },
+      "flags": {
+        "visualDefect": "Visual Defect",
+        "dimensionalIssue": "Dimensional Issue",
+        "surfaceIssue": "Surface Issue",
+        "colorDeviation": "Color Deviation",
+        "densityWeightIssue": "Density/Weight Issue",
+        "rework": "Rework",
+        "downgrade": "Downgrade",
+        "shiftIssue": "Shift Issue",
+        "changeoverIssue": "Changeover Issue",
+        "stopStartInstability": "Stop/Start Instability"
+      }
+    },
+    "reference": {
+      "title": "Deviation vs. Reference ({{regime}} Regime)",
+      "parameter": "Parameter",
+      "currentValue": "Current Value",
+      "referenceMean": "Reference (Mean)",
+      "deviation": "Deviation",
+      "status": "Status"
+    },
+    "aiUnderstanding": {
+      "title": "AI Understanding",
+      "description": "This panel combines production context, live process behavior and quality outcomes so repeated quality changes can be compared against machine state and material history."
+    }
+  },
+  "productionRunDashboard": {
+    "create": {
+      "title": "New Production Run",
+      "description": "Start a new story by connecting line, machine, product and start time.",
+      "button": "Create Run"
+    },
+    "fields": {
+      "lineId": "Line ID",
+      "machine": "Machine",
+      "selectMachine": "Select Machine",
+      "productName": "Product Name",
+      "startTime": "Start Time"
+    },
+    "errors": {
+      "fetchMachines": "Failed to fetch machines",
+      "validLineId": "Please enter a valid line ID",
+      "machineAndStartTime": "Please select a machine and enter the start time",
+      "fetchRuns": "Failed to fetch production runs",
+      "createRun": "Failed to create run"
+    }
+  },
+  "machineSensorViewer": {
+    "title": "Time Range Data Viewer",
+    "description": "Analyze historical machine sensor data across selected time ranges.",
+    "errors": {
+      "failedLoadMachines": "Failed to load machines",
+      "failedLoadSensors": "Failed to load sensors",
+      "failedLoadSummary": "Failed to load summary",
+      "failedLoadQualityReport": "Failed to load data quality report",
+      "selectMachine": "Please select machine",
+      "selectDateRange": "Please select date range",
+      "failedLoadSensorData": "Failed to load sensor data",
+      "machineRequired": "Machine required",
+      "startDateRequired": "Start date required",
+      "endDateRequired": "End date required",
+      "startAfterEnd": "Start date cannot exceed end date"
+    },
+    "filters": {
+      "machine": "Machine",
+      "lineId": "Line ID",
+      "from": "From",
+      "to": "To",
+      "selectMachine": "Select Machine",
+      "loadData": "Load Data"
+    },
+    "table": {
+      "title": "Sensor Values",
+      "loading": "Loading...",
+      "noData": "No Data Found",
+      "timestamp": "Timestamp",
+      "description": "Description",
+      "unit": "Unit",
+      "source": "Source"
+    },
+    "export": {
+      "button": "Export CSV",
+      "preparing": "Preparing export...",
+      "noData": "No data found",
+      "exportedRows": "Exported {{count}} rows",
+      "failed": "Export failed"
+    },
+    "pagination": {
+      "previous": "Previous",
+      "next": "Next"
+    },
+    "chart": {
+      "liveTrend": "Live Trend"
+    },
+    "summary": {
+      "title": "Time Range Summary",
+      "description": "Aggregated machine analytics and machine-state timeline analysis for the selected duration.",
+      "loading": "Loading analytics summary...",
+      "metrics": {
+        "totalRecords": "Total Records",
+        "rowsDetected": "Rows detected",
+        "timeDuration": "Time Duration",
+        "selectedRange": "Selected range",
+        "avgScrewSpeed": "Avg Screw Speed",
+        "avgPressure": "Avg Pressure",
+        "average": "Average",
+        "minPressure": "Min Pressure",
+        "minimum": "Minimum",
+        "maxPressure": "Max Pressure",
+        "maximum": "Maximum",
+        "avgTempZone1": "Avg Temp Zone 1",
+        "avgTempZone2": "Avg Temp Zone 2",
+        "avgTempZone3": "Avg Temp Zone 3",
+        "avgTempZone4": "Avg Temp Zone 4",
+        "temperature": "Temperature"
+      },
+      "timeline": {
+        "title": "Machine State Timeline",
+        "description": "This section represents the detected operational states of the machine during the selected time range. States are grouped by production run and indicate when the machine entered and exited a specific operational condition such as production, heating, cooling, ready state, or downtime.",
+        "view": "Timeline View",
+        "noStates": "No machine states detected in selected time range.",
+        "runDescription": "Machine operational states detected within this production run.",
+        "stateDescription": "State Description",
+        "detectedIntervals": "{{count}} detected timeline interval(s)"
+      },
+      "states": {
+        "labels": {
+          "off": "Off",
+          "heating": "Heating",
+          "ready": "Ready",
+          "cooling": "Cooling",
+          "lowProduction": "Low Production",
+          "production": "Production"
+        },
+        "descriptions": {
+          "off": "Machine is powered off or inactive. No active production activity detected during this interval.",
+          "heating": "Machine heating cycle is active. Temperature zones are stabilizing before production starts.",
+          "ready": "Machine is operational and ready for production but not actively processing material.",
+          "cooling": "Cooling cycle detected. Machine temperatures are decreasing after production or shutdown.",
+          "lowProduction": "Production activity detected but below expected operating thresholds or efficiency targets.",
+          "production": "Normal production operation detected with active machine throughput and stable process behavior.",
+          "fallback": "Machine operational state."
+        }
+      }
+    },
+    "quality": {
+      "title": "Data Quality Panel",
+      "description": "Sensor data validation and anomaly detection",
+      "totalRecords": "Total Records",
+      "loading": "Loading quality report...",
+      "missingValues": "Missing Values",
+      "constantSensors": "Constant Sensors",
+      "unrealisticValues": "Unrealistic Values",
+      "duplicatedTimestamps": "Duplicated Timestamps",
+      "sensorGaps": "Sensor Gaps",
+      "unmappedColumns": "Unmapped Columns",
+      "flatSignals": "Flat Signals",
+      "suspiciouslyFlatSignals": "Suspiciously Flat Signals"
+    }
+  },
+  "login": {
+    "appTitle": "Predictive Maintenance",
+    "tagline": "Operations Control Center",
+    "signIn": "Sign In",
+    "signingIn": "Signing in...",
+    "email": "Email",
+    "password": "Password",
+    "emailPlaceholder": "admin@example.com",
+    "emailRequired": "Email is required",
+    "invalidEmail": "Invalid email",
+    "passwordRequired": "Password is required",
+    "passwordMinLength": "Minimum 3 characters required",
+    "loginFailed": "Login failed",
+    "backendNotResponding": "Backend not responding",
+    "invalidCredentials": "Invalid credentials",
+    "backendStatus": "Backend status",
+    "status": {
+      "online": "online",
+      "offline": "offline",
+      "unknown": "unknown"
+    },
+    "demoCredentials": "Demo credentials",
+    "roles": {
+      "admin": "Admin",
+      "engineer": "Engineer",
+      "viewer": "Viewer"
+    }
+  }
+}

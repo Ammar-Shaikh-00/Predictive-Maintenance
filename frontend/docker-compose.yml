@@ -1,0 +1,14 @@
+version: "3.9"
+
+services:
+  frontend:
+    build: .
+    container_name: pm-updated-frontend
+    ports:
+      - "3001:80"
+    restart: unless-stopped
+    networks:
+      - pm-network
+networks:
+  pm-network:
+      external: true

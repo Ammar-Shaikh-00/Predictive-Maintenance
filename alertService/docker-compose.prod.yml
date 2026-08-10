@@ -1,0 +1,17 @@
+version: "3.9"
+
+services:
+  alert-service-prod:
+    build: .
+    container_name: pm-prod-alertService
+    ports:
+      - "9001:9000"
+    environment:
+      - SMTP_USER=your_email@gmail.com
+      - SMTP_PASS=your_password
+    networks:
+      - pm-prod-network
+
+networks:
+  pm-prod-network:
+    external: true

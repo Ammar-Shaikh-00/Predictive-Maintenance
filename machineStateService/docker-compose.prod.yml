@@ -1,0 +1,17 @@
+version: "3.9"
+
+services:
+  machine-state-service-prod:
+    build: .
+    container_name: pm-prod-machineStateService
+    ports:
+      - "9002:9005"
+    environment:
+      - SMTP_USER=your_email@gmail.com
+      - SMTP_PASS=your_password
+    networks:
+      - pm-prod-network
+
+networks:
+  pm-prod-network:
+    external: true

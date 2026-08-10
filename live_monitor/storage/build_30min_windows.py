@@ -145,8 +145,6 @@ def _aggregate_bucket(sub: pd.DataFrame) -> dict[str, object]:
     row["valid_fraction"] = float((sub["Val_1"].fillna(0) > 0).sum() / max(len(sub), 1))
     if (sub["source"] == "live_api").any():
         row["source"] = "live"
-    elif (sub["source"] == "simulation").any():
-        row["source"] = "simulation"
     else:
         row["source"] = "historical"
     row["window_start"] = sub["trend_date"].iloc[0]
@@ -183,9 +181,8 @@ def main() -> pd.DataFrame:
                 MachineSensorRaw.source,
             )
             .where(
-                MachineSensorRaw.source.in_(["historical_import", "live_api", "simulation"])
+                MachineSensorRaw.source.in_(["historical_import", "live_api"])
             )
-            # include all data sources in window building
             .order_by(MachineSensorRaw.trend_date.asc())
         )
         df = pd.DataFrame(session.execute(stmt).all(), columns=RAW_COLS)
