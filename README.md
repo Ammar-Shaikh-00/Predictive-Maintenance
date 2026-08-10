@@ -107,28 +107,6 @@ Anomaly outputs (score and flag) are attached to live run evaluations and persis
 
 ---
 
-## Persistence
-
-The live pipeline does not rely on local SQLite for operational output. Instead it posts to backend APIs, including:
-
-- Raw sensor rows → `POST /machine-raw-data/`
-- Process windows → `POST /live-process-windows`
-- Run evaluations → `POST /live-run-evaluations`
-- Feature evaluations → `POST /live-feature-evaluations`
-- Baseline lookup → `GET /baseline-registry`
-
-Context such as `machine_id`, `line_id`, and `production_run_id` is resolved from the backend so each write is associated with the active extruder and production run.
-
----
-
-## Documentation
-
-- `live_monitor/README.md` — pipeline module reference
-- `Docs/CURSOR_CHAT_HANDOFF.md` — development handoff and known issues
-- `Docs/SUNPOR_ARCHITECTURE.md` — broader SUNPOR system architecture
-
----
-
 ## License
 
 Proprietary — Standard project. Contact the repository owner for usage terms.
