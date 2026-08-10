@@ -1,8 +1,8 @@
-# Prediction Maintenance — Extruder Live Monitor
+# Predictive Maintenance — Extruder Live Monitor
 
 Industrial **predictive maintenance** platform for plastic extrusion lines. The system polls live machine sensors, detects operational states with machine learning, scores anomalies per state, and compares live behavior against historical baselines.
 
-Repository: [github.com/Ammar-Shaikh-00/Prediction-Maintenance](https://github.com/Ammar-Shaikh-00/Prediction-Maintenance)
+Repository: [github.com/Ammar-Shaikh-00/Predictive-Maintenance](https://github.com/Ammar-Shaikh-00/Predictive-Maintenance)
 
 ---
 
@@ -14,7 +14,7 @@ This project monitors an extruder in near real time and answers three questions:
 2. **Is current behavior anomalous for that state?** (per-state Isolation Forest models)
 3. **How does live behavior compare to historical baselines?** (z-score evaluation and drift detection)
 
-Data flows from a live API through a rolling window buffer, feature engine, ML classifiers, and is persisted to the backend Postgres database via HTTP APIs (`BACKEND_BASE_URL`, default `http://192.168.100.24:8002`). ML model files stay local under `live_monitor/ml_data/`. A local FastAPI service on port **8001** remains for pipeline health/debug.
+Live sensor values are polled from the extruder dashboard API, aggregated into a rolling 5-minute window, and transformed into process features. A RandomForest classifier assigns the machine state; Isolation Forest models score anomalies within that state. Baseline comparison evaluates feature drift against historical registry baselines. Results are written to the backend Postgres database through HTTP APIs. Trained model artifacts remain local under `live_monitor/ml_data/`. A local FastAPI service on port **8001** exposes pipeline health and debug endpoints.
 
 ---
 
@@ -50,81 +50,21 @@ machine_sensor_raw → build_live_windows → cluster_live_states
 
 ---
 
-## Repository Layout
+## System Components
 
-| Path | Description |
-|------|-------------|
-| `live_monitor/` | **Main pipeline** — polling loop, ML inference, FastAPI, SQLite |
-| `live_monitor/ml/` | Training scripts, anomaly scorer, retrain scheduler |
-| `live_monitor/ml_data/` | Trained models (`.pkl`), labeled CSVs, elbow plots |
-| `scripts/` | Data source fix utilities |
+| Path | Role |
+|------|------|
+| `live_monitor/` | Live polling pipeline, feature engine, ML inference, evaluation, backend persistence |
+| `live_monitor/ml/` | Offline training scripts, anomaly scorers, retrain orchestration |
+| `live_monitor/ml_data/` | Trained models (`.pkl`), labeled datasets, clustering diagnostics |
+| `backend/` | FastAPI application and Postgres domain APIs (machines, live windows, evaluations, baselines) |
+| `frontend/` | Web UI for operations, dashboards, and maintenance workflows |
+| `alertService/` | Alert delivery and notification services |
+| `machineStateService/` | Machine-state related service layer |
+| `historical_simulator/` | Historical data tooling |
+| `scripts/` | Utility scripts for data-source maintenance |
 | `timeSeriesDB/` | Historical extruder data and segmentation outputs |
-| `Dev-AI-PM/` | Full-stack PM application (backend API + frontend) |
-| `Docs/` | Architecture docs, handoff notes, SUNPOR roadmap |
-| `live_monitor.db` | SQLite database (raw sensor rows + process windows) |
-
----
-
-## Quick Start
-
-### Prerequisites
-
-- Python 3.11+
-- Network access to the extruder API
-
-### Install dependencies
-
-```powershell
-cd "path\to\Prediction-Maintenance"
-pip install -r live_monitor/requirements.txt
-```
-
-### Run live pipeline
-
-```powershell
-$env:PYTHONPATH='.;live_monitor'
-python -u live_monitor/main.py
-```
-
-- Local API docs: [http://localhost:8001/docs](http://localhost:8001/docs)
-- Live extruder API (default): `http://100.119.197.81:8002/dashboard/extruder-latest-values`
-
-### Docker
-
-```powershell
-docker compose up --build
-```
-
----
-
-## ML Retraining
-
-Full end-to-end retrain (5-minute live-scale windows):
-
-```powershell
-$env:PYTHONPATH='.;live_monitor'
-$env:PYTHONUTF8='1'
-echo yes | python live_monitor/ml/manual_retrain.py
-```
-
-**Restart the pipeline after retrain** — models are loaded at startup.
-
-Individual steps: `build_live_windows.py` → `cluster_live_states.py` → `map_live_cluster_states.py` → `train_state_classifier.py` → `train_anomaly_*.py`
-
----
-
-## Key Configuration
-
-| Setting | Default | Purpose |
-|---------|---------|---------|
-| `BACKEND_BASE_URL` | `http://192.168.100.24:8002` | Backend API for live persistence |
-| `MACHINE_ID` / `LINE_ID` | (auto from `/machines`) | Optional overrides for context |
-| `POLL_INTERVAL_SECONDS` | `10` | API poll frequency |
-| `WINDOW_DURATION_SECONDS` | `300` | 5-minute live buffer (aligned with training) |
-| `LIVE_WINDOW_MINUTES` | `5` | ML training window size |
-| `RETRAIN_MIN_NEW_ROWS` | `500` | Auto-retrain threshold |
-
-See `live_monitor/config.py` for all settings.
+| `Docs/` | Architecture notes, briefs, and project documentation |
 
 ---
 
@@ -139,24 +79,51 @@ See `live_monitor/config.py` for all settings.
 | PRODUCTION | Normal production run |
 | LOW_PRODUCTION | Reduced throughput |
 
-State confirmation requires **3 consecutive matching windows** before a transition is accepted.
+State transitions are confirmed only after **three consecutive matching windows**, which reduces flicker from short-lived fluctuations.
 
 ---
 
 ## Feature Engineering
 
-Critical features shared across classifier and anomaly models:
+Features shared by the state classifier and anomaly models include:
 
-- Screw speed, pressure, load (mean, std, slope)
-- Temperature mean, **temp_spread** (front zones Val_7–11 vs rear Val_27–32)
-- **temperature_direction** (second-half mean − first-half mean in window)
-- `valid_fraction` — data quality gate
+- Screw speed, pressure, and load (mean, standard deviation, slope)
+- Temperature mean and **temp_spread** (front zones Val_7–11 vs rear Val_27–32)
+- **temperature_direction** (second-half window mean minus first-half mean)
+- `valid_fraction` as a data-quality gate for incomplete windows
+
+Window duration is aligned between live inference and offline training at **5 minutes**.
+
+---
+
+## Machine Learning
+
+| Model | Purpose |
+|-------|---------|
+| RandomForest state classifier | Maps window features to one of six operational states |
+| Per-state Isolation Forest | Scores how unusual the current window is for the active state |
+
+Anomaly outputs (score and flag) are attached to live run evaluations and persisted with other evaluation fields. Baseline selection uses the backend baseline registry so live behavior can be compared against historical HIGH / LOW / NORMAL profiles.
+
+---
+
+## Persistence
+
+The live pipeline does not rely on local SQLite for operational output. Instead it posts to backend APIs, including:
+
+- Raw sensor rows → `POST /machine-raw-data/`
+- Process windows → `POST /live-process-windows`
+- Run evaluations → `POST /live-run-evaluations`
+- Feature evaluations → `POST /live-feature-evaluations`
+- Baseline lookup → `GET /baseline-registry`
+
+Context such as `machine_id`, `line_id`, and `production_run_id` is resolved from the backend so each write is associated with the active extruder and production run.
 
 ---
 
 ## Documentation
 
-- `live_monitor/README.md` — detailed pipeline module reference
+- `live_monitor/README.md` — pipeline module reference
 - `Docs/CURSOR_CHAT_HANDOFF.md` — development handoff and known issues
 - `Docs/SUNPOR_ARCHITECTURE.md` — broader SUNPOR system architecture
 
@@ -164,4 +131,4 @@ Critical features shared across classifier and anomaly models:
 
 ## License
 
-Proprietary — Standard project. Contact repository owner for usage terms.
+Proprietary — Standard project. Contact the repository owner for usage terms.
