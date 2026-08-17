@@ -6,7 +6,6 @@ import {
 } from "../../../config/operationsCenterDemo";
 import {
   computeDigitalizationProgress,
-  computePredictionReadiness,
   evaluateFeatures,
 } from "../../../utils/capabilityEngine";
 
@@ -34,7 +33,7 @@ function mapFeaturesFromOverview(overview, fallbackConnected) {
       benefit:
         lockedFeaturesDemo.find((f) => f.key === row.feature_key)?.benefit ||
         row.notes?.description ||
-        "Unlocks when required data sources are connected",
+        "Wird freigeschaltet, wenn die erforderlichen Datenquellen verbunden sind",
       requires: row.notes?.required_sources || row.missing_sources || [],
       missingSources: row.missing_sources || [],
       status: mapBackendFeatureStatus(row.status),
@@ -52,7 +51,7 @@ function mapFeaturesFromOverview(overview, fallbackConnected) {
 /**
  * Loads /operations-hardening/overview (auto-bootstraps empty registries)
  * and activates sources via setup-wizard API.
- * Falls back to local capability engine if backend is unavailable.
+ * Prediction readiness is NEVER invented from connected sources — AI/ML only.
  */
 export default function useOperationsHardening(pollIntervalMs = 15000) {
   const demo = operationsCenterDemo;
@@ -61,11 +60,7 @@ export default function useOperationsHardening(pollIntervalMs = 15000) {
     backendOk: false,
     error: null,
     digitalizationProgress: computeDigitalizationProgress(demo.connectedSources),
-    predictionReadiness: computePredictionReadiness(
-      demo.connectedSources,
-      demo.basePredictionReadiness,
-      demo.readinessBoost
-    ),
+    predictionReadiness: null,
     dataQualityScore: demo.dataQuality,
     connectedSources: demo.connectedSources,
     missingSources: demo.missingSources,
@@ -87,6 +82,15 @@ export default function useOperationsHardening(pollIntervalMs = 15000) {
       ? overview.missing_sources
       : demo.missingSources.filter((s) => !connected.includes(s));
 
+    // Hardening may mirror 0.0 when ML table empty — treat as unavailable
+    const rawReady = overview?.prediction_readiness;
+    const predictionReadiness =
+      rawReady != null &&
+      Number.isFinite(Number(rawReady)) &&
+      Number(rawReady) > 0
+        ? Number(rawReady)
+        : null;
+
     setState((prev) => ({
       ...prev,
       loading: false,
@@ -95,13 +99,7 @@ export default function useOperationsHardening(pollIntervalMs = 15000) {
       digitalizationProgress:
         overview?.digitalization_progress ??
         computeDigitalizationProgress(connected),
-      predictionReadiness:
-        overview?.prediction_readiness ??
-        computePredictionReadiness(
-          connected,
-          demo.basePredictionReadiness,
-          demo.readinessBoost
-        ),
+      predictionReadiness,
       dataQualityScore: overview?.data_quality_score ?? demo.dataQuality,
       connectedSources: connected,
       missingSources: missing,
@@ -129,7 +127,8 @@ export default function useOperationsHardening(pollIntervalMs = 15000) {
           ...prev,
           loading: false,
           backendOk: false,
-          error: res?.error || "Hardening API unavailable — using local demo engine",
+          predictionReadiness: null,
+          error: res?.error || "Hardening-API nicht verfügbar — lokaler Demo-Modus aktiv",
           lastUpdated: new Date(),
         }));
         return;
@@ -140,7 +139,8 @@ export default function useOperationsHardening(pollIntervalMs = 15000) {
         ...prev,
         loading: false,
         backendOk: false,
-        error: err?.message || "Failed to load hardening overview",
+        predictionReadiness: null,
+        error: err?.message || "Hardening-Übersicht konnte nicht geladen werden",
         lastUpdated: new Date(),
       }));
     } finally {
@@ -152,7 +152,6 @@ export default function useOperationsHardening(pollIntervalMs = 15000) {
     async (sourceKey) => {
       setState((prev) => ({ ...prev, activating: sourceKey }));
       try {
-        // Ensure source exists in setup, then activate
         await safeApi.post("/operations-hardening/setup-wizard/start", {
           company_id: COMPANY_ID,
           source_key: sourceKey,
@@ -169,7 +168,6 @@ export default function useOperationsHardening(pollIntervalMs = 15000) {
         );
 
         if (activateRes?.fallback) {
-          // Local fallback: optimistic UI update
           setState((prev) => {
             const connected = [
               ...new Set([...prev.connectedSources, sourceKey]),
@@ -182,15 +180,10 @@ export default function useOperationsHardening(pollIntervalMs = 15000) {
               connectedSources: connected,
               missingSources: missing,
               digitalizationProgress: computeDigitalizationProgress(connected),
-              predictionReadiness: computePredictionReadiness(
-                connected,
-                demo.basePredictionReadiness,
-                demo.readinessBoost
-              ),
               features: evaluateFeatures(lockedFeaturesDemo, connected),
               error:
                 activateRes?.error ||
-                "Activation saved locally — backend activate failed",
+                "Aktivierung lokal gespeichert — Backend-Aktivierung fehlgeschlagen",
             };
           });
           return { ok: false };
@@ -203,12 +196,12 @@ export default function useOperationsHardening(pollIntervalMs = 15000) {
         setState((prev) => ({
           ...prev,
           activating: null,
-          error: err?.message || "Failed to activate data source",
+          error: err?.message || "Datenquelle konnte nicht aktiviert werden",
         }));
         return { ok: false };
       }
     },
-    [demo, fetchOverview]
+    [fetchOverview]
   );
 
   useEffect(() => {

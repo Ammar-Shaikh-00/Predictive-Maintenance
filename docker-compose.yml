@@ -11,8 +11,9 @@ services:
       POLL_INTERVAL_SECONDS: "10"
       WINDOW_DURATION_SECONDS: "300"
       CONFIRMATION_WINDOWS: "3"
-      DB_CONNECTION_STRING: "sqlite:///live_monitor.db"
-      OUTPUT_API_URL: "http://host.docker.internal:8002/window-features"
-      OUTPUT_API_TIMEOUT: "5"
+      BACKEND_BASE_URL: "http://host.docker.internal:8002"
+      MACHINE_ID: "6f37c433-44e9-4a66-b019-cc342a95cc54"
     volumes:
-      - ./live_monitor.db:/app/live_monitor.db
+      - ./live_monitor/ml_data:/app/live_monitor/ml_data
+    ports:
+      - "8001:8001"

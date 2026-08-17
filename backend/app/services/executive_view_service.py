@@ -17,6 +17,7 @@ from app.models.ticket import Ticket
 from app.services import domain_import_sink_service as domain_sink
 from app.services import energy_center_service as energy_svc
 from app.services import operations_hardening_service as hardening
+from app.services import prediction_readiness_service as ml_readiness
 from app.services.operations_center_service import (
     _load_alarms,
     _load_machine_state,
@@ -76,9 +77,9 @@ def build_executive_payload(
     availability = None
     availability_available = False
     # Honest rule: with only binary plant state we cannot claim % utilization/availability
-    util_hint = "Needs shift calendar / runtime history — not invented from a single plant state."
+    util_hint = "Erfordert Schichtkalender / Laufzeithistorie — wird nicht aus einem einzelnen Anlagenstatus erfunden."
     avail_hint = util_hint
-    downtime_hint = "Needs downtime event history — not invented."
+    downtime_hint = "Erfordert Stillstands-Ereignishistorie — wird nicht erfunden."
 
     produced_available = produced_today is not None
     scrap_available = scrap_today is not None
@@ -87,16 +88,16 @@ def build_executive_payload(
     kpis = [
         _kpi(
             key="produced_today",
-            label="Produced today",
+            label="Heute produziert",
             value=round(produced_today, 1) if produced_available else None,
-            unit="pcs",
+            unit="Stk",
             value_source="LIVE",
             available=produced_available,
-            hint=None if produced_available else "No production run actual qty for today",
+            hint=None if produced_available else "Keine Ist-Menge aus Produktionslauf für heute",
         ),
         _kpi(
             key="utilization",
-            label="Utilization",
+            label="Auslastung",
             value=utilization,
             unit="%",
             value_source="DERIVED",
@@ -105,16 +106,16 @@ def build_executive_payload(
         ),
         _kpi(
             key="scrap",
-            label="Scrap today",
+            label="Ausschuss heute",
             value=round(scrap_today, 2) if scrap_available else None,
             unit="",
             value_source="LIVE",
             available=scrap_available,
-            hint=None if scrap_available else "No quality scrap imports for today",
+            hint=None if scrap_available else "Keine Qualitäts-Ausschussimporte für heute",
         ),
         _kpi(
             key="availability",
-            label="Availability",
+            label="Verfügbarkeit",
             value=availability,
             unit="%",
             value_source="DERIVED",
@@ -123,16 +124,16 @@ def build_executive_payload(
         ),
         _kpi(
             key="energy",
-            label="Energy",
+            label="Energie",
             value=round(energy_kwh, 1) if energy_available else None,
             unit="kWh",
             value_source="LIVE",
             available=energy_available,
-            hint=None if energy_available else "Connect energy_data / import readings",
+            hint=None if energy_available else "Energiedaten verbinden / Messwerte importieren",
         ),
         _kpi(
             key="downtime",
-            label="Downtime",
+            label="Stillstand",
             value=None,
             unit="h",
             value_source="LIVE",
@@ -146,7 +147,7 @@ def build_executive_payload(
         top_savings.append(
             {
                 "id": "energy-baseline",
-                "title": "Energy vs baseline period",
+                "title": "Energie vs. Basislinienzeitraum",
                 "value": round(savings_kwh, 1),
                 "unit": "kWh",
                 "cost": round(savings_cost, 2) if savings_cost is not None else None,
@@ -155,25 +156,28 @@ def build_executive_payload(
             }
         )
 
-    # AI benefit = readiness only — never Accuracy / ROI invention
+    # AI benefit = ML-reported readiness only — never invent from source weights
     ai_benefit = {
-        "label": "Prediction readiness",
+        "label": "Vorhersagebereitschaft",
         "value": round(float(prediction_readiness), 1)
         if prediction_readiness is not None
         else None,
         "unit": "%",
-        "value_source": "DERIVED",
+        "value_source": "AI_SERVICE",
         "available": prediction_readiness is not None,
-        "hint": "Not model Accuracy — readiness from connected sources.",
+        "hint": (
+            "Vom AI/ML-Dienst je Maschine gemeldet — "
+            "keine Backend-Formel, keine Modellgenauigkeit."
+        ),
     }
 
     ai_roi = {
-        "label": "ROI of AI",
+        "label": "ROI der KI",
         "value": None,
         "unit": "",
         "value_source": "MANUAL",
         "available": False,
-        "hint": "Shown only after validated model outcomes and cost baseline — never invented.",
+        "hint": "Nur nach validierten Modellergebnissen und Kostenbasislinie — wird nie erfunden.",
     }
 
     return {
@@ -357,7 +361,9 @@ async def get_executive_overview(
         connected_machines=connected_machines or progress.connected_machines or 0,
         total_machines=total_machines,
         digitalization_progress=progress.digitalization_progress,
-        prediction_readiness=progress.prediction_readiness,
+        prediction_readiness=await ml_readiness.get_company_prediction_readiness_average(
+            session, company_id=company_id
+        ),
         data_quality_score=progress.data_quality_score,
         top_problems=top_problems[:5],
         currency=ek.get("currency") or "EUR",

@@ -18,6 +18,8 @@ class ContextResolver:
         self._machine_id: str | None = config.MACHINE_ID
         self._line_id: int | None = config.LINE_ID
         self._production_run_id: int | None = None
+        self._profile_id: int | str | None = None
+        self._material_name: str | None = None
         self._last_refresh = 0.0
 
     @property
@@ -31,6 +33,14 @@ class ContextResolver:
     @property
     def production_run_id(self) -> int | None:
         return self._production_run_id
+
+    @property
+    def profile_id(self) -> int | str | None:
+        return self._profile_id
+
+    @property
+    def material_name(self) -> str | None:
+        return self._material_name
 
     def refresh_if_needed(self, force: bool = False) -> dict[str, Any]:
         now = time.time()
@@ -56,6 +66,8 @@ class ContextResolver:
             "machine_id": self._machine_id,
             "line_id": self._line_id,
             "production_run_id": self._production_run_id,
+            "profile_id": self._profile_id,
+            "material_name": self._material_name,
         }
 
     def _resolve_machine(self) -> None:
@@ -110,10 +122,13 @@ class ContextResolver:
                 self._line_id = int(running["line_id"])
             if running.get("id") is not None:
                 self._production_run_id = int(running["id"])
+            self._apply_profile_from_run(running)
             logging.info(
-                "Resolved from RUNNING run id=%s line_id=%s",
+                "Resolved from RUNNING run id=%s line_id=%s profile_id=%s material=%s",
                 self._production_run_id,
                 self._line_id,
+                self._profile_id,
+                self._material_name,
             )
             return
 
@@ -139,9 +154,33 @@ class ContextResolver:
 
         if not run:
             self._production_run_id = None
+            self._profile_id = None
+            self._material_name = None
             return
 
         run_id = run.get("id")
         self._production_run_id = int(run_id) if run_id is not None else None
         if run.get("line_id") is not None:
             self._line_id = int(run["line_id"])
+        self._apply_profile_from_run(run)
+
+    def _apply_profile_from_run(self, run: dict) -> None:
+        """Capture profile/material fields used by PROFILE baseline selection."""
+        self._material_name = (
+            str(run.get("material_name")).strip()
+            if run.get("material_name")
+            else None
+        )
+        raw = (
+            run.get("profile_id")
+            if run.get("profile_id") is not None
+            else run.get("material_profile_id")
+        )
+        if raw is None or raw == "":
+            self._profile_id = None
+            return
+        # baseline_registry.profile_id is typically int; keep UUID string if needed
+        try:
+            self._profile_id = int(raw)
+        except (TypeError, ValueError):
+            self._profile_id = str(raw)

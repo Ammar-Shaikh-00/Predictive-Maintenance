@@ -95,11 +95,11 @@
   "alarmTriggers": "Alarmauslöser",
 
   "baseline": {
-  "title": "Basislinie",
-  "description": "Baseline-Zuordnungen verwalten",
+  "title": "Basislinien-Manager",
+  "description": "Goldstandard-Sensorfenster pro Maschinenstatus — Referenz für Live-Abweichungen",
   "create": "Basislinie erstellen",
   "edit": "Basislinie bearbeiten",
-  "no_data": "Keine Basislinien gefunden",
+  "no_data": "Noch keine Basislinien",
   "id": "ID",
   "name_placeholder": "Name der Basislinie",
   "select_sensor": "Sensor auswählen",
@@ -113,12 +113,15 @@
     "save": "Speichern",
     "saving": "Speichern...",
     "cancel": "Abbrechen",
-    "loading": "Laden..."
+    "loading": "Wird geladen…",
+    "refresh": "Aktualisieren",
+    "backToOperations": "← Betriebszentrale"
     },
   "messages": {
     "load_failed": "Daten konnten nicht geladen werden",
     "created": "Erfolgreich erstellt",
     "updated": "Erfolgreich aktualisiert",
+    "deleted": "Gelöscht",
     "name_required": "Bitte geben Sie einen Namen ein.",
     "sensor_required": "Bitte fügen Sie mindestens einen Sensor hinzu.",
     "sensor_invalid": "Bitte alle Sensorfelder ausfüllen (Sensor, Min, Max).",

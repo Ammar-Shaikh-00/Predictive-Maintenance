@@ -1,0 +1,37 @@
+{
+  "focus_state": "LOW_PRODUCTION",
+  "focus_states": [
+    "COOLING",
+    "LOW_PRODUCTION"
+  ],
+  "started_at": "2026-08-17T09:51:02.178926+00:00",
+  "note": "WAIT: stay on LOW_PRODUCTION collection until live state returns to PRODUCTION, then retrain (more LOW_PRODUCTION data). Targets: COOLING + LOW_PRODUCTION.",
+  "window_counts_at_start": {
+    "LOW_PRODUCTION": 58,
+    "UNKNOWN": 16,
+    "COOLING": 15,
+    "PRODUCTION": 743,
+    "OFF": 1168
+  },
+  "focus_count_at_start": 58,
+  "completed_at": null,
+  "window_counts_at_complete": null,
+  "focus_count_at_complete": null,
+  "new_focus_windows": null,
+  "completed_focuses": [
+    {
+      "focus_state": "COOLING",
+      "started_at": "2026-08-17T09:38:56.077673+00:00",
+      "completed_at": "2026-08-17T09:51:02.178879+00:00",
+      "focus_count_at_start": 15,
+      "focus_count_at_complete": 15,
+      "new_focus_windows": 0,
+      "note": "Collect live COOLING behaviour from pipeline \u2192 Postgres. When phase finishes, run: python run_retrain.py --yes"
+    }
+  ],
+  "retrain_targets": [
+    "COOLING",
+    "LOW_PRODUCTION"
+  ],
+  "wait_until": "PRODUCTION"
+}

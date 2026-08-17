@@ -1,8 +1,8 @@
 import DomainImportPage from "./DomainImportPage";
 
 const COLUMNS = [
-  { key: "event_at", label: "When" },
-  { key: "machine_id", label: "Machine" },
+  { key: "event_at", label: "Wann" },
+  { key: "machine_id", label: "Maschine" },
   {
     key: "kwh",
     label: "kWh",
@@ -11,13 +11,13 @@ const COLUMNS = [
   },
   {
     key: "cost",
-    label: "Cost",
+    label: "Kosten",
     render: (row) =>
       row.cost != null && row.cost !== "" ? Number(row.cost).toFixed(2) : "—",
   },
   {
     key: "value_source",
-    label: "Provenance",
+    label: "Herkunft",
     render: (row) => (
       <span className="rounded border border-emerald-500/30 bg-emerald-500/10 px-1.5 py-0.5 text-[10px] text-emerald-300">
         {row.value_source || "LIVE"}
@@ -30,8 +30,8 @@ const COLUMNS = [
 export default function EnergyHistoryPage() {
   return (
     <DomainImportPage
-      title="Energy history"
-      subtitle="Imported meter readings from the Setup Wizard connector"
+      title="Energiehistorie"
+      subtitle="Importierte Zählerstände vom Setup-Assistenten-Connector"
       sourceKey="energy_data"
       endpoint="/operations-hardening/domain-imports/energy"
       columns={COLUMNS}

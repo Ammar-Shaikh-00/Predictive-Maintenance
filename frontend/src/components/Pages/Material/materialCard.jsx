@@ -31,7 +31,7 @@ function thresholdSummary(material, sensors) {
       const sensor =
         sensors.find((s) => String(s.id) === String(t.sensor_id)) ||
         null;
-      const name = t.sensor_name || sensor?.name || "sensor";
+      const name = t.sensor_name || sensor?.name || "Sensor";
       return `${name}: ${t.min_value}–${t.max_value}`;
     })
     .join(" · ");
@@ -57,7 +57,7 @@ export default function MaterialCard({
             {material?.name || "—"}
           </h3>
           <p className="mt-1 text-xs text-slate-400">
-            Reference profile for sensor windows
+            Referenzprofil für Sensorfenster
           </p>
         </div>
         <span
@@ -67,29 +67,29 @@ export default function MaterialCard({
               : "border-white/15 bg-white/5 text-slate-400"
           }`}
         >
-          {material?.active ? "Active" : "Inactive"}
+          {material?.active ? "Aktiv" : "Inaktiv"}
         </span>
       </div>
 
       <div className="mt-3 grid grid-cols-2 gap-3">
         <Field
-          label="Sensor windows"
+          label="Sensorfenster"
           value={thresholds}
           source="LIVE"
         />
         <Field
-          label="Product family"
+          label="Produktfamilie"
           value={material?.product_family}
           source="LIVE"
         />
         <Field
-          label="Material type"
+          label="Materialtyp"
           value={material?.material_type}
           source="LIVE"
         />
-        <Field label="Energy optima" value={null} />
-        <Field label="Scrap optima" value={null} />
-        <Field label="Recommended settings" value={null} />
+        <Field label="Energie-Optima" value={null} />
+        <Field label="Ausschuss-Optima" value={null} />
+        <Field label="Empfohlene Einstellungen" value={null} />
       </div>
 
       <div className="mt-4 flex flex-wrap gap-2">
@@ -98,27 +98,27 @@ export default function MaterialCard({
           onClick={onEdit}
           className="rounded-lg border border-white/10 px-3 py-1.5 text-xs text-slate-200 hover:bg-white/5"
         >
-          Edit
+          Bearbeiten
         </button>
         <button
           type="button"
           onClick={onToggle}
           className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-1.5 text-xs text-amber-100"
         >
-          {material?.active ? "Deactivate" : "Activate"}
+          {material?.active ? "Deaktivieren" : "Aktivieren"}
         </button>
         <button
           type="button"
           onClick={() => handleDelete(material)}
           className="rounded-lg border border-rose-500/30 px-3 py-1.5 text-xs text-rose-200 hover:bg-rose-500/10"
         >
-          Delete
+          Löschen
         </button>
         <Link
           to="/material-batches"
           className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-xs text-emerald-200"
         >
-          Lots
+          Chargen
         </Link>
       </div>
     </article>

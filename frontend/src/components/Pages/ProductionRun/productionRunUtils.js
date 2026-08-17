@@ -1,8 +1,8 @@
 export const tabs = [
-  { id: "context", label: "Context" },
-  { id: "process", label: "Process" },
-  { id: "quality", label: "Quality" },
-  { id: "ai", label: "AI Insights" },
+  { id: "context", label: "Kontext" },
+  { id: "process", label: "Prozess" },
+  { id: "quality", label: "Qualität" },
+  { id: "ai", label: "KI-Einblicke" },
   { id: "material", label: "Material" },
 ];
 

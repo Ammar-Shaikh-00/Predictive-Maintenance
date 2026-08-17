@@ -31,7 +31,7 @@ def test_executive_payload_keeps_roi_and_util_unavailable():
     assert by_key["downtime"]["available"] is False
     assert payload["ai_roi"]["available"] is False
     assert payload["ai_benefit"]["available"] is True
-    assert payload["ai_benefit"]["label"] == "Prediction readiness"
+    assert payload["ai_benefit"]["label"] == "Vorhersagebereitschaft"
     assert payload["ai_benefit"]["value"] == 55.0
     assert len(payload["top_savings"]) == 1
 

@@ -34,7 +34,7 @@ export default function BaselineCard({
     .map((st) => {
       const name =
         stateNameById[String(st.machine_state_id)] ||
-        `State ${st.machine_state_id}`;
+        `Status ${st.machine_state_id}`;
       const n = st.mappings?.length || 0;
       return `${name} (${n})`;
     })
@@ -57,12 +57,12 @@ export default function BaselineCard({
       </div>
 
       <div className="mt-3 grid grid-cols-2 gap-3">
-        <Field label="Machine states" value={stateCount || null} />
-        <Field label="Sensor mappings" value={sensorMapCount || null} />
+        <Field label="Maschinenstatus" value={stateCount || null} />
+        <Field label="Sensorzuordnungen" value={sensorMapCount || null} />
       </div>
 
       <p className="mt-3 line-clamp-3 text-xs text-slate-400">
-        {statePreview || "No state mappings yet"}
+        {statePreview || "Noch keine Statuszuordnungen"}
         {mappings.length > 4 ? " …" : ""}
       </p>
 
@@ -72,14 +72,14 @@ export default function BaselineCard({
           onClick={() => onEdit(baseline)}
           className="rounded-lg border border-white/10 px-3 py-1.5 text-xs text-slate-200 hover:bg-white/5"
         >
-          {t("common.edit") || "Edit"}
+          {t("common.edit") || "Bearbeiten"}
         </button>
         <button
           type="button"
           onClick={() => {
             if (
               window.confirm(
-                `Delete baseline "${baseline.baseline_name || baseline.id}"?`
+                `Basislinie „${baseline.baseline_name || baseline.id}“ löschen?`
               )
             ) {
               deleteMutation.mutate(baseline.id);
@@ -88,7 +88,7 @@ export default function BaselineCard({
           disabled={deleteMutation?.isPending}
           className="rounded-lg border border-rose-500/30 px-3 py-1.5 text-xs text-rose-200 hover:bg-rose-500/10 disabled:opacity-50"
         >
-          {t("common.delete") || "Delete"}
+          {t("common.delete") || "Löschen"}
         </button>
       </div>
     </article>

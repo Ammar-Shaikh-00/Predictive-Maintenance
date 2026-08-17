@@ -10,14 +10,14 @@ function formatDuration(seconds) {
   const s = Number(seconds);
   const hrs = Math.floor(s / 3600);
   const mins = Math.floor((s % 3600) / 60);
-  if (hrs <= 0) return `${mins}m`;
-  return `${hrs}h ${mins}m`;
+  if (hrs <= 0) return `${mins} Min.`;
+  return `${hrs} Std. ${mins} Min.`;
 }
 
 function formatWhen(iso) {
   if (!iso) return "—";
   try {
-    return new Date(iso).toLocaleString("en-GB", {
+    return new Date(iso).toLocaleString("de-DE", {
       day: "2-digit",
       month: "short",
       year: "numeric",
@@ -65,7 +65,7 @@ export default function HistoricalProductionRunsPage() {
       ]);
 
       if (listRes?.fallback) {
-        setError(listRes.error || "Could not load production history");
+        setError(listRes.error || "Produktionshistorie konnte nicht geladen werden");
         setRuns([]);
       } else {
         const rows = Array.isArray(listRes?.data) ? listRes.data : [];
@@ -77,7 +77,7 @@ export default function HistoricalProductionRunsPage() {
         setStats(statusRes?.data || null);
       }
     } catch (err) {
-      setError(err?.response?.data?.detail || err?.message || "Load failed");
+      setError(err?.response?.data?.detail || err?.message || "Laden fehlgeschlagen");
       setRuns([]);
     } finally {
       setLoading(false);
@@ -93,10 +93,10 @@ export default function HistoricalProductionRunsPage() {
       (runs || []).map((run) => ({
         id: run.run_id,
         when: run.start_time,
-        title: run.product || `Run #${run.run_id}`,
+        title: run.product || `Lauf #${run.run_id}`,
         subtitle: [
           run.machine_name || null,
-          run.line_id != null ? `Line ${run.line_id}` : null,
+          run.line_id != null ? `Linie ${run.line_id}` : null,
         ]
           .filter(Boolean)
           .join(" · "),
@@ -114,13 +114,13 @@ export default function HistoricalProductionRunsPage() {
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <p className="text-[11px] uppercase tracking-[0.2em] text-emerald-400/90">
-              ZITTA · Module 9
+              ZITTA · Modul 9
             </p>
             <h1 className="mt-1 text-2xl font-semibold tracking-tight text-slate-50">
-              Production history
+              Produktionshistorie
             </h1>
             <p className="mt-1 text-sm text-slate-400">
-              Chronological timeline of production runs — factual data only
+              Chronologische Zeitleiste der Produktionsläufe — nur Fakten
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -128,13 +128,13 @@ export default function HistoricalProductionRunsPage() {
               to="/production-run"
               className="rounded-xl border border-white/10 px-3 py-2 text-xs text-slate-300 hover:bg-white/5"
             >
-              ← Current order
+              ← Aktueller Auftrag
             </Link>
             <Link
               to="/"
               className="rounded-xl border border-white/10 px-3 py-2 text-xs text-slate-300 hover:bg-white/5"
             >
-              Operations Center
+              Betriebszentrale
             </Link>
             <div className="flex rounded-xl border border-white/10 overflow-hidden">
               {DAY_OPTIONS.map((d) => (
@@ -148,7 +148,7 @@ export default function HistoricalProductionRunsPage() {
                       : "text-slate-400 hover:bg-white/5"
                   }`}
                 >
-                  {d}d
+                  {d}T
                 </button>
               ))}
             </div>
@@ -159,7 +159,7 @@ export default function HistoricalProductionRunsPage() {
               className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-200 disabled:opacity-50"
             >
               <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
-              Refresh
+              Aktualisieren
             </button>
           </div>
         </div>
@@ -169,17 +169,17 @@ export default function HistoricalProductionRunsPage() {
       {stats ? (
         <div className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-6">
           {[
-            ["Runs", stats.total_runs],
+            ["Läufe gesamt", stats.total_runs],
             [
-              "Avg scrap",
+              "Durchschn. Ausschuss %",
               stats.Average_scrap != null
                 ? `${Number(stats.Average_scrap).toFixed(2)}%`
                 : "—",
             ],
-            ["Avg duration", formatDuration(stats.Average_duration)],
+            ["Durchschn. Dauer", formatDuration(stats.Average_duration)],
             ["Normal", stats.normal_runs],
-            ["Warning", stats.warning_runs],
-            ["Critical", stats.critical_runs],
+            ["Warnung", stats.warning_runs],
+            ["Kritisch", stats.critical_runs],
           ].map(([label, value]) => (
             <div
               key={label}
@@ -197,26 +197,26 @@ export default function HistoricalProductionRunsPage() {
       <section className="rounded-2xl border border-white/10 bg-[#141820] p-4 sm:p-5">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
           <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-300">
-            Event timeline ({timeline.length})
+            Ereigniszeitleiste ({timeline.length})
           </h2>
           <span className="rounded border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-[10px] text-emerald-300">
-            LIVE · no AI rating
+            LIVE · keine KI-Bewertung
           </span>
         </div>
 
         {loading ? (
-          <p className="text-sm text-slate-500">Loading timeline…</p>
+          <p className="text-sm text-slate-500">Zeitleiste wird geladen…</p>
         ) : timeline.length === 0 ? (
           <div className="rounded-xl border border-dashed border-white/10 bg-[#1a1f27] px-4 py-10 text-center">
-            <p className="text-sm text-slate-300">No production runs in this window</p>
+            <p className="text-sm text-slate-300">Keine Produktionsläufe</p>
             <p className="mt-1 text-xs text-slate-500">
-              Create a run from Current order, or widen the day range.
+              Erstellen Sie einen Lauf über Aktueller Auftrag, oder erweitern Sie den Tagesbereich.
             </p>
             <Link
               to="/production-run"
               className="mt-3 inline-block text-xs text-emerald-300 underline"
             >
-              Open current order
+              Aktuellen Auftrag öffnen
             </Link>
           </div>
         ) : (
@@ -254,18 +254,18 @@ export default function HistoricalProductionRunsPage() {
                   </div>
                   <div className="mt-3 flex flex-wrap gap-4 text-xs text-slate-400">
                     <span>
-                      Duration:{" "}
+                      Dauer:{" "}
                       <strong className="text-slate-200">
                         {formatDuration(ev.duration)}
                       </strong>
                     </span>
                     <span>
-                      Scrap:{" "}
+                      Ausschuss:{" "}
                       <strong className="text-slate-200">
                         {ev.scrap != null ? `${Number(ev.scrap).toFixed(2)}%` : "—"}
                       </strong>
                     </span>
-                    <span className="text-emerald-300/80">Open current order →</span>
+                    <span className="text-emerald-300/80">Aktuellen Auftrag öffnen →</span>
                   </div>
                 </button>
               </li>

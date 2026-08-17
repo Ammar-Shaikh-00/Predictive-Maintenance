@@ -49,7 +49,7 @@ export default function PlantStatusHeader({
                   online ? "bg-emerald-400" : "bg-slate-500"
                 }`}
               />
-              {online ? "Online" : "Offline"}
+              {online ? "Verbunden" : "Getrennt"}
               {since ? ` · Seit ${since} Uhr` : ""}
             </span>
           </div>

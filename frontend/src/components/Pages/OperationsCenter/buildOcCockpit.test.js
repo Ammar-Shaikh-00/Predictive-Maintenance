@@ -5,6 +5,7 @@ import {
   countAlarmSeverities,
   mapOrderBoardToRunBar,
   pickRecommendation,
+  resolveMlPredictionReadiness,
 } from "./buildOcCockpit";
 
 describe("buildOcCockpit", () => {
@@ -47,26 +48,33 @@ describe("buildOcCockpit", () => {
 
   it("picks recommendation from risks first", () => {
     const rec = pickRecommendation(
-      [{ id: "1", text: "Risk A", value_source: "SIMULATED" }],
+      [{ id: "1", text: "Risk A", value_source: "RULE_BASED" }],
       [{ id: "2", text: "Warn B" }]
     );
     expect(rec.text).toBe("Risk A");
   });
 
-  it("localizes English demo recommendation copy to German", () => {
+  it("skips SIMULATED risks and falls back to warnings", () => {
+    const rec = pickRecommendation(
+      [{ id: "1", text: "Fake risk", value_source: "SIMULATED" }],
+      [{ id: "2", text: "Warn B", value_source: "LIVE" }]
+    );
+    expect(rec.text).toBe("Warn B");
+  });
+
+  it("localizes English recommendation copy to German", () => {
     const rec = pickRecommendation(
       [
         {
           id: "1",
           text: "In 11 hours, the probability of a pressure loss rises to 82%.",
-          value_source: "SIMULATED",
-          display_label: "Demo Prediction",
+          value_source: "RULE_BASED",
+          display_label: "Rule-based Warning",
         },
       ],
       []
     );
     expect(rec.text).toContain("Druckverlusts");
-    expect(rec.display_label).toBe("Demo-Vorhersage");
   });
 
   it("counts alarm severities", () => {
@@ -74,9 +82,39 @@ describe("buildOcCockpit", () => {
       countAlarmSeverities([
         { severity: "critical" },
         { severity: "warning" },
-        { text: "x" },
+        { text: "x", value_source: "LIVE" },
       ])
     ).toEqual({ critical: 1, warning: 2 });
+  });
+
+  it("ignores DERIVED network notes in alarm KPI", () => {
+    expect(
+      countAlarmSeverities([
+        {
+          id: "network-note",
+          text: "Maschinennetzwerk noch nicht verbunden",
+          value_source: "DERIVED",
+        },
+      ])
+    ).toEqual({ critical: 0, warning: 0 });
+  });
+
+  it("rejects legacy readiness without AI/ML available flag", () => {
+    expect(
+      resolveMlPredictionReadiness({
+        prediction_readiness: 38,
+        prediction_readiness_meta: { available: false, value_source: "DERIVED" },
+      })
+    ).toMatchObject({
+      value: null,
+      meta: { available: false, value_source: "DERIVED" },
+    });
+    expect(
+      resolveMlPredictionReadiness({
+        prediction_readiness: 72,
+        prediction_readiness_meta: { available: true, value_source: "AI_SERVICE" },
+      }).value
+    ).toBe(72);
   });
 
   it("maps order board without [object Object] / NaN", () => {

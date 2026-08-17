@@ -28,7 +28,7 @@ const notification = () => {
         setRecipients(res.data || []);
       } catch (error) {
         console.error(error);
-        showError("❌ Failed to fetch recipients");
+        showError("❌ Empfänger konnten nicht geladen werden");
       } finally {
         setLoading(false);
       }
@@ -75,12 +75,12 @@ const notification = () => {
         onSuccess: (res) => {
         setRecipients((prev) => [...prev, res.data]);
         setShowAddEmailModal(false);
-        showError("✅ Recipient created successfully!");
+        showError("✅ Empfänger erfolgreich erstellt!");
         },
 
         onError: (error) => {
         showError(
-            `❌ Failed to create: ${
+            `❌ Erstellen fehlgeschlagen: ${
             error.response?.data?.detail || error.message
             }`
         );
@@ -106,12 +106,12 @@ const notification = () => {
                 )
             );
 
-            showError("✅ Email recipient status updated!");
+            showError("✅ Status des E-Mail-Empfängers aktualisiert!");
         },
 
         onError: (error) => {
             showError(
-                `❌ Failed to update email recipient: ${
+                `❌ Aktualisieren des E-Mail-Empfängers fehlgeschlagen: ${
                     error.response?.data?.detail || error.message
                 }`
             );
@@ -130,12 +130,12 @@ const notification = () => {
                 prev.filter((r) => r.id !== id)
             );
 
-            showError("✅ Email recipient removed successfully!");
+            showError("✅ E-Mail-Empfänger erfolgreich entfernt!");
         },
 
         onError: (error) => {
             showError(
-                `❌ Failed to remove email recipient: ${
+                `❌ Entfernen des E-Mail-Empfängers fehlgeschlagen: ${
                     error.response?.data?.detail || error.message
                 }`
             );
@@ -218,7 +218,7 @@ const notification = () => {
                                 type="email"
                                 value={newEmail}
                                 onChange={(e) => setNewEmail(e.target.value)}
-                                placeholder="recipient@example.com"
+                                placeholder="empfaenger@beispiel.de"
                                 className="w-full px-4 py-2 bg-white border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-300"
                             />
                         </div>
@@ -228,7 +228,7 @@ const notification = () => {
                                 type="text"
                                 value={newName}
                                 onChange={(e) => setNewName(e.target.value)}
-                                placeholder="John Doe"
+                                placeholder="Max Mustermann"
                                 className="w-full px-4 py-2 bg-white border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-300"
                             />
                         </div>
@@ -237,7 +237,7 @@ const notification = () => {
                             <textarea
                                 value={newDescription}
                                 onChange={(e) => setNewDescription(e.target.value)}
-                                placeholder="Optional notes about this recipient"
+                                placeholder="Optionale Notizen zu diesem Empfänger"
                                 rows={3}
                                 className="w-full px-4 py-2 bg-white border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-300"
                             />

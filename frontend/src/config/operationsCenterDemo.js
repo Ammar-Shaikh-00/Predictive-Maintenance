@@ -1,7 +1,6 @@
 /**
- * Stage 1 demo configuration for ZITTA Production Intelligence.
- * Adjust these values for customer presentations without backend changes.
- * Stage 2 will replace machineValues / warnings with live API data.
+ * Stage 1 config for ZITTA Production Intelligence.
+ * Structural defaults only — never invent LIVE-looking SIMULATED process values.
  */
 
 export const VALUE_SOURCES = {
@@ -29,21 +28,79 @@ export const DIGITALIZATION_WEIGHTS = {
 };
 
 /** Always-on infrastructure credits for the current Zitta footprint. */
-export const ALWAYS_CONNECTED = ["ai_server", "machine_data", "machine_state", "live_sensors"];
+export const ALWAYS_CONNECTED = [
+  "ai_server",
+  "machine_data",
+  "machine_state",
+  "live_sensors",
+];
+
+/** Empty slots when no live API values — honest, not simulated numbers. */
+export const EMPTY_MACHINE_VALUES = [
+  {
+    key: "motor_load",
+    label: "Motorlast",
+    value: "—",
+    unit: "",
+    traffic: "grey",
+    value_source: VALUE_SOURCES.LIVE,
+    lockedHint: "Warte auf Live-Sensordaten",
+    spark: [],
+  },
+  {
+    key: "screw_speed",
+    label: "Schneckendrehzahl",
+    value: "—",
+    unit: "",
+    traffic: "grey",
+    value_source: VALUE_SOURCES.LIVE,
+    lockedHint: "Warte auf Live-Sensordaten",
+    spark: [],
+  },
+  {
+    key: "melt_pressure",
+    label: "Extruderdruck",
+    value: "—",
+    unit: "",
+    traffic: "grey",
+    value_source: VALUE_SOURCES.LIVE,
+    lockedHint: "Warte auf Live-Sensordaten",
+    spark: [],
+  },
+  {
+    key: "zone3_temp",
+    label: "Zone-3-Temperatur",
+    value: "—",
+    unit: "",
+    traffic: "grey",
+    value_source: VALUE_SOURCES.LIVE,
+    lockedHint: "Warte auf Live-Sensordaten",
+    spark: [],
+  },
+  {
+    key: "energy",
+    label: "Energie",
+    value: "—",
+    unit: "",
+    traffic: "grey",
+    value_source: VALUE_SOURCES.LIVE,
+    lockedHint: "Erfordert Energiedaten",
+    spark: [],
+  },
+];
 
 export const operationsCenterDemo = {
-  plantName: "ZITTA Production Intelligence",
-  subtitle: "Digital Production Control Center",
-  demoMode: true,
+  plantName: "ZITTA Produktionsintelligenz",
+  subtitle: "Digitale Produktionsleitwarte",
+  demoMode: false,
   pollIntervalMs: 15000,
 
   totalMachines: 20,
   connectedMachines: 1,
 
-  /** Base scores before optional source toggles (presentation-friendly). */
   dataQuality: 86,
 
-  plantStatus: "PRODUCTION", // PRODUCTION | READY | HEATING | COOLING | FAULT | STOPPED
+  plantStatus: "STOPPED",
 
   connectedSources: [...ALWAYS_CONNECTED],
 
@@ -73,7 +130,6 @@ export const operationsCenterDemo = {
     { key: "material_batches", label: "Materialchargen" },
   ],
 
-  /** Readiness contribution when a source becomes connected (0–100 scale piece). */
   readinessBoost: {
     quality_data: 14,
     maintenance_history: 12,
@@ -83,14 +139,12 @@ export const operationsCenterDemo = {
     erp: 4,
   },
 
-  /** Presentation potentials (Estimated Potential — not Accuracy). */
   potentials: {
     after_quality: 68,
     after_maintenance: 81,
     after_all_machines: 92,
   },
 
-  /** Base readiness with current connected footprint only. */
   basePredictionReadiness: 42,
 
   machines: [
@@ -104,120 +158,42 @@ export const operationsCenterDemo = {
       integrationScore: 72,
       healthScore: 88,
     },
-    { id: "doser_01", name: "Dosierer", type: "doser", status: "NOT_CONNECTED", connected: false },
-    { id: "granulator_01", name: "Granulator", type: "granulator", status: "NOT_CONNECTED", connected: false },
-    { id: "screen_01", name: "Siebwechsler", type: "screen", status: "NOT_CONNECTED", connected: false },
-    { id: "cooling_01", name: "Kühlung", type: "cooling", status: "NOT_CONNECTED", connected: false },
-  ],
-
-  /** Compact live-looking values — Stage 1: SIMULATED / RULE_BASED only. */
-  machineValues: [
     {
-      key: "motor_load",
-      label: "Motorlast",
-      value: 68,
-      unit: "%",
-      traffic: "green",
-      normalMin: 40,
-      normalMax: 85,
-      deviation: 0,
-      value_source: VALUE_SOURCES.SIMULATED,
-      spark: [62, 64, 63, 66, 65, 67, 68, 66, 69, 68],
+      id: "doser_01",
+      name: "Dosierer",
+      type: "doser",
+      status: "NOT_CONNECTED",
+      connected: false,
     },
     {
-      key: "screw_speed",
-      label: "Schneckendrehzahl",
-      value: 42.5,
-      unit: "rpm",
-      traffic: "green",
-      normalMin: 30,
-      normalMax: 55,
-      deviation: 1.2,
-      value_source: VALUE_SOURCES.SIMULATED,
-      spark: [40, 41, 41.5, 42, 41.8, 42.2, 42.5, 42.1, 42.4, 42.5],
+      id: "granulator_01",
+      name: "Granulator",
+      type: "granulator",
+      status: "NOT_CONNECTED",
+      connected: false,
     },
     {
-      key: "melt_pressure",
-      label: "Extruderdruck",
-      value: 187,
-      unit: "bar",
-      traffic: "yellow",
-      normalMin: 140,
-      normalMax: 200,
-      deviation: 8,
-      value_source: VALUE_SOURCES.RULE_BASED,
-      spark: [170, 172, 175, 178, 180, 182, 184, 185, 186, 187],
+      id: "screen_01",
+      name: "Siebwechsler",
+      type: "screen",
+      status: "NOT_CONNECTED",
+      connected: false,
     },
     {
-      key: "zone3_temp",
-      label: "Zone-3-Temperatur",
-      value: 214,
-      unit: "°C",
-      traffic: "green",
-      normalMin: 200,
-      normalMax: 230,
-      deviation: -2,
-      value_source: VALUE_SOURCES.SIMULATED,
-      spark: [216, 215, 215, 214, 214, 215, 214, 213, 214, 214],
-    },
-    {
-      key: "throughput",
-      label: "Materialdurchsatz",
-      value: 312,
-      unit: "kg/h",
-      traffic: "green",
-      normalMin: 280,
-      normalMax: 350,
-      deviation: 0,
-      value_source: VALUE_SOURCES.SIMULATED,
-      spark: [300, 305, 308, 310, 309, 311, 312, 310, 311, 312],
-    },
-    {
-      key: "energy",
-      label: "Energie",
-      value: "—",
-      unit: "",
-      traffic: "grey",
-      normalMin: null,
-      normalMax: null,
-      deviation: null,
-      value_source: VALUE_SOURCES.SIMULATED,
-      lockedHint: "Erfordert Energiedaten",
-      spark: [],
+      id: "cooling_01",
+      name: "Kühlung",
+      type: "cooling",
+      status: "NOT_CONNECTED",
+      connected: false,
     },
   ],
 
-  warnings: [
-    {
-      id: "w1",
-      text: "Schmelzdruck nähert sich dem oberen Normalbereich.",
-      value_source: VALUE_SOURCES.RULE_BASED,
-      display_label: "Regelbasierte Warnung",
-    },
-    {
-      id: "w2",
-      text: "Maschinennetzwerk für 19 Maschinen noch nicht verbunden.",
-      value_source: VALUE_SOURCES.DERIVED,
-      display_label: "Abgeleitet",
-    },
-  ],
+  /** No invented numbers — live API fills these. */
+  machineValues: EMPTY_MACHINE_VALUES,
 
-  risks: [
-    {
-      id: "r1",
-      text: "In 11 Stunden steigt die Wahrscheinlichkeit eines Druckverlusts auf 82%.",
-      value_source: VALUE_SOURCES.SIMULATED,
-      display_label: "Demo-Vorhersage",
-      is_customer_decision_relevant: false,
-    },
-    {
-      id: "r2",
-      text: "Werkzeug erreicht voraussichtlich in 34 Tagen den Wartungsbereich.",
-      value_source: VALUE_SOURCES.SIMULATED,
-      display_label: "Demo-Vorhersage",
-      is_customer_decision_relevant: false,
-    },
-  ],
+  warnings: [],
+
+  risks: [],
 
   networkNotes: [
     "Maschinennetzwerk für weitere Linien noch nicht verbunden",

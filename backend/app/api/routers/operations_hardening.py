@@ -438,9 +438,14 @@ async def enrich_timeline_record(
 
 
 async def _build_overview(session: AsyncSession, company_id: str) -> HardeningOverview:
+    from app.services import prediction_readiness_service as ml_readiness
+
     progress = await service.get_or_build_progress(session, company_id)
     feature_status_rows = await service.list_feature_status(session, company_id)
     events = await service.list_progress_events(session, company_id, limit=20)
+    ml_avg = await ml_readiness.get_company_prediction_readiness_average(
+        session, company_id=company_id
+    )
 
     feature_status = [
         FeatureStatusRead.model_validate(
@@ -465,7 +470,7 @@ async def _build_overview(session: AsyncSession, company_id: str) -> HardeningOv
     return HardeningOverview(
         company_id=company_id,
         digitalization_progress=progress.digitalization_progress,
-        prediction_readiness=progress.prediction_readiness,
+        prediction_readiness=float(ml_avg) if ml_avg is not None else 0.0,
         data_quality_score=progress.data_quality_score,
         connected_machines=progress.connected_machines,
         total_machines=progress.total_machines,

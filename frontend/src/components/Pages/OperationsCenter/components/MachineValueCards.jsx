@@ -21,10 +21,10 @@ export default function MachineValueCards({ values = [] }) {
       <div className="mb-4 flex flex-wrap items-end justify-between gap-2">
         <div>
           <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-300">
-            Current machine values
+            Aktuelle Maschinenwerte
           </h2>
           <p className="text-xs text-slate-500">
-            Compact indicators only — detailed charts open on machine drill-down (Stage 2+)
+            Nur Kompaktanzeigen — Detailcharts beim Maschinen-Drilldown (Stage 2+)
           </p>
         </div>
       </div>
@@ -53,7 +53,7 @@ export default function MachineValueCards({ values = [] }) {
                   className={`mt-1 h-2.5 w-2.5 shrink-0 rounded-full ${
                     TRAFFIC[item.traffic] || TRAFFIC.grey
                   }`}
-                  title={`Traffic: ${item.traffic}`}
+                  title={`Ampel: ${item.traffic}`}
                 />
               </div>
 
@@ -64,7 +64,9 @@ export default function MachineValueCards({ values = [] }) {
                     color={SPARK_COLOR[item.traffic] || SPARK_COLOR.grey}
                   />
                 ) : (
-                  <p className="text-[11px] text-slate-500">{item.lockedHint || "No trend"}</p>
+                  <p className="text-[11px] text-slate-500">
+                    {item.lockedHint || "Kein Trend"}
+                  </p>
                 )}
                 <ProvenanceBadge source={item.value_source} />
               </div>
@@ -73,7 +75,7 @@ export default function MachineValueCards({ values = [] }) {
                 <p className="mt-2 text-[10px] text-slate-500">
                   Normal {item.normalMin}–{item.normalMax}
                   {item.deviation != null
-                    ? ` · Deviation ${item.deviation > 0 ? "+" : ""}${item.deviation}`
+                    ? ` · Abweichung ${item.deviation > 0 ? "+" : ""}${item.deviation}`
                     : ""}
                 </p>
               ) : null}

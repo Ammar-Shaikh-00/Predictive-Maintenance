@@ -307,23 +307,15 @@ async def recompute_progress_and_features(
 
     total_machines = len(integrations)
     connected_machines = sum(1 for m in integrations if _machine_integration_score(m) > 0)
-    machine_coverage = 0.0 if total_machines == 0 else (connected_machines / total_machines) * 100.0
 
-    history_length = min(
-        100.0,
-        max((c.minimum_history_days for c in capabilities), default=30) / 90.0 * 100.0,
-    )
-    label_coverage = min(100.0, len([k for k in connected_sources if "quality" in k or "maintenance" in k]) * 40.0)
-    system_stability = min(100.0, max(70.0, data_quality))
+    # Vorhersagebereitschaft is owned by AI/ML (per-machine table) — do not invent from weights
+    from app.services import prediction_readiness_service as ml_readiness
 
-    prediction_readiness = _readiness_from_inputs(
-        data_coverage=(len(connected_sources) / max(1, len(DIGITALIZATION_WEIGHTS))) * 100.0,
-        data_quality=data_quality,
-        history_length=history_length,
-        label_coverage=label_coverage,
-        machine_coverage=machine_coverage,
-        system_stability=system_stability,
+    ml_avg = await ml_readiness.get_company_prediction_readiness_average(
+        session, company_id=company_id
     )
+    # Mirror ML roll-up only — never persist legacy formula scores (e.g. 38%)
+    prediction_readiness = float(ml_avg) if ml_avg is not None else 0.0
 
     old_progress_row_result = await session.execute(
         select(IntegrationProgress).where(IntegrationProgress.company_id == company_id)

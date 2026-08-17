@@ -8,11 +8,11 @@ import ProvenanceBadge from "../OperationsCenter/components/ProvenanceBadge";
 
 const COMPANY_ID = "default";
 const TABS = [
-  ["overview", "Overview"],
-  ["machines", "By machine"],
-  ["materials", "By material"],
-  ["readings", "Readings"],
-  ["settings", "Settings"],
+  ["overview", "Übersicht"],
+  ["machines", "Nach Maschine"],
+  ["materials", "Nach Material"],
+  ["readings", "Messwerte"],
+  ["settings", "Einstellungen"],
 ];
 
 const inputClass =
@@ -20,7 +20,7 @@ const inputClass =
 
 function fmt(v, digits = 2) {
   if (v == null || !Number.isFinite(Number(v))) return "—";
-  return Number(v).toLocaleString(undefined, {
+  return Number(v).toLocaleString("de-DE", {
     maximumFractionDigits: digits,
   });
 }
@@ -63,7 +63,7 @@ export default function EnergyCenterPage() {
         `/energy-center/overview?company_id=${COMPANY_ID}`
       );
       if (res?.fallback) {
-        setError(res.error || "Could not load Energy Center");
+        setError(res.error || "Energiezentrum konnte nicht geladen werden");
         if (!soft) setData(null);
       } else {
         const payload = res?.data || null;
@@ -79,7 +79,7 @@ export default function EnergyCenterPage() {
         });
       }
     } catch (err) {
-      setError(err?.message || "Failed to load");
+      setError(err?.message || "Laden fehlgeschlagen");
       if (!soft) setData(null);
     } finally {
       setLoading(false);
@@ -94,14 +94,14 @@ export default function EnergyCenterPage() {
     mutationFn: (body) => safeApi.put("/energy-center/settings", body),
     onSuccess: async (res) => {
       if (res?.fallback) {
-        toast.error(res.error || "Save failed");
+        toast.error(res.error || "Speichern fehlgeschlagen");
         return;
       }
-      toast.success("Energy settings saved");
+      toast.success("Energieeinstellungen gespeichert");
       await load({ soft: true });
     },
     onError: (err) =>
-      toast.error(err?.response?.data?.detail || err?.message || "Save failed"),
+      toast.error(err?.response?.data?.detail || err?.message || "Speichern fehlgeschlagen"),
   });
 
   const kpis = data?.kpis || {};
@@ -121,14 +121,14 @@ export default function EnergyCenterPage() {
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <p className="text-[11px] uppercase tracking-[0.2em] text-emerald-400/90">
-              ZITTA · Module 19
+              ZITTA · Modul 19
             </p>
             <h1 className="mt-1 text-2xl font-semibold tracking-tight text-slate-50">
-              Energy Center
+              Energiezentrum
             </h1>
             <p className="mt-1 text-sm text-slate-400">
-              Consumption, cost, by machine / material, CO₂, savings potential —
-              no invented figures.
+              Verbrauch, Kosten, nach Maschine / Material, CO₂, Einsparpotenzial —
+              keine erfundenen Werte.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -136,13 +136,13 @@ export default function EnergyCenterPage() {
               to="/"
               className="rounded-xl border border-white/10 px-3 py-2 text-xs text-slate-300 hover:bg-white/5"
             >
-              ← Operations Center
+              ← Betriebszentrale
             </Link>
             <Link
               to="/energy-history"
               className="rounded-xl border border-white/10 px-3 py-2 text-xs text-slate-300 hover:bg-white/5"
             >
-              Classic history
+              Klassische Historie
             </Link>
             <button
               type="button"
@@ -151,7 +151,7 @@ export default function EnergyCenterPage() {
               className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-200 disabled:opacity-50"
             >
               <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
-              Refresh
+              Aktualisieren
             </button>
           </div>
         </div>
@@ -161,14 +161,14 @@ export default function EnergyCenterPage() {
       <div className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-5">
         {[
           ["kWh", fmt(kpis.kwh, 1), kpis.kwh_source || "LIVE"],
-          ["Cost", money(kpis.cost, currency), kpis.cost_source || "—"],
+          ["Kosten", money(kpis.cost, currency), kpis.cost_source || "—"],
           ["CO₂ (kg)", fmt(kpis.co2_kg, 1), kpis.co2_source || "—"],
           [
-            "Savings kWh",
+            "Einsparung kWh",
             savings.available ? fmt(savings.savings_kwh, 1) : "—",
             savings.available ? "DERIVED" : "—",
           ],
-          ["Readings", kpis.readings ?? 0, "LIVE"],
+          ["Messwerte", kpis.readings ?? 0, "LIVE"],
         ].map(([label, value, source]) => (
           <div
             key={label}
@@ -205,25 +205,25 @@ export default function EnergyCenterPage() {
       </div>
 
       {loading && !data ? (
-        <p className="py-10 text-center text-sm text-slate-500">Loading…</p>
+        <p className="py-10 text-center text-sm text-slate-500">Wird geladen…</p>
       ) : null}
 
       {tab === "overview" && data ? (
         <div className="grid gap-4 lg:grid-cols-2">
           <section className="rounded-2xl border border-white/10 bg-[#141820] p-4">
             <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-slate-300">
-              Savings potential
+              Einsparpotenzial
             </h2>
             {savings.available ? (
               <div className="space-y-2 text-sm">
                 <p className="text-slate-400">
-                  Baseline period:{" "}
+                  Basislinienzeitraum:{" "}
                   <span className="text-slate-200">
                     {fmt(savings.baseline_kwh, 1)} kWh
                   </span>
                 </p>
                 <p className="text-slate-400">
-                  Actual (imported):{" "}
+                  Ist (importiert):{" "}
                   <span className="text-slate-200">
                     {fmt(savings.actual_kwh, 1)} kWh
                   </span>
@@ -232,40 +232,40 @@ export default function EnergyCenterPage() {
                   {fmt(savings.savings_kwh, 1)} kWh
                 </p>
                 <p className="text-slate-400">
-                  Cost savings: {money(savings.savings_cost, currency)}
+                  Kosteneinsparung: {money(savings.savings_cost, currency)}
                 </p>
                 <ProvenanceBadge source="DERIVED" />
               </div>
             ) : (
               <p className="text-sm text-slate-500">
                 {savings.hint ||
-                  "Set a baseline period kWh under Settings to compute savings."}
+                  "Legen Sie unter Einstellungen einen Basislinienzeitraum in kWh fest, um Einsparungen zu berechnen."}
               </p>
             )}
           </section>
           <section className="rounded-2xl border border-white/10 bg-[#141820] p-4">
             <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-slate-300">
-              Configuration status
+              Konfigurationsstatus
             </h2>
             <ul className="space-y-2 text-sm text-slate-400">
               <li>
-                Grid CO₂ factor:{" "}
+                Netz-CO₂-Faktor:{" "}
                 <span className="text-slate-200">
                   {data.settings?.co2_configured
                     ? `${fmt(data.settings.co2_kg_per_kwh, 3)} kg/kWh`
-                    : "— (CO₂ stays blank)"}
+                    : "— (CO₂ bleibt leer)"}
                 </span>
               </li>
               <li>
-                Tariff:{" "}
+                Tarif:{" "}
                 <span className="text-slate-200">
                   {data.settings?.tariff_configured
                     ? `${money(data.settings.euro_per_kwh, currency)}/kWh`
-                    : "— (gap cost not derived)"}
+                    : "— (Differenzkosten nicht abgeleitet)"}
                 </span>
               </li>
               <li>
-                Baseline:{" "}
+                Basislinie:{" "}
                 <span className="text-slate-200">
                   {data.settings?.baseline_configured
                     ? `${fmt(data.settings.baseline_period_kwh, 1)} kWh`
@@ -279,19 +279,19 @@ export default function EnergyCenterPage() {
 
       {tab === "machines" && data ? (
         <BreakdownTable
-          title="Consumption by machine"
+          title="Verbrauch nach Maschine"
           rows={data.by_machine || []}
           currency={currency}
-          empty="No machine-linked energy readings"
+          empty="Keine maschinenbezogenen Energiemesswerte"
         />
       ) : null}
 
       {tab === "materials" && data ? (
         <BreakdownTable
-          title="Consumption by material"
+          title="Verbrauch nach Material"
           rows={data.by_material || []}
           currency={currency}
-          empty="No material keys on energy imports (material_batch / material_id)"
+          empty="Keine Materialschlüssel bei Energieimporten (material_batch / material_id)"
         />
       ) : null}
 
@@ -299,24 +299,24 @@ export default function EnergyCenterPage() {
         <section className="rounded-2xl border border-white/10 bg-[#141820] p-4">
           <div className="mb-3 flex items-center justify-between">
             <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-300">
-              Recent readings
+              Aktuelle Messwerte
             </h2>
             <ProvenanceBadge source="LIVE" />
           </div>
           {(data.readings || []).length === 0 ? (
             <p className="py-8 text-center text-sm text-slate-500">
-              No imported energy readings — connect energy_data in Setup Wizard
+              Keine importierten Energiemesswerte — energy_data im Setup-Assistenten verbinden
             </p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full min-w-[640px] text-sm">
                 <thead>
                   <tr className="border-b border-white/10 text-[10px] uppercase tracking-wider text-slate-500">
-                    <th className="py-2 text-left">When</th>
-                    <th className="py-2 text-left">Machine</th>
+                    <th className="py-2 text-left">Wann</th>
+                    <th className="py-2 text-left">Maschine</th>
                     <th className="py-2 text-left">Material</th>
                     <th className="py-2 text-right">kWh</th>
-                    <th className="py-2 text-right">Cost</th>
+                    <th className="py-2 text-right">Kosten</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -349,11 +349,11 @@ export default function EnergyCenterPage() {
       {tab === "settings" ? (
         <section className="max-w-xl rounded-2xl border border-white/10 bg-[#141820] p-4">
           <h2 className="mb-1 text-sm font-semibold uppercase tracking-wider text-slate-300">
-            Energy factors
+            Energiefaktoren
           </h2>
           <p className="mb-4 text-xs text-slate-500">
-            Leave fields empty to keep CO₂ / gap cost / savings as —. Manual
-            provenance only.
+            Felder leer lassen, damit CO₂ / Differenzkosten / Einsparungen als — bleiben.
+            Nur manuelle Herkunft.
           </p>
           <form
             className="space-y-3"
@@ -370,7 +370,7 @@ export default function EnergyCenterPage() {
           >
             <div>
               <label className="mb-1 block text-xs text-slate-400">
-                CO₂ factor (kg / kWh)
+                CO₂-Faktor (kg / kWh)
               </label>
               <input
                 type="number"
@@ -384,12 +384,12 @@ export default function EnergyCenterPage() {
                     co2_kg_per_kwh: e.target.value,
                   })
                 }
-                placeholder="e.g. 0.366"
+                placeholder="z. B. 0.366"
               />
             </div>
             <div>
               <label className="mb-1 block text-xs text-slate-400">
-                Tariff (€ / kWh)
+                Tarif (€ / kWh)
               </label>
               <input
                 type="number"
@@ -403,12 +403,12 @@ export default function EnergyCenterPage() {
                     euro_per_kwh: e.target.value,
                   })
                 }
-                placeholder="e.g. 0.22"
+                placeholder="z. B. 0.22"
               />
             </div>
             <div>
               <label className="mb-1 block text-xs text-slate-400">
-                Baseline period (kWh)
+                Basislinienzeitraum (kWh)
               </label>
               <input
                 type="number"
@@ -422,11 +422,11 @@ export default function EnergyCenterPage() {
                     baseline_period_kwh: e.target.value,
                   })
                 }
-                placeholder="Reference consumption for savings"
+                placeholder="Referenzverbrauch für Einsparungen"
               />
             </div>
             <div>
-              <label className="mb-1 block text-xs text-slate-400">Currency</label>
+              <label className="mb-1 block text-xs text-slate-400">Währung</label>
               <input
                 className={inputClass}
                 value={settingsForm.currency}
@@ -443,7 +443,7 @@ export default function EnergyCenterPage() {
               disabled={saveSettings.isPending}
               className="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-500 disabled:opacity-50"
             >
-              {saveSettings.isPending ? "Saving…" : "Save settings"}
+              {saveSettings.isPending ? "Wird gespeichert…" : "Einstellungen speichern"}
             </button>
           </form>
         </section>
@@ -466,9 +466,9 @@ function BreakdownTable({ title, rows, currency, empty }) {
             <thead>
               <tr className="border-b border-white/10 text-[10px] uppercase tracking-wider text-slate-500">
                 <th className="py-2 text-left">Name</th>
-                <th className="py-2 text-right">Readings</th>
+                <th className="py-2 text-right">Messwerte</th>
                 <th className="py-2 text-right">kWh</th>
-                <th className="py-2 text-right">Cost</th>
+                <th className="py-2 text-right">Kosten</th>
                 <th className="py-2 text-right">CO₂ kg</th>
               </tr>
             </thead>

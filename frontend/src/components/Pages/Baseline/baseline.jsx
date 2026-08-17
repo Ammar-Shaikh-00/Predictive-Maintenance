@@ -31,7 +31,7 @@ export default function Baseline() {
   const stateNameById = useMemo(() => {
     const map = {};
     for (const s of machineStates || []) {
-      map[String(s.id)] = s.name || s.state_name || s.label || `State ${s.id}`;
+      map[String(s.id)] = s.name || s.state_name || s.label || `Status ${s.id}`;
     }
     return map;
   }, [machineStates]);
@@ -47,7 +47,7 @@ export default function Baseline() {
       ]);
 
       if (b?.fallback) {
-        setError(b.error || "Could not load baselines");
+        setError(b.error || "Basislinien konnten nicht geladen werden");
         setBaselines([]);
       } else {
         setBaselines(Array.isArray(b?.data) ? b.data : []);
@@ -88,7 +88,7 @@ export default function Baseline() {
       await load({ soft: true });
     },
     onError: (err) => {
-      toast.error(err?.response?.data?.detail || err?.message || "Create failed");
+      toast.error(err?.response?.data?.detail || err?.message || "Erstellung fehlgeschlagen");
     },
   });
 
@@ -97,7 +97,7 @@ export default function Baseline() {
       safeApi.put(`/baselines/baseline-maps/${data.id}`, data),
     onSuccess: async (res) => {
       if (res?.fallback) {
-        toast.error(res.error || "Update failed");
+        toast.error(res.error || "Aktualisierung fehlgeschlagen");
         return;
       }
       toast.success(t("messages.updated"));
@@ -107,7 +107,7 @@ export default function Baseline() {
       await load({ soft: true });
     },
     onError: (err) => {
-      toast.error(err?.response?.data?.detail || err?.message || "Update failed");
+      toast.error(err?.response?.data?.detail || err?.message || "Aktualisierung fehlgeschlagen");
     },
   });
 
@@ -115,10 +115,10 @@ export default function Baseline() {
     mutationFn: (id) => safeApi.delete(`/baselines/baseline-maps/${id}`),
     onSuccess: (_, id) => {
       setBaselines((prev) => prev.filter((b) => b.id !== id));
-      toast.success(t("messages.deleted") || "Deleted");
+      toast.success(t("messages.deleted") || "Gelöscht");
     },
     onError: (err) => {
-      toast.error(err?.response?.data?.detail || err?.message || "Delete failed");
+      toast.error(err?.response?.data?.detail || err?.message || "Löschen fehlgeschlagen");
     },
   });
 
@@ -138,14 +138,14 @@ export default function Baseline() {
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <p className="text-[11px] uppercase tracking-[0.2em] text-emerald-400/90">
-              ZITTA · Module 13
+              ZITTA · Modul 13
             </p>
             <h1 className="mt-1 text-2xl font-semibold tracking-tight text-slate-50">
-              {t("baseline.title") || "Baseline manager"}
+              {t("baseline.title") || "Basislinien-Manager"}
             </h1>
             <p className="mt-1 text-sm text-slate-400">
               {t("baseline.description") ||
-                "Gold-standard sensor windows per machine state — reference for live deviations"}
+                "Goldstandard-Sensorfenster pro Maschinenstatus — Referenz für Live-Abweichungen"}
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -153,19 +153,19 @@ export default function Baseline() {
               to="/"
               className="rounded-xl border border-white/10 px-3 py-2 text-xs text-slate-300 hover:bg-white/5"
             >
-              ← Operations Center
+              ← Betriebszentrale
             </Link>
             <Link
               to="/live-deviations"
               className="rounded-xl border border-white/10 px-3 py-2 text-xs text-slate-300 hover:bg-white/5"
             >
-              Live deviations
+              Live-Abweichungen
             </Link>
             <Link
               to="/material"
               className="rounded-xl border border-white/10 px-3 py-2 text-xs text-slate-300 hover:bg-white/5"
             >
-              Material profiles
+              Materialprofile
             </Link>
             <button
               type="button"
@@ -174,7 +174,7 @@ export default function Baseline() {
               className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-200 disabled:opacity-50"
             >
               <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
-              Refresh
+              Aktualisieren
             </button>
             <button
               type="button"
@@ -185,7 +185,7 @@ export default function Baseline() {
               }}
               className="rounded-xl bg-emerald-600 px-3 py-2 text-xs font-medium text-white hover:bg-emerald-500"
             >
-              + {t("baseline.create") || "Create"}
+              + {t("baseline.create") || "Erstellen"}
             </button>
           </div>
         </div>
@@ -194,10 +194,10 @@ export default function Baseline() {
 
       <div className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
         {[
-          ["Baselines", baselines.length],
-          ["Machine states", machineStates.length],
-          ["Sensors", sensors.length],
-          ["Sensor mappings", totalMappings],
+          ["Basislinien", baselines.length],
+          ["Maschinenstatus", machineStates.length],
+          ["Sensoren", sensors.length],
+          ["Sensorzuordnungen", totalMappings],
         ].map(([label, value]) => (
           <div
             key={label}
@@ -213,12 +213,12 @@ export default function Baseline() {
 
       {loading && baselines.length === 0 ? (
         <p className="py-10 text-center text-sm text-slate-500">
-          {t("common.loading") || "Loading…"}
+          {t("common.loading") || "Wird geladen…"}
         </p>
       ) : baselines.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-white/10 bg-[#141820] px-4 py-10 text-center">
           <p className="text-sm text-slate-300">
-            {t("baseline.no_data") || "No baselines yet"}
+            {t("baseline.no_data") || "Noch keine Basislinien"}
           </p>
           <button
             type="button"
@@ -228,7 +228,7 @@ export default function Baseline() {
             }}
             className="mt-3 text-xs text-emerald-300 underline"
           >
-            + {t("baseline.create") || "Create"}
+            + {t("baseline.create") || "Erstellen"}
           </button>
         </div>
       ) : (

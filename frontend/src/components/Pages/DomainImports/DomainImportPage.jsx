@@ -34,7 +34,7 @@ export default function DomainImportPage({
         ),
       ]);
       if (listRes?.fallback) {
-        setError(listRes.error || "Failed to load domain import rows");
+        setError(listRes.error || "Domänenimport-Zeilen konnten nicht geladen werden");
         setRows([]);
       } else {
         setRows(listRes?.data?.rows || []);
@@ -43,7 +43,7 @@ export default function DomainImportPage({
         setSummary(sumRes?.data || null);
       }
     } catch (err) {
-      setError(err?.response?.data?.detail || err?.message || "Load failed");
+      setError(err?.response?.data?.detail || err?.message || "Laden fehlgeschlagen");
       setRows([]);
     } finally {
       setLoading(false);
@@ -60,15 +60,15 @@ export default function DomainImportPage({
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <p className="text-[11px] uppercase tracking-[0.2em] text-emerald-400/90">
-              ZITTA · Domain data
+              ZITTA · Domänendaten
             </p>
             <h1 className="mt-1 text-2xl font-semibold tracking-tight text-slate-50">
               {title}
             </h1>
             <p className="mt-1 text-sm text-slate-400">{subtitle}</p>
             <p className="mt-1 text-[11px] text-slate-500">
-              Source key: <code className="text-emerald-300/90">{sourceKey}</code> ·
-              provenance LIVE from connector import
+              Quellschlüssel: <code className="text-emerald-300/90">{sourceKey}</code> ·
+              Herkunft LIVE vom Connector-Import
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -76,7 +76,7 @@ export default function DomainImportPage({
               to="/"
               className="rounded-xl border border-white/10 px-3 py-2 text-xs text-slate-300 hover:bg-white/5"
             >
-              ← Operations Center
+              ← Betriebszentrale
             </Link>
             <button
               type="button"
@@ -85,7 +85,7 @@ export default function DomainImportPage({
               className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-200 disabled:opacity-50"
             >
               <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
-              Refresh
+              Aktualisieren
             </button>
           </div>
         </div>
@@ -97,11 +97,11 @@ export default function DomainImportPage({
       {summary ? (
         <div className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-5">
           {[
-            ["Quality", summary.quality_events],
-            ["Maintenance", summary.maintenance_events],
+            ["Qualität", summary.quality_events],
+            ["Wartung", summary.maintenance_events],
             ["Material", summary.material_batches],
-            ["Energy", summary.energy_readings],
-            ["Operator", summary.operator_events],
+            ["Energie", summary.energy_readings],
+            ["Bediener", summary.operator_events],
           ].map(([label, value]) => (
             <div
               key={label}
@@ -119,25 +119,25 @@ export default function DomainImportPage({
       <section className="rounded-2xl border border-white/10 bg-[#141820] p-4 sm:p-5">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
           <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-300">
-            Imported rows ({rows.length})
+            Importierte Zeilen ({rows.length})
           </h2>
           {rows.length === 0 && !loading ? (
             <Link
               to="/"
               className="text-xs text-emerald-300 hover:underline"
             >
-              {setupHint || "Connect this source via Setup Wizard on Operations Center →"}
+              {setupHint || "Diese Quelle über den Setup-Assistenten in der Betriebszentrale verbinden →"}
             </Link>
           ) : null}
         </div>
 
         {loading ? (
-          <p className="text-sm text-slate-500">Loading…</p>
+          <p className="text-sm text-slate-500">Wird geladen…</p>
         ) : rows.length === 0 ? (
           <div className="rounded-xl border border-dashed border-white/10 bg-[#1a1f27] px-4 py-8 text-center">
-            <p className="text-sm text-slate-300">No imported rows yet</p>
+            <p className="text-sm text-slate-300">Noch keine importierten Zeilen</p>
             <p className="mt-1 text-xs text-slate-500">
-              Use Operations Center → Missing sources → Setup Wizard to import{" "}
+              Nutzen Sie Betriebszentrale → Fehlende Quellen → Setup-Assistent zum Import von{" "}
               <strong className="text-slate-300">{sourceKey}</strong>.
             </p>
           </div>

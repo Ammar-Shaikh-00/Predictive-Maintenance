@@ -14,10 +14,16 @@ const STATUS_DE = {
   STOPPED: "GESTOPPT",
 };
 
+const OEE_REQUIREMENT_DE =
+  "Benötigt: Stillstandszeiten · Soll-/Ist-Durchsatz · Ausschussdaten (ERP/MES + Qualität) — wird nicht geschätzt.";
+
+const MAINTENANCE_REQUIREMENT_DE =
+  "Benötigt: Wartungsplan oder Verschleißteil-Termin (Wartungscenter) — wird nicht geschätzt.";
+
 /**
  * Top KPI strip — matches Operations Center design screenshot.
  * Outer card → label → inner glow panel (value + pill | icon).
- * "AI Genauigkeit" visual title; value remains Prediction Readiness (honest).
+ * "KI-Genauigkeit" visual title; value remains Prediction Readiness (honest).
  */
 export default function OcHeroKpis({
   plantStatus = "PRODUCTION",
@@ -25,8 +31,10 @@ export default function OcHeroKpis({
   lastTick = null,
   readiness = null,
   readinessDelta = null,
+  readinessHint = null,
   oee = null,
   oeeDelta = null,
+  oeeHint = null,
   nextMaintenanceDays = null,
   maintenanceDelta = null,
   maintenanceHint = null,
@@ -47,6 +55,11 @@ export default function OcHeroKpis({
       : null;
   const alarmTotal = (alarmsCritical || 0) + (alarmsWarning || 0);
 
+  const oeeRequirement = oeeHint || OEE_REQUIREMENT_DE;
+  const maintenanceRequirement = maintenanceHint || MAINTENANCE_REQUIREMENT_DE;
+  const hasMaintenance =
+    nextMaintenanceDays != null && Number.isFinite(Number(nextMaintenanceDays));
+
   return (
     <div className="oc-kpi-strip">
       <article className="oc-kpi">
@@ -61,7 +74,7 @@ export default function OcHeroKpis({
                 }`}
               >
                 <span className="oc-kpi__pill-dot" />
-                {online ? "Online" : "Offline"}
+                {online ? "Verbunden" : "Getrennt"}
               </span>
               {since ? (
                 <span className="oc-kpi__hint">Seit {since} Uhr</span>
@@ -75,7 +88,7 @@ export default function OcHeroKpis({
       </article>
 
       <article className="oc-kpi">
-        <p className="oc-kpi__label">AI Genauigkeit</p>
+        <p className="oc-kpi__label">Vorhersagebereitschaft</p>
         <div className="oc-kpi__panel">
           <div className="oc-kpi__main">
             <p className="oc-kpi__value">
@@ -97,7 +110,12 @@ export default function OcHeroKpis({
                   <span className="oc-kpi__hint">diese Woche</span>
                 </>
               ) : (
-                <span className="oc-kpi__hint">Vorhersagebereitschaft</span>
+                <span className="oc-kpi__hint">
+                  {readinessHint ||
+                    (readinessValue == null
+                      ? "AI/ML-Score je Maschine"
+                      : "AI/ML-Dienst")}
+                </span>
               )}
             </div>
           </div>
@@ -107,15 +125,15 @@ export default function OcHeroKpis({
         </div>
       </article>
 
-      <article className="oc-kpi">
+      <article className="oc-kpi" title={oee == null ? oeeRequirement : undefined}>
         <p className="oc-kpi__label">OEE (Gesamt)</p>
         <div className="oc-kpi__panel">
           <div className="oc-kpi__main">
             <p className="oc-kpi__value">
-              {oee != null ? Number(oee).toFixed(1) : "—"}
+              {oee != null ? `${Number(oee).toFixed(1)}%` : "—"}
             </p>
-            <div className="oc-kpi__meta">
-              {oeeDelta != null ? (
+            <div className="oc-kpi__meta oc-kpi__meta--stack">
+              {oee != null && oeeDelta != null ? (
                 <>
                   <span
                     className={`oc-kpi__pill ${
@@ -128,10 +146,17 @@ export default function OcHeroKpis({
                   </span>
                   <span className="oc-kpi__hint">diese Woche</span>
                 </>
-              ) : (
+              ) : oee != null ? (
                 <Link to="/executive" className="oc-pill-btn oc-pill-btn--sm">
-                  Details →
+                  Details anzeigen →
                 </Link>
+              ) : (
+                <>
+                  <p className="oc-kpi__req">{oeeRequirement}</p>
+                  <Link to="/executive" className="oc-pill-btn oc-pill-btn--sm">
+                    Was fehlt? →
+                  </Link>
+                </>
               )}
             </div>
           </div>
@@ -141,39 +166,46 @@ export default function OcHeroKpis({
         </div>
       </article>
 
-      <article className="oc-kpi">
+      <article
+        className="oc-kpi"
+        title={!hasMaintenance ? maintenanceRequirement : maintenanceHint || undefined}
+      >
         <p className="oc-kpi__label">Nächste Wartung</p>
         <div className="oc-kpi__panel">
           <div className="oc-kpi__main">
             <p className="oc-kpi__value">
-              {nextMaintenanceDays != null ? (
+              {hasMaintenance ? (
                 <>
-                  {nextMaintenanceDays}{" "}
+                  {Number(nextMaintenanceDays)}{" "}
                   <span className="oc-kpi__unit">TAGE</span>
                 </>
               ) : (
                 "—"
               )}
             </p>
-            <div className="oc-kpi__meta">
-              {maintenanceDelta != null ? (
+            <div className="oc-kpi__meta oc-kpi__meta--stack">
+              {hasMaintenance ? (
                 <>
-                  <span className="oc-kpi__pill oc-kpi__pill--red">
-                    <TrendIcon up />
-                    {Math.abs(Number(maintenanceDelta))}%
-                  </span>
+                  {maintenanceDelta != null ? (
+                    <span className="oc-kpi__pill oc-kpi__pill--red">
+                      <TrendIcon up />
+                      {Math.abs(Number(maintenanceDelta))}%
+                    </span>
+                  ) : null}
                   <span className="oc-kpi__hint">
-                    {maintenanceHint || "Empfohlen"}
+                    {maintenanceHint || "Nächster Termin"}
                   </span>
+                  <Link to="/maintenance" className="oc-pill-btn oc-pill-btn--sm">
+                    Details anzeigen →
+                  </Link>
                 </>
-              ) : nextMaintenanceDays != null ? (
-                <span className="oc-kpi__hint">
-                  {maintenanceHint || "Empfohlen"}
-                </span>
               ) : (
-                <Link to="/maintenance" className="oc-pill-btn oc-pill-btn--sm">
-                  Details →
-                </Link>
+                <>
+                  <p className="oc-kpi__req">{maintenanceRequirement}</p>
+                  <Link to="/maintenance" className="oc-pill-btn oc-pill-btn--sm">
+                    Wartung anlegen →
+                  </Link>
+                </>
               )}
             </div>
           </div>
@@ -195,9 +227,14 @@ export default function OcHeroKpis({
               {alarmTotal}
             </p>
             <div className="oc-kpi__meta">
-              <span className="oc-kpi__pill oc-kpi__pill--red oc-kpi__pill--wide">
+              <span
+                className="oc-kpi__pill oc-kpi__pill--red oc-kpi__pill--wide"
+                title={`Kritisch: ${alarmsCritical} · Warnung: ${alarmsWarning}`}
+              >
                 <TrendIcon up={alarmTotal > 0} />
-                Kritisch: {alarmsCritical} · Warnung: {alarmsWarning}
+                <span className="oc-kpi__pill-text">
+                  Kritisch: {alarmsCritical} · Warnung: {alarmsWarning}
+                </span>
               </span>
             </div>
           </div>

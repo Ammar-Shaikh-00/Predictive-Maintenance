@@ -16,7 +16,7 @@ describe("ConstantData sanity checks", () => {
     const operationsItem = allItems.find((item) => item.path === "/");
 
     expect(operationsItem).toBeDefined();
-    expect(operationsItem?.label).toBe("Operations Center");
+    expect(operationsItem?.label).toBe("Betriebszentrale");
 
     expect(allItems.find((item) => item.path === "/executive")).toBeDefined();
 

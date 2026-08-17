@@ -5,15 +5,17 @@ const STYLES = {
   DERIVED: "bg-sky-500/15 text-sky-300 border-sky-500/30",
   SIMULATED: "bg-violet-500/15 text-violet-300 border-violet-500/30",
   MODEL_PREDICTION: "bg-teal-500/15 text-teal-300 border-teal-500/30",
+  AI_SERVICE: "bg-teal-500/15 text-teal-300 border-teal-500/30",
   MANUAL: "bg-slate-500/15 text-slate-300 border-slate-500/30",
 };
 
 const LABELS = {
   LIVE: "LIVE",
-  RULE_BASED: "Regelbasierte Warnung",
+  RULE_BASED: "Regelbasierte Auswertung",
   DERIVED: "Abgeleitet",
   SIMULATED: "Demo / Simuliert",
   MODEL_PREDICTION: "Modellvorhersage",
+  AI_SERVICE: "AI/ML-Dienst",
   MANUAL: "Manuell",
 };
 
@@ -36,13 +38,13 @@ function resolveLabel(source, label) {
     if (aliased) return aliased;
     return label;
   }
-  return LABELS[source] || source || LABELS.SIMULATED;
+  return LABELS[source] || source || LABELS.LIVE;
 }
 
 export default function ProvenanceBadge({ source, label, className = "" }) {
-  const key = source || "SIMULATED";
+  const key = source || "LIVE";
   const text = resolveLabel(key, label);
-  const style = STYLES[key] || STYLES.SIMULATED;
+  const style = STYLES[key] || STYLES.LIVE;
 
   return (
     <span

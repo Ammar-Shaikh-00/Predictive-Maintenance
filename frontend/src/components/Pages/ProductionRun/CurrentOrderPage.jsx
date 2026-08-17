@@ -7,18 +7,18 @@ const COMPANY_POLL_MS = 15000;
 
 const FIELD_ORDER = [
   ["material", "Material"],
-  ["customer", "Customer order"],
-  ["tool", "Tool / mold"],
-  ["machine", "Machine"],
-  ["product", "Product"],
-  ["batch", "Batch"],
+  ["customer", "Kundenauftrag"],
+  ["tool", "Werkzeug / Form"],
+  ["machine", "Maschine"],
+  ["product", "Produkt"],
+  ["batch", "Charge"],
   ["status", "Status"],
-  ["target", "Target qty"],
-  ["actual", "Actual qty"],
-  ["progress", "Progress %"],
+  ["target", "Sollmenge"],
+  ["actual", "Istmenge"],
+  ["progress", "Fortschritt %"],
   ["eta", "ETA"],
-  ["elapsed", "Elapsed (min)"],
-  ["started", "Started"],
+  ["elapsed", "Verstrichen (Min)"],
+  ["started", "Gestartet"],
 ];
 
 const SOURCE_STYLE = {
@@ -26,6 +26,77 @@ const SOURCE_STYLE = {
   DERIVED: "border-sky-500/30 bg-sky-500/10 text-sky-300",
   MANUAL: "border-slate-500/30 bg-slate-500/10 text-slate-400",
 };
+
+const SOURCE_LABEL_DE = {
+  LIVE: "Live",
+  DERIVED: "Abgeleitet",
+  MANUAL: "Manuell",
+  RULE_BASED: "Regelbasiert",
+  SIMULATED: "Demo",
+};
+
+const STATUS_DE = {
+  RUNNING: "Läuft",
+  COMPLETED: "Abgeschlossen",
+  STOPPED: "Gestoppt",
+  PAUSED: "Pausiert",
+  CANCELLED: "Abgebrochen",
+  FAILED: "Fehlgeschlagen",
+  PLANNED: "Geplant",
+};
+
+const HINT_DE = {
+  "material not set on run": "Material im Lauf nicht gesetzt",
+  "customer order not set": "Kundenauftrag nicht gesetzt",
+  "tool / mold not connected": "Werkzeug / Form nicht verbunden",
+  "product not set": "Produkt nicht gesetzt",
+  "batch not set": "Charge nicht gesetzt",
+  "target qty not connected (erp/mes)": "Sollmenge nicht verbunden (ERP/MES)",
+  "actual qty not connected": "Istmenge nicht verbunden",
+  "progress needs target/actual or progress_pct":
+    "Fortschritt benötigt Soll-/Istmenge oder progress_pct",
+  "eta not connected — will not invent from ml":
+    "ETA nicht verbunden — wird nicht aus ML erfunden",
+  "not connected yet": "Noch nicht verbunden",
+  "no production run found — create a run or connect mes/erp order data":
+    "Kein Produktionslauf gefunden — Lauf anlegen oder MES/ERP-Auftragsdaten verbinden",
+};
+
+function localizeHint(hint) {
+  if (!hint) return hint;
+  return HINT_DE[String(hint).trim().toLowerCase()] || hint;
+}
+
+function localizeStatus(value) {
+  if (value == null || value === "" || value === "—") return value ?? "—";
+  const key = String(value).toUpperCase();
+  return STATUS_DE[key] || value;
+}
+
+function localizeSource(src) {
+  return SOURCE_LABEL_DE[src] || src;
+}
+
+function formatStarted(value) {
+  if (!value || value === "—") return "—";
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return value;
+  return d.toLocaleString("de-DE", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+function displayCell(key, cell) {
+  if (!cell?.available) return "—";
+  if (key === "status") return localizeStatus(cell.display ?? cell.value);
+  if (key === "started") return formatStarted(cell.display ?? cell.value);
+  if (key === "progress") return `${cell.display}%`;
+  return cell.display ?? "—";
+}
 
 /**
  * Module 8 — Current Order cockpit (production-ready, non-AI).
@@ -47,13 +118,13 @@ export default function CurrentOrderPage() {
         : "/production-run/order-board";
       const res = await safeApi.get(q);
       if (res?.fallback || !res?.data) {
-        setError(res?.error || "Order board unavailable");
+        setError(res?.error || "Auftragsübersicht nicht verfügbar");
         setBoard(null);
       } else {
         setBoard(res.data);
       }
     } catch (err) {
-      setError(err?.response?.data?.detail || err?.message || "Failed to load");
+      setError(err?.response?.data?.detail || err?.message || "Laden fehlgeschlagen");
       setBoard(null);
     } finally {
       setLoading(false);
@@ -75,13 +146,13 @@ export default function CurrentOrderPage() {
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <p className="text-[11px] uppercase tracking-[0.2em] text-emerald-400/90">
-              ZITTA · Module 8
+              ZITTA · Modul 8
             </p>
             <h1 className="mt-1 text-2xl font-semibold tracking-tight text-slate-50">
-              Current order
+              Aktueller Auftrag
             </h1>
             <p className="mt-1 text-sm text-slate-400">
-              Material · customer · tool · machine · target/actual · progress · ETA
+              Material · Kunde · Werkzeug · Maschine · Soll/Ist · Fortschritt · ETA
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -89,21 +160,21 @@ export default function CurrentOrderPage() {
               to="/"
               className="rounded-xl border border-white/10 px-3 py-2 text-xs text-slate-300 hover:bg-white/5"
             >
-              ← Operations Center
+              ← Betriebszentrale
             </Link>
             {run?.id ? (
               <Link
                 to={`/production-run/detail?runId=${run.id}`}
                 className="rounded-xl border border-white/10 px-3 py-2 text-xs text-slate-300 hover:bg-white/5"
               >
-                Analyst detail
+                Analystenansicht
               </Link>
             ) : null}
             <Link
               to="/historical-runs"
               className="rounded-xl border border-white/10 px-3 py-2 text-xs text-slate-300 hover:bg-white/5"
             >
-              History
+              Historie
             </Link>
             <button
               type="button"
@@ -112,7 +183,7 @@ export default function CurrentOrderPage() {
               className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-200 disabled:opacity-50"
             >
               <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
-              Refresh
+              Aktualisieren
             </button>
           </div>
         </div>
@@ -122,16 +193,16 @@ export default function CurrentOrderPage() {
       {board?.empty || !run ? (
         <div className="rounded-2xl border border-dashed border-white/10 bg-[#141820] px-4 py-10 text-center">
           <p className="text-sm text-slate-300">
-            {board?.message || "No active production run"}
+            {localizeHint(board?.message) || "Kein aktiver Produktionslauf"}
           </p>
           <p className="mt-2 text-xs text-slate-500">
-            Create a run from the sidebar or connect MES/ERP order fields.
+            Erstellen Sie einen Lauf über die Seitenleiste oder verbinden Sie MES/ERP-Auftragsfelder.
           </p>
           <Link
             to="/production-run/detail?create=1"
             className="mt-4 inline-block text-xs text-emerald-300 underline"
           >
-            Open create form
+            Formular zum Anlegen öffnen
           </Link>
         </div>
       ) : (
@@ -140,7 +211,7 @@ export default function CurrentOrderPage() {
             <div className="flex flex-wrap items-end justify-between gap-3">
               <div>
                 <p className="text-[11px] uppercase tracking-wider text-slate-500">
-                  Run #{run.id}
+                  Lauf #{run.id}
                 </p>
                 <p className="mt-1 text-xl font-semibold text-slate-50">
                   {fields.product?.display || "—"} ·{" "}
@@ -148,14 +219,16 @@ export default function CurrentOrderPage() {
                 </p>
                 <p className="mt-1 text-sm text-slate-400">
                   Status:{" "}
-                  <span className="text-emerald-300">{fields.status?.display || "—"}</span>
+                  <span className="text-emerald-300">
+                    {localizeStatus(fields.status?.display || fields.status?.value || "—")}
+                  </span>
                   {fields.elapsed?.available
-                    ? ` · ${fields.elapsed.display} min elapsed`
+                    ? ` · ${fields.elapsed.display} Min. verstrichen`
                     : ""}
                 </p>
               </div>
               <span className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-[11px] text-emerald-300">
-                No invented AI ETA / Accuracy
+                Keine erfundenen KI-ETA / Genauigkeitswerte
               </span>
             </div>
           </section>
@@ -178,16 +251,16 @@ export default function CurrentOrderPage() {
                         SOURCE_STYLE[src] || SOURCE_STYLE.MANUAL
                       }`}
                     >
-                      {src}
+                      {localizeSource(src)}
                     </span>
                   </div>
                   <p className="mt-2 text-lg font-semibold text-slate-50">
-                    {key === "progress" && cell.available
-                      ? `${cell.display}%`
-                      : cell.display ?? "—"}
+                    {displayCell(key, cell)}
                   </p>
                   {!cell.available && cell.hint ? (
-                    <p className="mt-1 text-[11px] text-slate-500">{cell.hint}</p>
+                    <p className="mt-1 text-[11px] text-slate-500">
+                      {localizeHint(cell.hint)}
+                    </p>
                   ) : null}
                 </div>
               );
