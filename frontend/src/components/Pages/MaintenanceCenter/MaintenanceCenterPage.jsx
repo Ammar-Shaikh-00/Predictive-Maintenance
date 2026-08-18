@@ -9,25 +9,12 @@ import { currentMonthKey, groupCalendarByMonth } from "./calendarUtils";
 
 const COMPANY_ID = "default";
 const TABS = [
-  ["overview", "Übersicht"],
-  ["calendar", "Kalender"],
-  ["history", "Historie"],
-  ["planned", "Geplant"],
-  ["wear", "Verschleißteile"],
+  ["overview", "Overview"],
+  ["calendar", "Calendar"],
+  ["history", "History"],
+  ["planned", "Planned"],
+  ["wear", "Wear parts"],
 ];
-
-const STATUS_LABELS = {
-  planned: "Geplant",
-  in_progress: "In Bearbeitung",
-  done: "Erledigt",
-  cancelled: "Abgebrochen",
-};
-
-const KIND_LABELS = {
-  history: "Historie",
-  planned: "Geplant",
-  wear: "Verschleiß",
-};
 
 const inputClass =
   "w-full rounded-lg border border-white/10 bg-[#0f1218] px-3 py-2 text-sm text-slate-100";
@@ -40,7 +27,7 @@ function dash(v) {
 function formatWhen(iso) {
   if (!iso) return "—";
   try {
-    return new Date(iso).toLocaleString("de-DE");
+    return new Date(iso).toLocaleString();
   } catch {
     return String(iso);
   }
@@ -101,10 +88,10 @@ function PlanModal({ open, onClose, onSave, machines, isLoading }) {
           });
         }}
       >
-        <h2 className="text-lg font-semibold">Wartung planen</h2>
+        <h2 className="text-lg font-semibold">Plan maintenance</h2>
         <input
           className={inputClass}
-          placeholder="Titel *"
+          placeholder="Title *"
           value={form.title}
           onChange={(e) => setForm({ ...form, title: e.target.value })}
           required
@@ -114,7 +101,7 @@ function PlanModal({ open, onClose, onSave, machines, isLoading }) {
           value={form.machine_id}
           onChange={(e) => setForm({ ...form, machine_id: e.target.value })}
         >
-          <option value="">Maschine (optional)</option>
+          <option value="">Machine (optional)</option>
           {machines.map((m) => (
             <option key={m.id} value={m.id}>
               {m.name || m.id}
@@ -133,28 +120,28 @@ function PlanModal({ open, onClose, onSave, machines, isLoading }) {
             value={form.status}
             onChange={(e) => setForm({ ...form, status: e.target.value })}
           >
-            <option value="planned">Geplant</option>
-            <option value="in_progress">In Bearbeitung</option>
-            <option value="done">Erledigt</option>
-            <option value="cancelled">Abgebrochen</option>
+            <option value="planned">Planned</option>
+            <option value="in_progress">In progress</option>
+            <option value="done">Done</option>
+            <option value="cancelled">Cancelled</option>
           </select>
         </div>
         <input
           className={inputClass}
-          placeholder="Komponente"
+          placeholder="Component"
           value={form.component}
           onChange={(e) => setForm({ ...form, component: e.target.value })}
         />
         <input
           className={inputClass}
-          placeholder="Techniker"
+          placeholder="Technician"
           value={form.technician}
           onChange={(e) => setForm({ ...form, technician: e.target.value })}
         />
         <textarea
           className={inputClass}
           rows={2}
-          placeholder="Notizen"
+          placeholder="Notes"
           value={form.notes}
           onChange={(e) => setForm({ ...form, notes: e.target.value })}
         />
@@ -164,14 +151,14 @@ function PlanModal({ open, onClose, onSave, machines, isLoading }) {
             onClick={onClose}
             className="rounded-xl border border-white/10 px-4 py-2 text-sm text-slate-300"
           >
-            Abbrechen
+            Cancel
           </button>
           <button
             type="submit"
             disabled={isLoading}
             className="rounded-xl bg-emerald-600 px-4 py-2 text-sm text-white disabled:opacity-50"
           >
-            Speichern
+            Save
           </button>
         </div>
       </form>
@@ -229,7 +216,7 @@ function WearModal({ open, onClose, onSave, machines, isLoading }) {
           });
         }}
       >
-        <h2 className="text-lg font-semibold">Verschleißteil hinzufügen</h2>
+        <h2 className="text-lg font-semibold">Add wear part</h2>
         <input
           className={inputClass}
           placeholder="Name *"
@@ -242,7 +229,7 @@ function WearModal({ open, onClose, onSave, machines, isLoading }) {
           value={form.machine_id}
           onChange={(e) => setForm({ ...form, machine_id: e.target.value })}
         >
-          <option value="">Maschine (optional)</option>
+          <option value="">Machine (optional)</option>
           {machines.map((m) => (
             <option key={m.id} value={m.id}>
               {m.name || m.id}
@@ -252,7 +239,7 @@ function WearModal({ open, onClose, onSave, machines, isLoading }) {
         <div className="grid grid-cols-2 gap-2">
           <input
             className={inputClass}
-            placeholder="Teilenummer"
+            placeholder="Part number"
             value={form.part_number}
             onChange={(e) => setForm({ ...form, part_number: e.target.value })}
           />
@@ -267,14 +254,14 @@ function WearModal({ open, onClose, onSave, machines, isLoading }) {
         </div>
         <input
           className={inputClass}
-          placeholder="Komponente"
+          placeholder="Component"
           value={form.component}
           onChange={(e) => setForm({ ...form, component: e.target.value })}
         />
         <input
           type="number"
           className={inputClass}
-          placeholder="Bestand (Menge)"
+          placeholder="Qty on hand"
           value={form.quantity_on_hand}
           onChange={(e) =>
             setForm({ ...form, quantity_on_hand: e.target.value })
@@ -283,7 +270,7 @@ function WearModal({ open, onClose, onSave, machines, isLoading }) {
         <textarea
           className={inputClass}
           rows={2}
-          placeholder="Notizen"
+          placeholder="Notes"
           value={form.notes}
           onChange={(e) => setForm({ ...form, notes: e.target.value })}
         />
@@ -293,14 +280,14 @@ function WearModal({ open, onClose, onSave, machines, isLoading }) {
             onClick={onClose}
             className="rounded-xl border border-white/10 px-4 py-2 text-sm text-slate-300"
           >
-            Abbrechen
+            Cancel
           </button>
           <button
             type="submit"
             disabled={isLoading}
             className="rounded-xl bg-emerald-600 px-4 py-2 text-sm text-white disabled:opacity-50"
           >
-            Speichern
+            Save
           </button>
         </div>
       </form>
@@ -341,7 +328,7 @@ export default function MaintenanceCenterPage() {
         safeApi.get("/machines"),
       ]);
       if (ov?.fallback) {
-        setError(ov.error || "Wartungszentrum konnte nicht geladen werden");
+        setError(ov.error || "Could not load Maintenance Center");
         if (!soft) setData(null);
       } else {
         setData(ov?.data || null);
@@ -350,7 +337,7 @@ export default function MaintenanceCenterPage() {
         setMachines(Array.isArray(mach?.data) ? mach.data : []);
       }
     } catch (err) {
-      setError(err?.message || "Laden fehlgeschlagen");
+      setError(err?.message || "Failed to load");
       if (!soft) setData(null);
     } finally {
       setLoading(false);
@@ -365,36 +352,36 @@ export default function MaintenanceCenterPage() {
     mutationFn: (body) => safeApi.post("/maintenance-center/plans", body),
     onSuccess: async (res) => {
       if (res?.fallback) {
-        toast.error(res.error || "Erstellen fehlgeschlagen");
+        toast.error(res.error || "Create failed");
         return;
       }
-      toast.success("Plan erstellt");
+      toast.success("Plan created");
       setShowPlan(false);
       await load({ soft: true });
     },
     onError: (err) =>
-      toast.error(err?.response?.data?.detail || err?.message || "Erstellen fehlgeschlagen"),
+      toast.error(err?.response?.data?.detail || err?.message || "Create failed"),
   });
 
   const wearMutation = useMutation({
     mutationFn: (body) => safeApi.post("/maintenance-center/wear-parts", body),
     onSuccess: async (res) => {
       if (res?.fallback) {
-        toast.error(res.error || "Erstellen fehlgeschlagen");
+        toast.error(res.error || "Create failed");
         return;
       }
-      toast.success("Verschleißteil hinzugefügt");
+      toast.success("Wear part added");
       setShowWear(false);
       await load({ soft: true });
     },
     onError: (err) =>
-      toast.error(err?.response?.data?.detail || err?.message || "Erstellen fehlgeschlagen"),
+      toast.error(err?.response?.data?.detail || err?.message || "Create failed"),
   });
 
   const deletePlan = useMutation({
     mutationFn: (id) => safeApi.delete(`/maintenance-center/plans/${id}`),
     onSuccess: async () => {
-      toast.success("Plan entfernt");
+      toast.success("Plan removed");
       await load({ soft: true });
     },
   });
@@ -402,7 +389,7 @@ export default function MaintenanceCenterPage() {
   const deleteWear = useMutation({
     mutationFn: (id) => safeApi.delete(`/maintenance-center/wear-parts/${id}`),
     onSuccess: async () => {
-      toast.success("Verschleißteil entfernt");
+      toast.success("Wear part removed");
       await load({ soft: true });
     },
   });
@@ -428,14 +415,14 @@ export default function MaintenanceCenterPage() {
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <p className="text-[11px] uppercase tracking-[0.2em] text-emerald-400/90">
-              ZITTA · Modul 18
+              ZITTA · Module 18
             </p>
             <h1 className="mt-1 text-2xl font-semibold tracking-tight text-slate-50">
-              Wartungszentrum
+              Maintenance Center
             </h1>
             <p className="mt-1 text-sm text-slate-400">
-              Restlaufzeit, Kalender, Historie, geplante Arbeiten, Verschleißteile —
-              RUL zeigt — bis ein Modell sie liefert.
+              Remaining life, calendar, history, planned work, wear parts — RUL
+              shows — until a model provides it.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -443,7 +430,7 @@ export default function MaintenanceCenterPage() {
               to="/"
               className="rounded-xl border border-white/10 px-3 py-2 text-xs text-slate-300 hover:bg-white/5"
             >
-              ← Betriebszentrale
+              ← Operations Center
             </Link>
             <Link
               to="/ticket"
@@ -458,7 +445,7 @@ export default function MaintenanceCenterPage() {
               className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-200 disabled:opacity-50"
             >
               <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
-              Aktualisieren
+              Refresh
             </button>
           </div>
         </div>
@@ -467,11 +454,11 @@ export default function MaintenanceCenterPage() {
 
       <div className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-5">
         {[
-          ["Historie-Ereignisse", kpis.history_count ?? 0, "text-emerald-300"],
-          ["Offene Pläne", kpis.planned_open ?? 0, "text-sky-300"],
-          ["Verschleißteile", kpis.wear_parts ?? 0, "text-amber-300"],
-          ["RUL verfügbar", kpis.rul_available ?? 0, "text-violet-300"],
-          ["Maschinen", kpis.machines ?? 0, "text-slate-200"],
+          ["History events", kpis.history_count ?? 0, "text-emerald-300"],
+          ["Open planned", kpis.planned_open ?? 0, "text-sky-300"],
+          ["Wear parts", kpis.wear_parts ?? 0, "text-amber-300"],
+          ["RUL available", kpis.rul_available ?? 0, "text-violet-300"],
+          ["Machines", kpis.machines ?? 0, "text-slate-200"],
         ].map(([label, value, tone]) => (
           <div
             key={label}
@@ -503,7 +490,7 @@ export default function MaintenanceCenterPage() {
       </div>
 
       {loading && !data ? (
-        <p className="py-10 text-center text-sm text-slate-500">Wird geladen…</p>
+        <p className="py-10 text-center text-sm text-slate-500">Loading…</p>
       ) : null}
 
       {tab === "overview" && data ? (
@@ -511,9 +498,9 @@ export default function MaintenanceCenterPage() {
           <div className="rounded-2xl border border-white/10 bg-[#141820] p-4">
             <div className="mb-3 flex items-center justify-between">
               <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-300">
-                Restlaufzeit
+                Remaining life
               </h2>
-              <ProvenanceBadge source="MODEL_PREDICTION" label="Nur wenn vorhanden" />
+              <ProvenanceBadge source="MODEL_PREDICTION" label="Only if provided" />
             </div>
             <ul className="space-y-2">
               {(data.remaining_life || []).map((row) => (
@@ -530,21 +517,21 @@ export default function MaintenanceCenterPage() {
                     }`}
                   >
                     {row.available
-                      ? `${row.remaining_useful_life} Tage`
+                      ? `${row.remaining_useful_life} days`
                       : "—"}
                   </span>
                 </li>
               ))}
               {(data.remaining_life || []).length === 0 ? (
                 <li className="py-6 text-center text-sm text-slate-500">
-                  Keine Maschinen registriert
+                  No machines registered
                 </li>
               ) : null}
             </ul>
           </div>
           <div className="rounded-2xl border border-white/10 bg-[#141820] p-4">
             <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-slate-300">
-              Bevorstehend (Kalender)
+              Upcoming (calendar)
             </h2>
             <ul className="space-y-2">
               {(data.calendar || [])
@@ -566,14 +553,14 @@ export default function MaintenanceCenterPage() {
                         e.kind
                       )}`}
                     >
-                      {KIND_LABELS[e.kind] || e.kind}
+                      {e.kind}
                     </span>
                   </li>
                 ))}
               {(data.calendar || []).filter((e) => e.kind !== "history")
                 .length === 0 ? (
                 <li className="py-6 text-center text-sm text-slate-500">
-                  Noch keine geplanten oder Verschleißtermine
+                  No planned or wear dates yet
                 </li>
               ) : null}
             </ul>
@@ -585,7 +572,7 @@ export default function MaintenanceCenterPage() {
         <section className="rounded-2xl border border-white/10 bg-[#141820] p-4">
           <div className="mb-3 flex flex-wrap items-center gap-2">
             <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-300">
-              Kalender
+              Calendar
             </h2>
             <input
               type="month"
@@ -596,7 +583,7 @@ export default function MaintenanceCenterPage() {
           </div>
           {calendarGroups.length === 0 ? (
             <p className="py-8 text-center text-sm text-slate-500">
-              Keine Ereignisse in diesem Monat
+              No events in this month
             </p>
           ) : (
             <div className="space-y-3">
@@ -619,7 +606,7 @@ export default function MaintenanceCenterPage() {
                               e.kind
                             )}`}
                           >
-                            {KIND_LABELS[e.kind] || e.kind}
+                            {e.kind}
                           </span>
                         </div>
                       </li>
@@ -636,29 +623,29 @@ export default function MaintenanceCenterPage() {
         <section className="rounded-2xl border border-white/10 bg-[#141820] p-4">
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
             <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-300">
-              Historie (importiertes CMMS)
+              History (imported CMMS)
             </h2>
             <Link
               to="/maintenance-history"
               className="text-xs text-emerald-300 hover:underline"
             >
-              Klassische Historietabelle →
+              Classic history table →
             </Link>
           </div>
           {(data.history || []).length === 0 ? (
             <p className="py-8 text-center text-sm text-slate-500">
-              Keine importierten Wartungsereignisse — CMMS im Setup-Assistenten verbinden
+              No imported maintenance events — connect CMMS in Setup Wizard
             </p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full min-w-[640px] text-sm">
                 <thead>
                   <tr className="border-b border-white/10 text-[10px] uppercase tracking-wider text-slate-500">
-                    <th className="py-2 text-left">Wann</th>
-                    <th className="py-2 text-left">Maschine</th>
-                    <th className="py-2 text-left">Arbeitsauftrag</th>
-                    <th className="py-2 text-left">Komponente</th>
-                    <th className="py-2 text-left">Aktion</th>
+                    <th className="py-2 text-left">When</th>
+                    <th className="py-2 text-left">Machine</th>
+                    <th className="py-2 text-left">Work order</th>
+                    <th className="py-2 text-left">Component</th>
+                    <th className="py-2 text-left">Action</th>
                     <th className="py-2 text-left">Tech</th>
                   </tr>
                 </thead>
@@ -695,19 +682,19 @@ export default function MaintenanceCenterPage() {
         <section className="rounded-2xl border border-white/10 bg-[#141820] p-4">
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
             <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-300">
-              Geplante Wartung
+              Planned maintenance
             </h2>
             <button
               type="button"
               onClick={() => setShowPlan(true)}
               className="rounded-xl bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-500"
             >
-              + Arbeit planen
+              + Plan work
             </button>
           </div>
           {(data.planned || []).length === 0 ? (
             <p className="py-8 text-center text-sm text-slate-500">
-              Noch keine geplanten Arbeiten
+              No planned work yet
             </p>
           ) : (
             <ul className="space-y-2">
@@ -720,7 +707,7 @@ export default function MaintenanceCenterPage() {
                     <div className="mb-1 flex flex-wrap items-center gap-2">
                       <ProvenanceBadge source={p.value_source || "MANUAL"} />
                       <span className="rounded border border-sky-500/30 bg-sky-500/10 px-1.5 py-0.5 text-[10px] uppercase text-sky-200">
-                        {STATUS_LABELS[p.status] || p.status}
+                        {p.status}
                       </span>
                     </div>
                     <p className="font-medium text-slate-50">{p.title}</p>
@@ -735,7 +722,7 @@ export default function MaintenanceCenterPage() {
                     onClick={() => deletePlan.mutate(p.id)}
                     className="rounded-lg border border-white/10 px-2 py-1 text-[11px] text-slate-400 hover:bg-white/5"
                   >
-                    Entfernen
+                    Remove
                   </button>
                 </li>
               ))}
@@ -748,19 +735,19 @@ export default function MaintenanceCenterPage() {
         <section className="rounded-2xl border border-white/10 bg-[#141820] p-4">
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
             <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-300">
-              Verschleißteile
+              Wear parts
             </h2>
             <button
               type="button"
               onClick={() => setShowWear(true)}
               className="rounded-xl bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-500"
             >
-              + Teil hinzufügen
+              + Add part
             </button>
           </div>
           {(data.wear_parts || []).length === 0 ? (
             <p className="py-8 text-center text-sm text-slate-500">
-              Keine Verschleißteile registriert
+              No wear parts registered
             </p>
           ) : (
             <ul className="space-y-2">
@@ -775,9 +762,9 @@ export default function MaintenanceCenterPage() {
                     </div>
                     <p className="font-medium text-slate-50">{w.name}</p>
                     <p className="mt-1 text-xs text-slate-500">
-                      TN {dash(w.part_number)} ·{" "}
-                      {machineName[String(w.machine_id)] || "—"} · nächster Austausch{" "}
-                      {formatWhen(w.next_replace_at)} · Menge{" "}
+                      PN {dash(w.part_number)} ·{" "}
+                      {machineName[String(w.machine_id)] || "—"} · next replace{" "}
+                      {formatWhen(w.next_replace_at)} · qty{" "}
                       {dash(w.quantity_on_hand)}
                     </p>
                   </div>
@@ -786,7 +773,7 @@ export default function MaintenanceCenterPage() {
                     onClick={() => deleteWear.mutate(w.id)}
                     className="rounded-lg border border-white/10 px-2 py-1 text-[11px] text-slate-400 hover:bg-white/5"
                   >
-                    Entfernen
+                    Remove
                   </button>
                 </li>
               ))}

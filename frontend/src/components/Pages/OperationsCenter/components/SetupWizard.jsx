@@ -180,7 +180,7 @@ export default function SetupWizard({
       }));
       setUploadName(file.name);
     } catch (err) {
-      setError(wizardError(err, "CSV-Upload fehlgeschlagen"));
+      setError(wizardError(err, "CSV upload failed"));
     } finally {
       setBusy(false);
     }
@@ -258,7 +258,7 @@ export default function SetupWizard({
       setQuality(res.data);
       setStep(4);
     } catch (err) {
-      setError(wizardError(err, "Datenqualitätsprüfung fehlgeschlagen"));
+      setError(wizardError(err, "Data quality check failed"));
     } finally {
       setBusy(false);
     }
@@ -290,7 +290,7 @@ export default function SetupWizard({
       setImportResult(res.data);
       setStep(5);
     } catch (err) {
-      setError(wizardError(err, "Historienimport fehlgeschlagen"));
+      setError(wizardError(err, "Historical import failed"));
     } finally {
       setBusy(false);
     }
@@ -308,18 +308,18 @@ export default function SetupWizard({
       if (res?.fallback) {
         setError(
           res?.error ||
-            "Aktivierung erfordert einen erfolgreichen echten Import (Backend nicht verfügbar)."
+            "Activation requires a successful real import (backend unavailable)."
         );
         return;
       }
       setDoneSummary({
         ok: true,
-        message: `${sourceLabel(sourceKey)} über Live-Konnektor-Import verbunden`,
+        message: `${sourceLabel(sourceKey)} connected from live connector import`,
       });
       onCompleted?.({ sourceKey, ok: true, local: false });
       setStep(6);
     } catch (err) {
-      setError(wizardError(err, "Aktivierung fehlgeschlagen"));
+      setError(wizardError(err, "Activation failed"));
     } finally {
       setBusy(false);
     }
@@ -490,7 +490,7 @@ export default function SetupWizard({
                     Gespeicherte Verbindungen → MSSQL-Zugangsdaten nutzen
                   </label>
                   <label className="block text-sm">
-                    <span className="text-xs text-slate-400">SELECT-Abfrage</span>
+                    <span className="text-xs text-slate-400">SELECT query</span>
                     <textarea
                       rows={4}
                       value={connection.query || ""}
@@ -505,14 +505,9 @@ export default function SetupWizard({
                   </label>
                   {!connection.use_saved_mssql ? (
                     <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                      {[
-                        ["host", "Host"],
-                        ["username", "Benutzername"],
-                        ["password", "Passwort"],
-                        ["database", "Datenbank"],
-                      ].map(([k, label]) => (
+                      {["host", "username", "password", "database"].map((k) => (
                         <label key={k} className="block text-sm">
-                          <span className="text-xs text-slate-400">{label}</span>
+                          <span className="text-xs text-slate-400">{k}</span>
                           <input
                             type={k === "password" ? "password" : "text"}
                             value={connection[k] || ""}
@@ -549,7 +544,7 @@ export default function SetupWizard({
                   </label>
                   <div className="grid grid-cols-2 gap-2">
                     <label className="block text-sm">
-                      <span className="text-xs text-slate-400">Methode</span>
+                      <span className="text-xs text-slate-400">Method</span>
                       <select
                         value={connection.method || "GET"}
                         onChange={(e) =>
@@ -565,7 +560,7 @@ export default function SetupWizard({
                       </select>
                     </label>
                     <label className="block text-sm">
-                      <span className="text-xs text-slate-400">JSON-Pfad</span>
+                      <span className="text-xs text-slate-400">JSON path</span>
                       <input
                         value={connection.json_path || ""}
                         onChange={(e) =>
@@ -597,13 +592,13 @@ export default function SetupWizard({
                   >
                     <div>
                       <p className="text-[10px] uppercase tracking-wider text-slate-500">
-                        ZITTA-Feld
+                        ZITTA field
                       </p>
                       <p className="text-sm text-slate-200">{target}</p>
                     </div>
                     <label className="block">
                       <span className="text-[10px] uppercase tracking-wider text-slate-500">
-                        Quellspalte
+                        Source column
                       </span>
                       <input
                         value={sourceCol}
@@ -624,7 +619,7 @@ export default function SetupWizard({
               <p className="mb-3 text-sm text-slate-300">
                 Schritt 3 — Zugeordnete Zeilen vorschauen (
                 {preview?.value_source || "LIVE"} · {preview?.row_count || 0}{" "}
-                angezeigt).
+                shown).
               </p>
               {preview?.rows?.length ? (
                 <div className="overflow-x-auto rounded-xl border border-white/10">
@@ -665,22 +660,22 @@ export default function SetupWizard({
               {quality ? (
                 <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                   {[
-                    ["Bewertung", `${Math.round(quality.quality_score)}%`],
+                    ["Score", `${Math.round(quality.quality_score)}%`],
                     [
-                      "Vollständigkeit",
+                      "Completeness",
                       `${Math.round((quality.completeness || 0) * 100)}%`,
                     ],
                     [
-                      "Aktualität",
+                      "Freshness",
                       `${Math.round((quality.freshness || 0) * 100)}%`,
                     ],
                     [
-                      "Konsistenz",
+                      "Consistency",
                       `${Math.round((quality.consistency || 0) * 100)}%`,
                     ],
-                    ["Gültigkeit", `${Math.round((quality.validity || 0) * 100)}%`],
+                    ["Validity", `${Math.round((quality.validity || 0) * 100)}%`],
                     [
-                      "Verfügbarkeit",
+                      "Availability",
                       `${Math.round((quality.availability || 0) * 100)}%`,
                     ],
                   ].map(([label, value]) => (
@@ -706,7 +701,7 @@ export default function SetupWizard({
                 </ul>
               ) : (
                 <p className="mt-3 text-xs text-emerald-400">
-                  Keine blockierenden Qualitätsprobleme erkannt.
+                  No blocking quality issues detected.
                 </p>
               )}
             </div>
@@ -719,7 +714,7 @@ export default function SetupWizard({
                 <code className="text-emerald-300">source_import_rows</code>).
               </p>
               <label className="block max-w-xs">
-                <span className="text-xs text-slate-400">Historienfenster (Tage)</span>
+                <span className="text-xs text-slate-400">History window (days)</span>
                 <input
                   type="number"
                   min={7}
@@ -733,18 +728,18 @@ export default function SetupWizard({
               </label>
               {importResult ? (
                 <div className="mt-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-3 py-3 text-sm text-emerald-100">
-                  Importiert {importResult.imported_rows} Zeilen ·{" "}
-                  {importResult.import_history_days} Tage ·{" "}
+                  Importiert {importResult.imported_rows} rows ·{" "}
+                  {importResult.import_history_days} days ·{" "}
                   {importResult.value_source || "LIVE"}
                   {importResult.import_batch_id
-                    ? ` · Charge ${importResult.import_batch_id}`
+                    ? ` · batch ${importResult.import_batch_id}`
                     : ""}
                   {importResult.domain_table ? (
                     <p className="mt-1 text-xs text-emerald-200/90">
-                      Zieltabelle: {importResult.domain_table} ·{" "}
+                      Domain sink: {importResult.domain_table} ·{" "}
                       {importResult.domain_rows ?? 0} Zeilen
                       {importResult.quality_records_linked
-                        ? ` · ${importResult.quality_records_linked} Qualitätsdatensatz-Verknüpfungen`
+                        ? ` · ${importResult.quality_records_linked} quality_record links`
                         : ""}
                     </p>
                   ) : null}
@@ -760,7 +755,7 @@ export default function SetupWizard({
           {step === 6 && (
             <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-5">
               <p className="text-lg font-semibold text-emerald-200">
-                {doneSummary?.message || "Quelle aktiviert"}
+                {doneSummary?.message || "Source activated"}
               </p>
               <p className="mt-2 text-sm text-slate-300">
                 Digitalisierungsfortschritt und Funktionsfreigaben werden in der

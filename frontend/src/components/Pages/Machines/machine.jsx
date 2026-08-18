@@ -41,7 +41,7 @@ export default function Machine() {
       ]);
 
       if (machRes?.fallback) {
-        setError(machRes.error || "Maschinen konnten nicht geladen werden");
+        setError(machRes.error || "Could not load machines");
         setMachines([]);
       } else {
         setMachines(Array.isArray(machRes?.data) ? machRes.data : []);
@@ -64,7 +64,7 @@ export default function Machine() {
         setSensorCounts(counts);
       }
     } catch (err) {
-      setError(err?.message || "Fehler beim Laden der Maschinen");
+      setError(err?.message || "Failed to load machines");
       setMachines([]);
     } finally {
       setLoading(false);
@@ -87,12 +87,12 @@ export default function Machine() {
     mutationFn: (id) => safeApi.delete(`/machines/${String(id)}`),
     onSuccess: (_, id) => {
       setMachines((prev) => prev.filter((m) => m.id !== id));
-      showError("✅ Maschine erfolgreich gelöscht!");
+      showError("✅ Machine deleted successfully!");
     },
     onError: (error) => {
       showError(
-        `❌ Maschine konnte nicht gelöscht werden: ${
-          error.response?.data?.detail || error.message || "Unbekannter Fehler"
+        `❌ Failed to delete machine: ${
+          error.response?.data?.detail || error.message || "Unknown error"
         }`
       );
     },
@@ -102,7 +102,7 @@ export default function Machine() {
     mutationFn: ({ id, data }) => safeApi.put(`/machines/${id}`, data),
     onSuccess: (res, variables) => {
       if (res?.fallback) {
-        showError(res?.error || "Maschine konnte nicht aktualisiert werden");
+        showError(res?.error || "Failed to update machine");
         return;
       }
       setMachines((prev) =>
@@ -112,11 +112,11 @@ export default function Machine() {
       );
       setIsEditing(false);
       setSelectedMachine(null);
-      toast.success("Maschine erfolgreich aktualisiert");
+      toast.success("Machine updated successfully");
     },
     onError: (error) => {
       showError(
-        `❌ Maschine konnte nicht aktualisiert werden: ${
+        `❌ Failed to update machine: ${
           error.response?.data?.detail || error.message
         }`
       );
@@ -128,11 +128,11 @@ export default function Machine() {
     onSuccess: (res) => {
       if (res?.data) setMachines((prev) => [...prev, res.data]);
       setShowCreateModal(false);
-      showError("✅ Maschine erfolgreich erstellt!");
+      showError("✅ Machine created successfully!");
     },
     onError: (error) => {
       showError(
-        `❌ Maschine konnte nicht erstellt werden: ${
+        `❌ Failed to create machine: ${
           error.response?.data?.detail || error.message
         }`
       );
@@ -152,11 +152,11 @@ export default function Machine() {
               ZITTA · Module 10
             </p>
             <h1 className="mt-1 text-2xl font-semibold tracking-tight text-slate-50">
-              Maschinenübersicht
+              Machine overview
             </h1>
             <p className="mt-1 text-sm text-slate-400">
-              Karten je Maschine — Status, Standort, Sensoren, Integration.
-              KI / Restlaufzeit nur bei vorhandenen Realdaten.
+              Cards for each machine — status, location, sensors, integration.
+              AI / remaining life only when real data exists.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -164,13 +164,13 @@ export default function Machine() {
               to="/"
               className="rounded-xl border border-white/10 px-3 py-2 text-xs text-slate-300 hover:bg-white/5"
             >
-              ← Betriebszentrale
+              ← Operations Center
             </Link>
             <Link
               to="/sensor"
               className="rounded-xl border border-white/10 px-3 py-2 text-xs text-slate-300 hover:bg-white/5"
             >
-              Sensoren
+              Sensors
             </Link>
             <button
               type="button"
@@ -179,7 +179,7 @@ export default function Machine() {
               className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-200 disabled:opacity-50"
             >
               <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
-              Aktualisieren
+              Refresh
             </button>
             <button
               type="button"
@@ -195,11 +195,11 @@ export default function Machine() {
 
       <div className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
         {[
-          ["Maschinen", machines.length],
-          ["Verbunden", onlineCount],
-          ["Getrennt / sonstige", Math.max(0, machines.length - onlineCount)],
+          ["Machines", machines.length],
+          ["Online", onlineCount],
+          ["Offline / other", Math.max(0, machines.length - onlineCount)],
           [
-            "Mit Integration",
+            "With integration",
             machines.filter((m) => integrationByMachine[String(m.id)]).length,
           ],
         ].map(([label, value]) => (

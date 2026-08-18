@@ -1,4 +1,3 @@
-import re
 from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 from uuid import UUID
@@ -7,62 +6,8 @@ from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
-from app.models.live_run_evaluation import LiveRunEvaluation
 from app.models.machine import Machine
 from app.models.production_run import ProductionRun
-
-
-def _parse_machine_uuid(machine_id: Any) -> Optional[UUID]:
-    if machine_id is None or machine_id == "":
-        return None
-    if isinstance(machine_id, UUID):
-        return machine_id
-    try:
-        return UUID(str(machine_id))
-    except (TypeError, ValueError):
-        return None
-
-
-async def _resolve_machine_uuid(db: AsyncSession, machine_id: str) -> Optional[UUID]:
-    """
-    ProductionRun.machine_id is UUID. OC map may pass integration slugs (e.g. extruder_01).
-    """
-    parsed = _parse_machine_uuid(machine_id)
-    if parsed is not None:
-        return parsed
-
-    slug = str(machine_id).strip().lower()
-    if not slug:
-        return None
-
-    match = re.match(r"^extruder[_-]?(\d+)$", slug)
-    if match:
-        num = match.group(1)
-        result = await db.execute(
-            select(Machine.id).where(Machine.name.ilike(f"%extruder%{num}%"))
-        )
-        row = result.scalar_one_or_none()
-        if row is not None:
-            return row
-
-    result = await db.execute(
-        select(Machine.id).where(Machine.name.ilike(f"%{slug.replace('_', ' ')}%"))
-    )
-    row = result.scalar_one_or_none()
-    if row is not None:
-        return row
-
-    # Single live machine fallback (common single-extruder deployments)
-    result = await db.execute(
-        select(LiveRunEvaluation.machine_id)
-        .where(LiveRunEvaluation.machine_id.isnot(None))
-        .order_by(LiveRunEvaluation.id.desc())
-        .limit(5)
-    )
-    mids = {r for r in result.scalars().all() if r is not None}
-    if len(mids) == 1:
-        return next(iter(mids))
-    return None
 
 
 def _elapsed_minutes(start_time) -> Optional[float]:
@@ -125,7 +70,7 @@ def enrich_run_dict(run: ProductionRun) -> Dict[str, Any]:
 def build_order_fields(run: Optional[ProductionRun], machine_name: Optional[str]) -> Dict[str, Any]:
     """Module 8 field board with provenance — never invent ML ETA/progress."""
 
-    def cell(value, source: str, missing_hint: str = "Noch nicht verbunden"):
+    def cell(value, source: str, missing_hint: str = "Not connected yet"):
         has = value is not None and value != ""
         return {
             "value": value if has else None,
@@ -149,20 +94,20 @@ def build_order_fields(run: Optional[ProductionRun], machine_name: Optional[str]
     eta = getattr(run, "eta_at", None)
 
     return {
-        "material": cell(run.material_name or run.material_type, "LIVE", "Material im Lauf nicht gesetzt"),
-        "customer": cell(run.customer_order, "LIVE", "Kundenauftrag nicht gesetzt"),
-        "tool": cell(getattr(run, "tool_name", None), "LIVE", "Werkzeug / Form nicht verbunden"),
+        "material": cell(run.material_name or run.material_type, "LIVE", "Material not set on run"),
+        "customer": cell(run.customer_order, "LIVE", "Customer order not set"),
+        "tool": cell(getattr(run, "tool_name", None), "LIVE", "Tool / mold not connected"),
         "machine": cell(machine_name or (str(run.machine_id) if run.machine_id else None), "LIVE"),
-        "product": cell(run.product_name or run.product_code, "LIVE", "Produkt nicht gesetzt"),
-        "batch": cell(run.batch_no, "LIVE", "Charge nicht gesetzt"),
+        "product": cell(run.product_name or run.product_code, "LIVE", "Product not set"),
+        "batch": cell(run.batch_no, "LIVE", "Batch not set"),
         "status": cell(run.status, "LIVE"),
-        "target": cell(getattr(run, "target_qty", None), "LIVE", "Sollmenge nicht verbunden (ERP/MES)"),
-        "actual": cell(getattr(run, "actual_qty", None), "LIVE", "Istmenge nicht verbunden"),
-        "progress": cell(progress, progress_source, "Fortschritt benötigt Soll-/Istmenge oder progress_pct"),
+        "target": cell(getattr(run, "target_qty", None), "LIVE", "Target qty not connected (ERP/MES)"),
+        "actual": cell(getattr(run, "actual_qty", None), "LIVE", "Actual qty not connected"),
+        "progress": cell(progress, progress_source, "Progress needs target/actual or progress_pct"),
         "eta": cell(
             eta.isoformat() if eta else None,
             "LIVE",
-            "ETA nicht verbunden — wird nicht aus ML erfunden",
+            "ETA not connected — will not invent from ML",
         ),
         "elapsed": cell(_elapsed_minutes(run.start_time), "DERIVED"),
         "started": cell(
@@ -248,56 +193,14 @@ async def get_latest_running_run(db: AsyncSession):
     return result.scalar_one_or_none()
 
 
-async def get_latest_running_run_for_machine(db, machine_id: Any):
-    mid = await _resolve_machine_uuid(db, str(machine_id)) if machine_id else None
-    if mid is None:
-        return None
-    result = await db.execute(
-        select(ProductionRun)
-        .where(
-            ProductionRun.status == "RUNNING",
-            ProductionRun.machine_id == mid,
-        )
-        .order_by(ProductionRun.start_time.desc())
-        .limit(1)
-    )
-    return result.scalar_one_or_none()
-
-
 async def build_current_order_board(
     db: AsyncSession,
     *,
     run_id: Optional[int] = None,
-    machine_id: Optional[str] = None,
 ) -> Dict[str, Any]:
     run = None
     if run_id:
         run = await get_run(db, run_id)
-    resolved_machine_id: Optional[UUID] = None
-    if machine_id:
-        resolved_machine_id = await _resolve_machine_uuid(db, machine_id)
-        if resolved_machine_id is None:
-            return {
-                "run": None,
-                "machine_name": None,
-                "fields": {},
-                "empty": True,
-                "message": (
-                    f"Maschinen-ID „{machine_id}“ konnte nicht aufgelöst werden "
-                    "(UUID oder bekannter Extruder-Name erforderlich)"
-                ),
-            }
-
-    if not run and resolved_machine_id:
-        run = await get_latest_running_run_for_machine(db, str(resolved_machine_id))
-        if not run:
-            result = await db.execute(
-                select(ProductionRun)
-                .where(ProductionRun.machine_id == resolved_machine_id)
-                .order_by(ProductionRun.start_time.desc())
-                .limit(1)
-            )
-            run = result.scalar_one_or_none()
     if not run:
         run = await get_latest_running_run(db)
     if not run:
@@ -310,17 +213,7 @@ async def build_current_order_board(
             "machine_name": None,
             "fields": {},
             "empty": True,
-            "message": "Kein Produktionslauf gefunden — Lauf anlegen oder MES/ERP-Auftragsdaten verbinden",
-        }
-
-    # If a machine was requested but the fallback run belongs to another machine, stay honest
-    if resolved_machine_id and run.machine_id and run.machine_id != resolved_machine_id:
-        return {
-            "run": None,
-            "machine_name": None,
-            "fields": {},
-            "empty": True,
-            "message": "Kein Produktionslauf für die ausgewählte Maschine",
+            "message": "No production run found — create a run or connect MES/ERP order data",
         }
 
     machine_name = None

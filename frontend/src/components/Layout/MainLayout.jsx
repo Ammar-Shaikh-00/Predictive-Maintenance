@@ -27,7 +27,6 @@ import CurrentOrderPage from "../Pages/ProductionRun/CurrentOrderPage";
 import TicketCenterPage from "../Pages/Tickets/TicketCenterPage";
 import ExecutiveViewPage from "../Pages/ExecutiveView/ExecutiveViewPage";
 import UserNotificationsPage from "../Pages/UserNotifications/UserNotificationsPage";
-import PredictionsPage from "../Pages/Predictions/PredictionsPage";
 
 const MainLayout = ({ backendStatus }) => {
   const [mobileSideBar, setMobileSideBar] = useState(false);
@@ -38,8 +37,8 @@ const MainLayout = ({ backendStatus }) => {
       status: "online",
       criticality: "high",
       criticalColor: "bg-rose-500/20 text-rose-200 border border-rose-400/40",
-      description: "Erstellt: 5. Feb. 2026, 18:15:35",
-      location: "Kein Standort",
+      description: "Created: Feb 5, 2026, 06:15:35 PM",
+      location: "No location",
     },
   ];
 
@@ -106,8 +105,6 @@ const MainLayout = ({ backendStatus }) => {
               <Route path="extruder-latest-values" element={<ExtruderLatestValues />} />
               <Route path="baseline" element={<Baseline />} />
               <Route path="live-deviations" element={<LiveDeviationsPage />} />
-              <Route path="prediction" element={<PredictionsPage />} />
-              <Route path="predictions" element={<PredictionsPage />} />
               <Route path="ticket" element={<TicketCenterPage />} />
               <Route path="production-run" element={<CurrentOrderPage />} />
               <Route path="production-run/detail" element={<ProductionRunDashboard />} />

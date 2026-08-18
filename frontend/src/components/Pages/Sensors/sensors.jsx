@@ -49,7 +49,7 @@ export default function Sensors() {
       ]);
 
       if (sensorRes?.fallback) {
-        setError(sensorRes.error || "Sensoren konnten nicht geladen werden");
+        setError(sensorRes.error || "Could not load sensors");
         setSensors([]);
       } else {
         setSensors(Array.isArray(sensorRes?.data) ? sensorRes.data : []);
@@ -75,7 +75,7 @@ export default function Sensors() {
       }
       setLatestBySensor(latest);
     } catch (err) {
-      setError(err?.message || "Fehler beim Laden des Sensorzentrums");
+      setError(err?.message || "Failed to load Sensor Center");
       setSensors([]);
     } finally {
       setLoading(false);
@@ -93,7 +93,7 @@ export default function Sensors() {
         setAllMachines(Array.isArray(machineRes?.data) ? machineRes.data : []);
       }
     } catch {
-      setError("Sensor-Zuordnungskatalog konnte nicht geladen werden");
+      setError("Failed to load sensor mapping catalog");
     }
   }, []);
 
@@ -116,7 +116,7 @@ export default function Sensors() {
       setMappingSensors((prev) => [...prev, res.data]);
       setShowCreateModal(false);
     },
-    onError: () => showError("Sensor-Zuordnung konnte nicht erstellt werden"),
+    onError: () => showError("Unable to create sensor mapping"),
   });
 
   const updateMutation = useMutation({
@@ -128,7 +128,7 @@ export default function Sensors() {
       setIsEditing(false);
       setSelectedSensor(null);
     },
-    onError: () => showError("Sensor-Zuordnung konnte nicht aktualisiert werden"),
+    onError: () => showError("Unable to update sensor mapping"),
   });
 
   const deleteMutation = useMutation({
@@ -136,7 +136,7 @@ export default function Sensors() {
     onSuccess: (_, id) => {
       setMappingSensors((prev) => prev.filter((s) => s.id !== id));
     },
-    onError: () => showError("Sensor-Zuordnung konnte nicht gelöscht werden"),
+    onError: () => showError("Unable to delete sensor mapping"),
   });
 
   const filteredSensors = useMemo(() => {
@@ -164,11 +164,11 @@ export default function Sensors() {
               ZITTA · Module 11
             </p>
             <h1 className="mt-1 text-2xl font-semibold tracking-tight text-slate-50">
-              Sensorzentrum
+              Sensor center
             </h1>
             <p className="mt-1 text-sm text-slate-400">
-              Status, letzter Wert, Schwellenwerte — Historie auf Abruf. Kalibrierung /
-              Signalqualität zeigen — bis zur Anbindung.
+              Status, last value, thresholds — history on demand. Calibration /
+              signal quality show — until connected.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -176,13 +176,13 @@ export default function Sensors() {
               to="/machine"
               className="rounded-xl border border-white/10 px-3 py-2 text-xs text-slate-300 hover:bg-white/5"
             >
-              ← Maschinen
+              ← Machines
             </Link>
             <Link
               to="/time-range-data-view"
               className="rounded-xl border border-white/10 px-3 py-2 text-xs text-slate-300 hover:bg-white/5"
             >
-              Historie / Export
+              History / export
             </Link>
             <button
               type="button"
@@ -193,7 +193,7 @@ export default function Sensors() {
               className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-200 disabled:opacity-50"
             >
               <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
-              Aktualisieren
+              Refresh
             </button>
             {tab === "mapping" ? (
               <button
@@ -201,7 +201,7 @@ export default function Sensors() {
                 onClick={() => setShowCreateModal(true)}
                 className="rounded-xl bg-emerald-600 px-3 py-2 text-xs font-medium text-white hover:bg-emerald-500"
               >
-                + Zuordnung
+                + Mapping
               </button>
             ) : null}
           </div>
@@ -217,7 +217,7 @@ export default function Sensors() {
                 : "border-white/10 text-slate-400"
             }`}
           >
-            Live-Sensoren
+            Live sensors
           </button>
           <button
             type="button"
@@ -228,7 +228,7 @@ export default function Sensors() {
                 : "border-white/10 text-slate-400"
             }`}
           >
-            Namens-Zuordnungskatalog
+            Name mapping catalog
           </button>
         </div>
         {error ? <p className="mt-3 text-xs text-amber-200">{error}</p> : null}
@@ -237,14 +237,14 @@ export default function Sensors() {
       <div className="mb-4 flex flex-wrap items-end gap-3">
         <label className="block text-sm">
           <span className="text-[10px] uppercase tracking-wider text-slate-500">
-            Maschine filtern
+            Filter machine
           </span>
           <select
             value={selectedMachine}
             onChange={(e) => setSelectedMachine(e.target.value)}
             className="mt-1 block min-w-[200px] rounded-lg border border-white/10 bg-[#0f1218] px-3 py-2 text-sm text-slate-100"
           >
-            <option value="">Alle Maschinen</option>
+            <option value="">All machines</option>
             {allMachines.map((m) => (
               <option key={m.id} value={m.id}>
                 {m.name}
@@ -258,10 +258,10 @@ export default function Sensors() {
         <>
           <div className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
             {[
-              ["Sensoren", filteredSensors.length],
-              ["Mit letztem Messwert", withReading],
-              ["Maschinen", allMachines.length],
-              ["Warten auf Daten", Math.max(0, filteredSensors.length - withReading)],
+              ["Sensors", filteredSensors.length],
+              ["With last reading", withReading],
+              ["Machines", allMachines.length],
+              ["Awaiting data", Math.max(0, filteredSensors.length - withReading)],
             ].map(([label, value]) => (
               <div
                 key={label}
@@ -277,11 +277,11 @@ export default function Sensors() {
 
           {loading && filteredSensors.length === 0 ? (
             <p className="py-10 text-center text-sm text-slate-500">
-              {t("loading") || "Laden…"}
+              {t("loading") || "Loading…"}
             </p>
           ) : filteredSensors.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-white/10 bg-[#141820] px-4 py-10 text-center text-sm text-slate-400">
-              Noch keine Sensoren registriert für diesen Filter.
+              No sensors registered yet for this filter.
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
@@ -300,11 +300,11 @@ export default function Sensors() {
       ) : (
         <>
           <p className="mb-3 text-xs text-slate-500">
-            SPS- / Standardnamen-Zuordnung (Admin). Nicht die Live-Sensorzentrum-Liste.
+            PLC / default name mapping (admin). Not the live Sensor Center list.
           </p>
           {filteredMapping.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-white/10 bg-[#141820] px-4 py-10 text-center text-sm text-slate-400">
-              Keine Zuordnungszeilen.
+              No mapping rows.
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
@@ -319,7 +319,7 @@ export default function Sensors() {
                     setIsEditing(true);
                   }}
                   onDelete={() => {
-                    if (window.confirm(`Zuordnung ${sensor.name} löschen?`)) {
+                    if (window.confirm(`Delete mapping ${sensor.name}?`)) {
                       deleteMutation.mutate(sensor.id);
                     }
                   }}

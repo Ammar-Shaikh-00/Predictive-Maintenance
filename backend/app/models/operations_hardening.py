@@ -99,33 +99,6 @@ class FeatureStatus(Base):
     model_id = Column(String(128), nullable=True)
 
 
-class MachinePredictionReadiness(Base):
-    """
-    Per-machine Vorhersagebereitschaft — owned by the AI/ML service.
-
-    Backend/OC must not invent this score from source-connection weights.
-    ML upserts readiness_pct; Operations Center only reads and displays it.
-    """
-
-    __tablename__ = "machine_prediction_readiness"
-    __table_args__ = (
-        UniqueConstraint(
-            "company_id",
-            "machine_id",
-            name="uq_machine_prediction_readiness_company_machine",
-        ),
-    )
-
-    company_id = Column(String(64), nullable=False, index=True, default="default")
-    machine_id = Column(String(128), nullable=False, index=True)
-    readiness_pct = Column(Float, nullable=False)
-    model_id = Column(String(128), nullable=True)
-    model_version = Column(String(64), nullable=True)
-    value_source = Column(String(32), nullable=False, default="AI_SERVICE")
-    reported_at = Column(String(64), nullable=True)
-    details_json = Column("details", JSONB, nullable=False, default=dict)
-
-
 class IntegrationProgress(Base):
     __tablename__ = "integration_progress"
     __table_args__ = (
@@ -134,7 +107,6 @@ class IntegrationProgress(Base):
 
     company_id = Column(String(64), nullable=False, index=True, default="default")
     digitalization_progress = Column(Float, nullable=False, default=0.0)
-    # Mirror of ML-reported readiness (company roll-up). Not formula-computed.
     prediction_readiness = Column(Float, nullable=False, default=0.0)
     data_quality_score = Column(Float, nullable=False, default=0.0)
 

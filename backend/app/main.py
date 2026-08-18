@@ -28,7 +28,6 @@ from app.api.routers import (
     jobs,
     knowledge,
     live_feature_evaluation,
-    live_ml_export,
     live_process_window,
     live_run_evaluation,
     machine_state,
@@ -101,17 +100,9 @@ def custom_openapi():
 
 app.openapi = custom_openapi
 
-_cors_origins = [
-    o.strip()
-    for o in (settings.cors_origins or "").split(",")
-    if o.strip()
-]
-if not _cors_origins:
-    _cors_origins = ["http://localhost:5173"]
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=_cors_origins,
+    allow_origins=["http://100.119.197.81:3001","http://100.119.197.81:3000", "http://localhost:5173", "http://192.168.100.24:5173","http://100.67.139.6:5173"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -222,7 +213,6 @@ app.include_router(machine_status.router)
 app.include_router(live_process_window.router)
 app.include_router(live_feature_evaluation.router)
 app.include_router(live_run_evaluation.router)
-app.include_router(live_ml_export.router)
 app.include_router(window_features.router)
 app.include_router(production_run.router)
 app.include_router(historical_runs.router)

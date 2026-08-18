@@ -3,53 +3,14 @@ import safeApi from "../../../api/safeApi";
 import {
   lockedFeaturesDemo,
   operationsCenterDemo,
-  EMPTY_MACHINE_VALUES,
 } from "../../../config/operationsCenterDemo";
 import {
   computeDigitalizationProgress,
+  computePredictionReadiness,
   evaluateFeatures,
 } from "../../../utils/capabilityEngine";
-import { localizeUiText, resolveMlPredictionReadiness } from "./buildOcCockpit";
-import { fetchLiveAiSnapshot } from "./buildLiveAiSnapshot";
 
 const COMPANY_ID = "default";
-
-function isSimulated(item) {
-  return String(item?.value_source || "").toUpperCase() === "SIMULATED";
-}
-
-function localizeMachineValues(values = []) {
-  return values.map((v) => ({
-    ...v,
-    label: localizeUiText(v.label) || v.label,
-    lockedHint: v.lockedHint ? localizeUiText(v.lockedHint) : v.lockedHint,
-  }));
-}
-
-function sanitizeMachineValues(values) {
-  if (!Array.isArray(values) || values.length === 0) {
-    return localizeMachineValues(EMPTY_MACHINE_VALUES);
-  }
-  const liveOnly = values.filter((v) => !isSimulated(v));
-  if (!liveOnly.length) {
-    return localizeMachineValues(EMPTY_MACHINE_VALUES);
-  }
-  return localizeMachineValues(liveOnly);
-}
-
-function sanitizeWarnings(warnings) {
-  if (!Array.isArray(warnings)) return [];
-  return warnings.filter((w) => !isSimulated(w));
-}
-
-function sanitizeRisks(risks) {
-  if (!Array.isArray(risks)) return [];
-  return risks.filter((r) => !isSimulated(r));
-}
-
-function localizeNetworkNotes(notes = []) {
-  return notes.map((n) => localizeUiText(n));
-}
 
 function mapBackendFeatureStatus(status = "") {
   const s = String(status).toUpperCase();
@@ -75,7 +36,7 @@ function mapFeatures(featureStatus, connectedSources) {
       benefit:
         lockedFeaturesDemo.find((f) => f.key === row.feature_key)?.benefit ||
         row.notes?.description ||
-        "Wird freigeschaltet, wenn die erforderlichen Datenquellen verbunden sind",
+        "Unlocks when required data sources are connected",
       requires: row.notes?.required_sources || row.missing_sources || [],
       missingSources: row.missing_sources || [],
       status: mapBackendFeatureStatus(row.status),
@@ -88,13 +49,9 @@ function mapFeatures(featureStatus, connectedSources) {
 
 /**
  * Single-poll Operations Center consumer for GET /operations-center/overview.
- * Never falls back to invented SIMULATED process values.
- * Optional machineId scopes live values / alarms / maintenance to the map selection.
+ * Falls back to demo/local capability engine if aggregate API is unavailable.
  */
-export default function useOperationsCenterOverview(
-  pollIntervalMs = 15000,
-  machineId = null
-) {
+export default function useOperationsCenterOverview(pollIntervalMs = 15000) {
   const demo = operationsCenterDemo;
   const [state, setState] = useState({
     loading: true,
@@ -102,49 +59,42 @@ export default function useOperationsCenterOverview(
     liveFeedOk: false,
     hardeningOk: false,
     error: null,
-    plantStatus: "STOPPED",
+    plantStatus: demo.plantStatus,
     machineState: null,
-    machineValues: localizeMachineValues(EMPTY_MACHINE_VALUES),
-    warnings: [],
-    risks: [],
-    aiSnapshot: null,
+    machineValues: demo.machineValues,
+    warnings: demo.warnings,
+    risks: demo.risks,
     connectedMachine: demo.machines.find((m) => m.connected),
     greyMachines: demo.machines.filter((m) => !m.connected),
-    lineMachines: [],
-    selectedMachineId: machineId,
-    selectedMachineName: null,
-    connectedMachines: 0,
+    connectedMachines: demo.connectedMachines,
     totalMachines: demo.totalMachines,
-    digitalizationProgress: 0,
-    predictionReadiness: null,
-    predictionReadinessHint: null,
-    predictionReadinessMeta: null,
-    dataQualityScore: null,
-    oee: null,
-    oeeHint: null,
-    nextMaintenanceDays: null,
-    maintenanceHint: null,
-    connectedSources: [],
+    digitalizationProgress: computeDigitalizationProgress(demo.connectedSources),
+    predictionReadiness: computePredictionReadiness(
+      demo.connectedSources,
+      demo.basePredictionReadiness,
+      demo.readinessBoost
+    ),
+    dataQualityScore: demo.dataQuality,
+    connectedSources: demo.connectedSources,
     missingSources: demo.missingSources,
-    features: evaluateFeatures(lockedFeaturesDemo, []),
+    features: evaluateFeatures(lockedFeaturesDemo, demo.connectedSources),
     recentEvents: [],
-    networkNotes: [],
+    networkNotes: demo.networkNotes,
     activating: null,
     lastUpdated: null,
     cacheHit: false,
   });
 
-  const requestSeq = useRef(0);
+  const inFlight = useRef(false);
 
   const applyPayload = useCallback(
     (data, aggregateOk = true) => {
-      const connected = Array.isArray(data?.connected_sources)
+      const connected = data?.connected_sources?.length
         ? data.connected_sources
-        : [];
-      const missing = Array.isArray(data?.missing_sources)
+        : demo.connectedSources;
+      const missing = data?.missing_sources?.length
         ? data.missing_sources
         : demo.missingSources.filter((s) => !connected.includes(s));
-      const mlReadiness = resolveMlPredictionReadiness(data);
 
       setState((prev) => ({
         ...prev,
@@ -157,22 +107,19 @@ export default function useOperationsCenterOverview(
             ? data.feed_error
             : null
           : prev.error,
-        plantStatus: data?.plant_status || "STOPPED",
+        plantStatus: data?.plant_status || demo.plantStatus,
         machineState: data?.machine_state || null,
-        machineValues: sanitizeMachineValues(data?.machine_values),
-        warnings: sanitizeWarnings(data?.warnings),
-        risks: sanitizeRisks(data?.risks),
-        aiSnapshot: data?.ai_snapshot || null,
+        machineValues: data?.machine_values?.length
+          ? data.machine_values
+          : demo.machineValues,
+        warnings: data?.warnings?.length ? data.warnings : demo.warnings,
+        risks: data?.risks?.length ? data.risks : demo.risks,
         connectedMachine: data?.connected_machine || prev.connectedMachine,
         greyMachines: data?.grey_machines?.length
           ? data.grey_machines
           : demo.machines.filter((m) => !m.connected),
-        lineMachines: Array.isArray(data?.line_machines) ? data.line_machines : [],
-        selectedMachineId:
-          data?.selected_machine_id || data?.connected_machine?.id || machineId,
-        selectedMachineName:
-          data?.selected_machine_name || data?.connected_machine?.name || null,
-        connectedMachines: data?.connected_machines ?? 0,
+        connectedMachines:
+          data?.connected_machines ?? demo.connectedMachines,
         totalMachines: Math.max(
           data?.total_machines ?? 0,
           demo.totalMachines
@@ -180,44 +127,33 @@ export default function useOperationsCenterOverview(
         digitalizationProgress:
           data?.digitalization_progress ??
           computeDigitalizationProgress(connected),
-        predictionReadiness: mlReadiness.value,
-        predictionReadinessHint: mlReadiness.hint,
-        predictionReadinessMeta: mlReadiness.meta,
-        dataQualityScore: data?.data_quality_score ?? null,
-        oee:
-          data?.oee?.available && data?.oee?.value != null
-            ? Number(data.oee.value)
-            : null,
-        oeeHint: data?.oee?.hint || null,
-        nextMaintenanceDays:
-          data?.next_maintenance?.available &&
-          data?.next_maintenance?.days != null
-            ? Number(data.next_maintenance.days)
-            : null,
-        maintenanceHint: data?.next_maintenance?.hint || null,
+        predictionReadiness:
+          data?.prediction_readiness ??
+          computePredictionReadiness(
+            connected,
+            demo.basePredictionReadiness,
+            demo.readinessBoost
+          ),
+        dataQualityScore: data?.data_quality_score ?? demo.dataQuality,
         connectedSources: connected,
         missingSources: missing,
         features: mapFeatures(data?.feature_status, connected),
         recentEvents: data?.recent_progress_events || [],
-        networkNotes: localizeNetworkNotes(data?.network_notes || []),
+        networkNotes: data?.network_notes || demo.networkNotes,
         lastUpdated: new Date(),
         cacheHit: Boolean(data?.cache_hit),
       }));
     },
-    [demo, machineId]
+    [demo]
   );
 
   const fetchOverview = useCallback(async () => {
-    const seq = ++requestSeq.current;
+    if (inFlight.current) return;
+    inFlight.current = true;
     try {
-      const qs = new URLSearchParams({
-        company_id: COMPANY_ID,
-        bootstrap_if_empty: "true",
-      });
-      if (machineId) qs.set("machine_id", machineId);
-      const res = await safeApi.get(`/operations-center/overview?${qs.toString()}`);
-      // Ignore stale responses when the user switched machines mid-flight
-      if (seq !== requestSeq.current) return;
+      const res = await safeApi.get(
+        `/operations-center/overview?company_id=${COMPANY_ID}&bootstrap_if_empty=true`
+      );
       if (res?.fallback || !res?.data) {
         setState((prev) => ({
           ...prev,
@@ -225,62 +161,26 @@ export default function useOperationsCenterOverview(
           aggregateOk: false,
           liveFeedOk: false,
           hardeningOk: false,
-          machineValues: localizeMachineValues(EMPTY_MACHINE_VALUES),
-          warnings: [],
-          risks: [],
-          plantStatus: "STOPPED",
           error:
             res?.error ||
-            "Übersicht nicht verfügbar — keine simulierten Ersatzwerte",
+            "Übersicht nicht verfügbar — lokaler Demo-Fallback aktiv",
           lastUpdated: new Date(),
         }));
         return;
       }
       applyPayload(res.data, true);
-
-      // Older remotes omit ai_snapshot — compose Module 7 from live_* APIs.
-      const snap = res.data?.ai_snapshot;
-      const hasRec =
-        snap?.recommendation?.text ||
-        snap?.recommendation?.explanation_text ||
-        snap?.latest_run?.text ||
-        snap?.latest_run?.explanation_text;
-      if (!hasRec) {
-        try {
-          const composed = await fetchLiveAiSnapshot(safeApi, {
-            historyLimit: 10,
-            machineId,
-          });
-          if (seq !== requestSeq.current) return;
-          if (composed?.available || composed?.recommendation) {
-            setState((prev) => ({
-              ...prev,
-              aiSnapshot: composed,
-              risks:
-                prev.risks?.length > 0
-                  ? prev.risks
-                  : sanitizeRisks(composed.risks || []),
-            }));
-          }
-        } catch {
-          /* keep overview without AI panel */
-        }
-      }
     } catch (err) {
-      if (seq !== requestSeq.current) return;
       setState((prev) => ({
         ...prev,
         loading: false,
         aggregateOk: false,
-        machineValues: localizeMachineValues(EMPTY_MACHINE_VALUES),
-        warnings: [],
-        risks: [],
-        plantStatus: "STOPPED",
         error: err?.message || "Betriebszentrale-Übersicht konnte nicht geladen werden",
         lastUpdated: new Date(),
       }));
+    } finally {
+      inFlight.current = false;
     }
-  }, [applyPayload, machineId]);
+  }, [applyPayload]);
 
   const activateSource = useCallback(
     async (sourceKey) => {
@@ -302,6 +202,11 @@ export default function useOperationsCenterOverview(
               connectedSources: connected,
               missingSources: missing,
               digitalizationProgress: computeDigitalizationProgress(connected),
+              predictionReadiness: computePredictionReadiness(
+                connected,
+                demo.basePredictionReadiness,
+                demo.readinessBoost
+              ),
               features: evaluateFeatures(lockedFeaturesDemo, connected),
               error:
                 activateRes?.error ||
@@ -326,22 +231,6 @@ export default function useOperationsCenterOverview(
     },
     [demo, fetchOverview]
   );
-
-  // On machine switch: clear scoped values immediately so OC visibly updates
-  useEffect(() => {
-    if (machineId == null) return;
-    setState((prev) => ({
-      ...prev,
-      loading: true,
-      machineValues: localizeMachineValues(EMPTY_MACHINE_VALUES),
-      warnings: [],
-      plantStatus: "STOPPED",
-      machineState: null,
-      oee: null,
-      nextMaintenanceDays: null,
-      selectedMachineId: machineId,
-    }));
-  }, [machineId]);
 
   useEffect(() => {
     fetchOverview();

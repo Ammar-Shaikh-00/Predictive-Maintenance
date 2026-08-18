@@ -8,7 +8,7 @@ It continuously:
 - computes process features,
 - detects machine state,
 - compares live behavior to historical baselines,
-- stores results in backend Postgres via HTTP APIs,
+- stores results in SQLite,
 - exposes latest results through FastAPI endpoints.
 
 ---
@@ -21,7 +21,7 @@ At runtime, the pipeline runs in a loop every `POLL_INTERVAL_SECONDS`:
 2. Add point into rolling buffer (`processing/window_buffer.py`)
 3. Compute window features (`processing/feature_engine.py`)
 4. Detect candidate + confirmed state (`state/state_detector.py`)
-5. Save live window snapshot (`storage/backend_writer.py`)
+5. Save live window snapshot (`storage/db_writer.py`)
 6. Run evaluation guard (`evaluation/evaluation_guard.py`)
 7. Select baseline by regime (`evaluation/baseline_selector.py`)
 8. Evaluate each feature (`evaluation/feature_evaluator.py`)
@@ -51,13 +51,10 @@ live_monitor/
   state/
     state_detector.py          # Candidate/confirmed machine state logic
   storage/
-    backend_writer.py          # Persist live windows/evals to backend Postgres
-    backend_history.py         # Fetch Postgres history for retrain
-    build_live_windows.py      # Build 5-min training windows
+    db_writer.py               # SQLAlchemy models + write helpers
     populate_baseline.py       # Baseline registry population script
-  run_retrain.py               # PC-only retrain entry (not started by main.py)
   config.py                    # Environment-driven configuration
-  main.py                      # Inference polling loop + API thread
+  main.py                      # Main polling/evaluation loop + API thread
   requirements.txt             # Python dependencies
 ```
 
@@ -78,7 +75,7 @@ Expected payload uses a `"rows"` object. It maps:
 - load: `Val_5`
 - temperature: average of configured zone fields (`Val_7` to `Val_10` currently enabled)
 
-Timestamp parsing is normalized to UTC-aware/naive datetimes consistently for backend writes.
+Timestamp parsing is normalized to UTC naive datetime for SQLite compatibility.
 
 ---
 
@@ -212,15 +209,18 @@ Default runtime URL:
 
 ---
 
-## Persistence
+## Database Tables
 
-Live outputs go to backend Postgres (not local SQLite) via `BACKEND_BASE_URL`:
+Defined in `storage/db_writer.py`:
 
-- `live_process_window`
-- `live_feature_evaluation`
-- `live_run_evaluation`
-- `baseline_registry` (read/write via backend APIs)
-- `machine_sensor_raw` (training history)
+- `window_features` (legacy/backward-compatible feature snapshots)
+- `machine_state` (legacy state table; writes currently not active in main loop)
+- `baseline_registry` (historical/statistical references)
+- `live_process_window` (live window snapshot + state)
+- `live_feature_evaluation` (per-feature evaluation rows)
+- `live_run_evaluation` (one top-level evaluation per window)
+
+SQLite file (default): `live_monitor.db`
 
 ---
 
@@ -233,7 +233,7 @@ All key settings are in `config.py` and can be overridden with environment varia
 - `POLL_INTERVAL_SECONDS`
 - `WINDOW_DURATION_SECONDS`
 - `CONFIRMATION_WINDOWS`
-- `BACKEND_BASE_URL`
+- `DB_CONNECTION_STRING`
 
 ---
 
@@ -274,11 +274,19 @@ You should see logs similar to:
 ## Stop and Clear (Operational)
 
 Typical operational reset:
-1. Stop running `live_monitor/main.py`
-2. Clear/reset related backend tables if needed (via backend/DB tools)
+1. Stop running `live_monitor/main.py` process
+2. Clear pipeline tables in `live_monitor.db`
 3. Restart pipeline
 
-After a baseline wipe, rerun `populate_baseline.py` before live evaluation.
+Core tables to clear:
+- `window_features`
+- `machine_state`
+- `live_feature_evaluation`
+- `live_run_evaluation`
+- `live_process_window`
+- `baseline_registry` (only if you want a full baseline reset)
+
+After full clear, rerun baseline population before live evaluation.
 
 ---
 
@@ -290,10 +298,14 @@ From repository root:
 docker compose up --build
 ```
 
+Files used:
+- `Dockerfile`
+- `docker-compose.yml`
+
 Notes:
-- Container is inference-only (`main.py`); retrain on PC with `python run_retrain.py`
-- `PYTHONPATH` should include `/app` and `/app/live_monitor`
-- Persist models under `live_monitor/ml_data/`
+- DB is volume-mounted to `./live_monitor.db`
+- `PYTHONPATH` is set in container to include `/app` and `/app/live_monitor`
+- `docker-compose.yml` contains `OUTPUT_API_URL` and `OUTPUT_API_TIMEOUT`, but current pipeline code does not use external output POST anymore.
 
 ---
 
@@ -302,6 +314,10 @@ Notes:
 ### Import errors (`No module named ...`)
 - Ensure you run with `PYTHONPATH='.;live_monitor'` locally.
 
+### SQLite datetime errors
+- Pipeline expects Python datetime objects (UTC naive when persisted).
+- Timestamp normalization is handled in `api_client.py`.
+
 ### Evaluation not running
 - Check guard condition logs:
   - transition state not yet confirmed,
@@ -309,7 +325,7 @@ Notes:
   - insufficient data quality.
 
 ### No baseline found
-- Run `populate_baseline.py` and verify backend `baseline_registry` has rows.
+- Run `populate_baseline.py` and verify `baseline_registry` has rows.
 
 ### API timeout
 - External source API may be temporarily unreachable; pipeline logs warning and skips cycle safely.
@@ -318,10 +334,11 @@ Notes:
 
 ## Current Design Notes
 
-- The system is intentionally resilient: API or backend errors should not crash the loop.
+- The system is intentionally resilient: API or DB errors should not crash the loop.
 - Evaluation is gated to avoid false alarms during transitions/off states.
 - FastAPI and pipeline loop run together in one process (API thread + main loop thread).
-- Retrain is external (`run_retrain.py`); live-monitor only loads/reloads `.pkl` models.
+- `window_features` writes are retained for backward compatibility.
+- `machine_state` save block exists but is currently commented in `main.py`.
 
 ---
 

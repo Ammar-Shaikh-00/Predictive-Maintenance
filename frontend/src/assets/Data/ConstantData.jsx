@@ -3,13 +3,13 @@ export const menuData = [
     title: null,
     items: [
       {
-        label: "Betriebszentrale",
+        label: "Operations Center",
         icon: "dashboard",
         active: true,
         path: "/",
       },
       {
-        label: "Management-Ansicht",
+        label: "Executive View",
         icon: "executive",
         active: false,
         path: "/executive",

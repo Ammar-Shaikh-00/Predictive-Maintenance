@@ -1,6 +1,9 @@
+# Runtime dependencies for the live monitoring pipeline scaffold.
 pandas
 numpy
 requests
+apscheduler
+sqlalchemy
 fastapi
 uvicorn
 scikit-learn

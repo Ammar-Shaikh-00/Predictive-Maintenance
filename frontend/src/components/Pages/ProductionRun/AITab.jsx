@@ -9,12 +9,12 @@ export default function AITab({ runId }) {
       .then(setData);
   }, [runId]);
 
-  if (!data) return "Wird geladen...";
+  if (!data) return "Loading...";
 
   return (
     <div>
-      <div>Profil: {data.detected_profile_id}</div>
-      <div>Konfidenz: {data.confidence}</div>
+      <div>Profile: {data.detected_profile_id}</div>
+      <div>Confidence: {data.confidence}</div>
       <div>Drift: {data.drift_score}</div>
     </div>
   );

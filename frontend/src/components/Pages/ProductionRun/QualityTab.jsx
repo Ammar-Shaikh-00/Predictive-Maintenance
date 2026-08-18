@@ -46,7 +46,7 @@ export default function QualityTab({ runId }) {
         setForm((prev)=> res.data || prev);
       }
       catch(err){
-        toast.error("Qualität konnte nicht geladen werden");
+        toast.error("Failed to fatch quality");
       }
 
     }
@@ -62,12 +62,12 @@ export default function QualityTab({ runId }) {
         const res = await safeApi.put(`/production-run/${runId}/quality`,form);
         setForm(res.data || {});
       } catch (err) {
-        toast.error("Qualität konnte nicht aktualisiert werden", err);
+        toast.error("Failed to update quality", err);
         console.log(err);
         return
       }
       // console.log(form);
-      toast.success("Erfolgreich aktualisiert.")
+      toast.success("updated successfully.")
   };
 
 
@@ -77,45 +77,45 @@ export default function QualityTab({ runId }) {
 
       {/* 🔹 BASIC */}
       <div className="grid grid-cols-3 gap-4">
-        <Input name="quality_status" label="Qualitätsstatus" form={form} handleChange={handleChange} />
-        <Input name="scrap_amount" label="Ausschussmenge" form={form} handleChange={handleChange} />
-        <Input name="scrap_percentage" label="Ausschuss %" form={form} handleChange={handleChange} />
+        <Input name="quality_status" label="Quality Status" form={form} handleChange={handleChange} />
+        <Input name="scrap_amount" label="Scrap Amount" form={form} handleChange={handleChange} />
+        <Input name="scrap_percentage" label="Scrap %" form={form} handleChange={handleChange} />
       </div>
 
       {/* 🔹 DEFECTS */}
       <div className="grid grid-cols-2 gap-4">
-        <Input name="defect_type" label="Fehlertyp" form={form} handleChange={handleChange} />
-        <Input name="defect_description" label="Fehlerbeschreibung" form={form} handleChange={handleChange} />
+        <Input name="defect_type" label="Defect Type" form={form} handleChange={handleChange} />
+        <Input name="defect_description" label="Defect Description" form={form} handleChange={handleChange} />
       </div>
 
       {/* 🔹 FLAGS */}
       <div className="grid grid-cols-3 gap-3">
-        <Checkbox name="visual_defect_flag" label="Sichtfehler" form={form} handleChange={handleChange} />
-        <Checkbox name="dimensional_issue_flag" label="Maßabweichung" form={form} handleChange={handleChange} />
-        <Checkbox name="surface_issue_flag" label="Oberflächenproblem" form={form} handleChange={handleChange} />
-        <Checkbox name="color_deviation_flag" label="Farbabweichung" form={form} handleChange={handleChange} />
-        <Checkbox name="density_weight_issue_flag" label="Dichte-/Gewichtsproblem" form={form} handleChange={handleChange} />
+        <Checkbox name="visual_defect_flag" label="Visual Defect" form={form} handleChange={handleChange} />
+        <Checkbox name="dimensional_issue_flag" label="Dimensional Issue" form={form} handleChange={handleChange} />
+        <Checkbox name="surface_issue_flag" label="Surface Issue" form={form} handleChange={handleChange} />
+        <Checkbox name="color_deviation_flag" label="Color Deviation" form={form} handleChange={handleChange} />
+        <Checkbox name="density_weight_issue_flag" label="Density/Weight Issue" form={form} handleChange={handleChange} />
       </div>
 
       {/* 🔹 QC / LAB */}
       <div className="grid grid-cols-2 gap-4">
-        <Input name="customer_complaint_reference" label="Kundenreklamationsnr." form={form} handleChange={handleChange} />
-        <Input name="internal_qc_result" label="Internes QS-Ergebnis" form={form} handleChange={handleChange} />
-        <Input name="lab_result" label="Laborergebnis" form={form} handleChange={handleChange} />
+        <Input name="customer_complaint_reference" label="Customer Complaint Ref" form={form} handleChange={handleChange} />
+        <Input name="internal_qc_result" label="Internal QC Result" form={form} handleChange={handleChange} />
+        <Input name="lab_result" label="Lab Result" form={form} handleChange={handleChange} />
       </div>
 
       {/* 🔹 PROCESS ISSUES */}
       <div className="grid grid-cols-3 gap-3">
-        <Checkbox name="rework_flag" label="Nacharbeit" form={form} handleChange={handleChange} />
-        <Checkbox name="downgrade_flag" label="Herabstufung" form={form} handleChange={handleChange} />
-        <Checkbox name="shift_issue_flag" label="Schichtproblem" form={form} handleChange={handleChange} />
-        <Checkbox name="changeover_issue_flag" label="Umrüstproblem" form={form} handleChange={handleChange} />
-        <Checkbox name="stop_start_instability_flag" label="Stopp-/Start-Instabilität" form={form} handleChange={handleChange} />
+        <Checkbox name="rework_flag" label="Rework" form={form} handleChange={handleChange} />
+        <Checkbox name="downgrade_flag" label="Downgrade" form={form} handleChange={handleChange} />
+        <Checkbox name="shift_issue_flag" label="Shift Issue" form={form} handleChange={handleChange} />
+        <Checkbox name="changeover_issue_flag" label="Changeover Issue" form={form} handleChange={handleChange} />
+        <Checkbox name="stop_start_instability_flag" label="Stop/Start Instability" form={form} handleChange={handleChange} />
       </div>
 
       {/* 🔹 NOTES */}
       <div>
-        <label className="text-sm text-gray-600">Notizen</label>
+        <label className="text-sm text-gray-600">Notes</label>
         <textarea
           name="notes"
           value={form.notes || ""}
@@ -129,7 +129,7 @@ export default function QualityTab({ runId }) {
         onClick={handleSave}
         className="bg-green-600 text-white px-4 py-2 rounded"
       >
-        Qualität speichern
+        Save Quality
       </button>
 
     </div>

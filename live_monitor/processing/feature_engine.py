@@ -121,20 +121,19 @@ class FeatureEngine:
         # ratio of load to pressure, useful for detecting abnormal states
         load_per_pressure = 0.0 if pressure_mean == 0 else float(load_mean / pressure_mean)
 
-        # Real data-quality fractions from core sensors in this window
-        quality = self._quality_fractions(numeric_df, sensor_columns)
-
         # Window boundaries help downstream components align decisions in time.
+        # must be Python datetime objects for SQLite compatibility
         window_start = pd.to_datetime(numeric_df[time_col].iloc[0]).to_pydatetime()
         window_end = pd.to_datetime(numeric_df[time_col].iloc[-1]).to_pydatetime()
 
         return {
             "window_start": window_start,
             "window_end": window_end,
+            # placeholder fractions for now, can be refined later
             "row_count": len(numeric_df),
-            "valid_fraction": quality["valid_fraction"],
-            "invalid_fraction": quality["invalid_fraction"],
-            "outlier_fraction": quality["outlier_fraction"],
+            "valid_fraction": 1.0,
+            "invalid_fraction": 0.0,
+            "outlier_fraction": 0.0,
             "screw_speed_mean": screw_speed_mean,
             "screw_speed_std": screw_speed_std,
             "screw_speed_min": screw_speed_min,
@@ -163,45 +162,4 @@ class FeatureEngine:
             "pressure_per_rpm": pressure_per_rpm,
             "temp_spread": temp_spread,
             "load_per_pressure": load_per_pressure,
-        }
-
-    @staticmethod
-    def _quality_fractions(numeric_df: pd.DataFrame, sensor_columns: list[str]) -> dict[str, float]:
-        """Compute valid / invalid / outlier fractions for evaluation_guard."""
-        cols = [c for c in sensor_columns if c in numeric_df.columns]
-        if not cols or numeric_df.empty:
-            return {
-                "valid_fraction": 1.0,
-                "invalid_fraction": 0.0,
-                "outlier_fraction": 0.0,
-            }
-
-        total_cells = float(len(numeric_df) * len(cols))
-        invalid = 0
-        outlier = 0
-        valid_cells = 0
-
-        for col in cols:
-            series = pd.to_numeric(numeric_df[col], errors="coerce")
-            nan_mask = series.isna()
-            invalid += int(nan_mask.sum())
-            valid = series[~nan_mask]
-            valid_cells += int(len(valid))
-            if len(valid) < 3:
-                continue
-            std = float(valid.std(ddof=1))
-            if not np.isfinite(std) or std == 0.0:
-                continue
-            mean = float(valid.mean())
-            outlier += int(((valid - mean).abs() > (3.0 * std)).sum())
-
-        invalid_fraction = round(invalid / total_cells, 4) if total_cells else 0.0
-        valid_fraction = round(max(0.0, 1.0 - invalid_fraction), 4)
-        outlier_fraction = (
-            round(outlier / valid_cells, 4) if valid_cells > 0 else 0.0
-        )
-        return {
-            "valid_fraction": valid_fraction,
-            "invalid_fraction": invalid_fraction,
-            "outlier_fraction": outlier_fraction,
         }

@@ -43,16 +43,6 @@ class  Settings(BaseSettings):
     # Refresh token
     refresh_token_exp_days: int = 30
 
-    # CORS — comma-separated browser origins (e.g. http://localhost:5173,http://192.168.100.24:5173)
-    cors_origins: str = (
-        "http://localhost:5173,"
-        "http://127.0.0.1:5173,"
-        "http://192.168.100.24:5173,"
-        "http://100.119.197.81:3000,"
-        "http://100.119.197.81:3001,"
-        "http://100.67.139.6:5173"
-    )
-
     # TimescaleDB (main source for extruder sensor data / live charts)
     tsdb_host: str = ""
     # tsdb_host: str = "100.119.197.81"

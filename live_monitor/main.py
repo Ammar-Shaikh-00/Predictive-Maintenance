@@ -19,6 +19,7 @@ from storage.backend_writer import BackendWriter
 from storage.context_resolver import ContextResolver
 from ml.anomaly_scorer import AnomalyScorer
 from ml.drift_detector import DriftDetector
+from ml.retrain_scheduler import start_scheduler
 from state.state_detector import StateDetector
 
 # FastAPI runs in background thread
@@ -163,11 +164,7 @@ def run_cycle() -> None:
         logging.info("Guard passed - proceeding to evaluation")
 
         # Step 7 — select regime + baseline (from backend baseline_registry)
-        ctx = context_resolver.refresh_if_needed()
-        baseline_result = selector.select(
-            features,
-            profile_id=ctx.get("profile_id"),
-        )
+        baseline_result = selector.select(features)
 
         logging.info(
             "Regime=%s | Method=%s | Confidence=%s",
@@ -209,14 +206,11 @@ def run_cycle() -> None:
                 live_run_evaluation_id=saved_evaluation.id,
             )
 
-        findings = getattr(run_evaluation, "findings", None) or []
-        top_finding = findings[0] if findings else {}
         logging.info(
-            "RunEvaluation saved | status=%s | ml_anomaly=%s | ml_score=%s | finding=%s | %s",
+            "RunEvaluation saved | status=%s | ml_anomaly=%s | ml_score=%s | %s",
             getattr(run_evaluation, "overall_status", None),
             getattr(run_evaluation, "ml_is_anomaly", None),
             getattr(run_evaluation, "ml_anomaly_score", None),
-            top_finding.get("text"),
             run_evaluation.explanation_text,
         )
 
@@ -255,18 +249,23 @@ if __name__ == "__main__":
     logging.info("Backend persistence URL: %s", config.BACKEND_BASE_URL)
     ctx = context_resolver.refresh_if_needed(force=True)
     logging.info(
-        "Backend context | machine_id=%s | line_id=%s | production_run_id=%s | profile_id=%s",
+        "Backend context | machine_id=%s | line_id=%s | production_run_id=%s",
         ctx.get("machine_id"),
         ctx.get("line_id"),
         ctx.get("production_run_id"),
-        ctx.get("profile_id"),
     )
 
-    # Retrain/scheduler are NOT started here — inference-only for Docker/server.
-    # Train on PC whenever you want:  python run_retrain.py
+    # start auto-retraining scheduler in background
+    scheduler_thread = threading.Thread(
+        target=start_scheduler,
+        args=(anomaly_scorer,),
+        daemon=True,
+    )
+    scheduler_thread.start()
     logging.info(
-        "Auto-retrain disabled in live-monitor (inference only). "
-        "On PC: python run_retrain.py → copy .pkl to ml_data/ → POST /ml/reload-models."
+        f"Auto-retraining scheduler started "
+        f"(every {config.RETRAIN_INTERVAL_HOURS}h, "
+        f"min {config.RETRAIN_MIN_NEW_ROWS} new rows)"
     )
 
     # start FastAPI in background thread

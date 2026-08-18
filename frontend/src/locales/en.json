@@ -113,15 +113,12 @@
   "save": "Save",
   "saving": "Saving...",
   "cancel": "Cancel",
-  "loading": "Loading...",
-  "refresh": "Refresh",
-  "backToOperations": "← Operations Center"
+  "loading": "Loading..."
   },
 "messages": {
   "load_failed": "Failed to load data",
   "created": "Successfully created",
   "updated": "Successfully updated",
-  "deleted": "Deleted",
   "name_required": "Please enter the name.",
   "sensor_required": "Please add at least one sensor in a state.",
   "sensor_invalid": "Please fill all sensor fields (sensor, min, max).",

@@ -55,12 +55,12 @@ const kpiCards = ({currentDashboardData,machineState, mssqlDerived}) => {
                     ? currentDashboardData.metrics.Motor_load.current_value.toFixed(1) 
                     : '--'}
                 </span>
-                <span className="text-2xl text-slate-500 ml-2">A</span>
+                <span className="text-2xl text-slate-500 ml-2">amp</span>
                 </div>
                 {/* Baseline Mean */}
                 {machineState === 'PRODUCTION' && currentDashboardData?.metrics?.Motor_load?.baseline_mean !== undefined && (
                 <div className="text-xs text-slate-600 mb-1">
-                    Basislinien-Mittelwert: {currentDashboardData.metrics.Motor_load.baseline_mean?.toFixed(1)} A
+                    Baseline Mean: {currentDashboardData.metrics.Motor_load.baseline_mean?.toFixed(1)} amp
                     {currentDashboardData?.metrics?.Motor_load?.baseline?.baseline_material ? (
                     <span className="text-slate-500"> (Material: {currentDashboardData.metrics.Motor_load.baseline.baseline_material})</span>
                     ) : null}
@@ -69,7 +69,7 @@ const kpiCards = ({currentDashboardData,machineState, mssqlDerived}) => {
                 {/* Green Band */}
                 {machineState === 'PRODUCTION' && currentDashboardData?.metrics?.Motor_load?.green_band && (
                 <div className="text-xs text-slate-600 mb-1">
-                    Grüner Bereich: {currentDashboardData.metrics.Motor_load.green_band.min.toFixed(1)} - {currentDashboardData.metrics.Motor_load.green_band.max.toFixed(1)} A
+                    Green Band: {currentDashboardData.metrics.Motor_load.green_band.min.toFixed(1)} - {currentDashboardData.metrics.Motor_load.green_band.max.toFixed(1)} amp
                 </div>
                 )}
                 {/* Explanation */}
@@ -83,14 +83,14 @@ const kpiCards = ({currentDashboardData,machineState, mssqlDerived}) => {
                 <div className={`text-xs mb-1 ${
                     Math.abs(currentDashboardData.metrics.Motor_load.deviation) > 5 ? 'text-amber-600' : 'text-slate-600'
                 }`}>
-                    Abweichung: {currentDashboardData.metrics.Motor_load.deviation > 0 ? '+' : ''}{currentDashboardData.metrics.Motor_load.deviation?.toFixed(1)} A
+                    Deviation: {currentDashboardData.metrics.Motor_load.deviation > 0 ? '+' : ''}{currentDashboardData.metrics.Motor_load.deviation?.toFixed(1)} amp
                 </div>
                 )}
                 <div className="text-xs text-slate-500 mb-1">
                 Berechnung: Direkte Messung vom Drehzahlsensor
                 </div>
                 <div className="text-xs text-slate-500 mb-2">
-                Referenz: {machineState === 'PRODUCTION' ? 'Materialabhängiger optimaler Bereich aus Baseline-Daten' : 'Prozessbewertung nur im Zustand PRODUKTION'}
+                Referenz: {machineState === 'PRODUCTION' ? 'Materialabhängiger optimaler Bereich aus Baseline-Daten' : 'Prozessbewertung nur in PRODUCTION Zustand'}
                 </div>
                 <div className="text-xs text-slate-600">
                 {machineState === 'PRODUCTION' ? (
@@ -129,12 +129,12 @@ const kpiCards = ({currentDashboardData,machineState, mssqlDerived}) => {
                     ? currentDashboardData.metrics.ScrewSpeed_rpm.current_value.toFixed(1) 
                     : '--'}
                 </span>
-                <span className="text-2xl text-slate-500 ml-2">U/min</span>
+                <span className="text-2xl text-slate-500 ml-2">rpm</span>
               </div>
               {/* Baseline Mean */}
               {machineState === 'PRODUCTION' && currentDashboardData?.metrics?.ScrewSpeed_rpm?.baseline_mean !== undefined && (
                 <div className="text-xs text-slate-600 mb-1">
-                  Basislinien-Mittelwert: {currentDashboardData.metrics.ScrewSpeed_rpm.baseline_mean?.toFixed(1)} U/min
+                  Baseline Mean: {currentDashboardData.metrics.ScrewSpeed_rpm.baseline_mean?.toFixed(1)} rpm
                   {currentDashboardData?.metrics?.ScrewSpeed_rpm?.baseline?.baseline_material ? (
                     <span className="text-slate-500"> (Material: {currentDashboardData.metrics.ScrewSpeed_rpm.baseline.baseline_material})</span>
                   ) : null}
@@ -143,7 +143,7 @@ const kpiCards = ({currentDashboardData,machineState, mssqlDerived}) => {
               {/* Green Band */}
               {machineState === 'PRODUCTION' && currentDashboardData?.metrics?.ScrewSpeed_rpm?.green_band && (
                 <div className="text-xs text-slate-600 mb-1">
-                  Grüner Bereich: {currentDashboardData.metrics.ScrewSpeed_rpm.green_band.min.toFixed(1)} - {currentDashboardData.metrics.ScrewSpeed_rpm.green_band.max.toFixed(1)} U/min
+                  Green Band: {currentDashboardData.metrics.ScrewSpeed_rpm.green_band.min.toFixed(1)} - {currentDashboardData.metrics.ScrewSpeed_rpm.green_band.max.toFixed(1)} rpm
                 </div>
               )}
               {/* Explanation */}
@@ -157,14 +157,14 @@ const kpiCards = ({currentDashboardData,machineState, mssqlDerived}) => {
                 <div className={`text-xs mb-1 ${
                   Math.abs(currentDashboardData.metrics.ScrewSpeed_rpm.deviation) > 5 ? 'text-amber-600' : 'text-slate-600'
                 }`}>
-                  Abweichung: {currentDashboardData.metrics.ScrewSpeed_rpm.deviation > 0 ? '+' : ''}{currentDashboardData.metrics.ScrewSpeed_rpm.deviation?.toFixed(1)} U/min
+                  Deviation: {currentDashboardData.metrics.ScrewSpeed_rpm.deviation > 0 ? '+' : ''}{currentDashboardData.metrics.ScrewSpeed_rpm.deviation?.toFixed(1)} rpm
                 </div>
               )}
               <div className="text-xs text-slate-500 mb-1">
                 Berechnung: Direkte Messung vom Drehzahlsensor
               </div>
               <div className="text-xs text-slate-500 mb-2">
-                Referenz: {machineState === 'PRODUCTION' ? 'Materialabhängiger optimaler Bereich aus Baseline-Daten' : 'Prozessbewertung nur im Zustand PRODUKTION'}
+                Referenz: {machineState === 'PRODUCTION' ? 'Materialabhängiger optimaler Bereich aus Baseline-Daten' : 'Prozessbewertung nur in PRODUCTION Zustand'}
               </div>
               <div className="text-xs text-slate-600">
                 {machineState === 'PRODUCTION' ? (
@@ -207,7 +207,7 @@ const kpiCards = ({currentDashboardData,machineState, mssqlDerived}) => {
               {/* Baseline Mean */}
               {machineState === 'PRODUCTION' && currentDashboardData?.metrics?.Pressure_bar?.baseline_mean !== undefined && (
                 <div className="text-xs text-slate-600 mb-1">
-                  Basislinien-Mittelwert: {currentDashboardData.metrics.Pressure_bar.baseline_mean?.toFixed(1)} bar
+                  Baseline Mean: {currentDashboardData.metrics.Pressure_bar.baseline_mean?.toFixed(1)} bar
                   {currentDashboardData?.metrics?.Pressure_bar?.baseline?.baseline_material ? (
                     <span className="text-slate-500"> (Material: {currentDashboardData.metrics.Pressure_bar.baseline.baseline_material})</span>
                   ) : null}
@@ -216,7 +216,7 @@ const kpiCards = ({currentDashboardData,machineState, mssqlDerived}) => {
               {/* Green Band */}
               {machineState === 'PRODUCTION' && currentDashboardData?.metrics?.Pressure_bar?.green_band && (
                 <div className="text-xs text-slate-600 mb-1">
-                  Grüner Bereich: {currentDashboardData.metrics.Pressure_bar.green_band.min.toFixed(1)} - {currentDashboardData.metrics.Pressure_bar.green_band.max.toFixed(1)} bar
+                  Green Band: {currentDashboardData.metrics.Pressure_bar.green_band.min.toFixed(1)} - {currentDashboardData.metrics.Pressure_bar.green_band.max.toFixed(1)} bar
                 </div>
               )}
               {/* Explanation */}
@@ -230,14 +230,14 @@ const kpiCards = ({currentDashboardData,machineState, mssqlDerived}) => {
                 <div className={`text-xs mb-1 ${
                   Math.abs(currentDashboardData.metrics.Pressure_bar.deviation) > 10 ? 'text-amber-600' : 'text-slate-600'
                 }`}>
-                  Abweichung: {currentDashboardData.metrics.Pressure_bar.deviation > 0 ? '+' : ''}{currentDashboardData.metrics.Pressure_bar.deviation?.toFixed(1)} bar
+                  Deviation: {currentDashboardData.metrics.Pressure_bar.deviation > 0 ? '+' : ''}{currentDashboardData.metrics.Pressure_bar.deviation?.toFixed(1)} bar
                 </div>
               )}
               <div className="text-xs text-slate-500 mb-1">
                 Berechnung: Direkte Messung vom Drucksensor im Extruder
               </div>
               <div className="text-xs text-slate-500 mb-2">
-                Referenz: {machineState === 'PRODUCTION' ? 'Materialabhängiger optimaler Druckbereich aus historischen Prozessdaten' : 'Prozessbewertung nur im Zustand PRODUKTION'}
+                Referenz: {machineState === 'PRODUCTION' ? 'Materialabhängiger optimaler Druckbereich aus historischen Prozessdaten' : 'Prozessbewertung nur in PRODUCTION Zustand'}
               </div>
               <div className="text-xs text-slate-600">
                 {machineState === 'PRODUCTION' ? (
@@ -346,7 +346,7 @@ const kpiCards = ({currentDashboardData,machineState, mssqlDerived}) => {
                 Berechnung: (Zone1 + Zone2 + Zone3 + Zone4) ÷ 4
               </div>
               <div className="text-xs text-slate-500 mb-2">
-                Referenz: {machineState === 'PRODUCTION' ? 'Materialabhängiger optimaler Temperaturbereich aus Baseline-Daten' : 'Prozessbewertung nur im Zustand PRODUKTION'}
+                Referenz: {machineState === 'PRODUCTION' ? 'Materialabhängiger optimaler Temperaturbereich aus Baseline-Daten' : 'Prozessbewertung nur in PRODUCTION Zustand'}
               </div>
               <div className="text-xs text-slate-600">
                 {machineState === 'PRODUCTION' ? (
@@ -402,7 +402,7 @@ const kpiCards = ({currentDashboardData,machineState, mssqlDerived}) => {
                 Berechnung: Max(Zone1-4) - Min(Zone1-4)
               </div>
               <div className="text-xs text-slate-500 mb-2">
-                Referenz: {machineState === 'PRODUCTION' ? '≤5°C optimal, ≤8°C akzeptabel, >8°C kritisch' : 'Prozessbewertung nur im Zustand PRODUKTION'}
+                Referenz: {machineState === 'PRODUCTION' ? '≤5°C optimal, ≤8°C akzeptabel, >8°C kritisch' : 'Prozessbewertung nur in PRODUCTION Zustand'}
               </div>
               <div className="text-xs text-slate-600">
                 {machineState === 'PRODUCTION' ? (

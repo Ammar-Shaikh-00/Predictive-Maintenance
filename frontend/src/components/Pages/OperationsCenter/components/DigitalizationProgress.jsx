@@ -28,16 +28,15 @@ export default function DigitalizationProgress({
   return (
     <section className="rounded-2xl border border-white/10 bg-[#141820] p-4 sm:p-5 h-full">
       <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-300">
-        Digitalisierungsfortschritt
+        Digitalization progress
       </h2>
       <p className="mt-1 text-xs text-slate-500">
-        Wie viel Infrastruktur und wie viele Datenquellen bereits verbunden
-        sind — keine Modellgenauigkeit
+        How much infrastructure and how many data sources are already connected — not model accuracy
       </p>
 
       <div className="mt-4 flex items-end justify-between gap-3">
         <p className="text-3xl font-semibold text-slate-50">{progress}%</p>
-        <p className="text-xs text-slate-500 pb-1">Digitalisierung abgeschlossen</p>
+        <p className="text-xs text-slate-500 pb-1">Digitalization completed</p>
       </div>
       <div className="mt-2">
         <ProgressBar value={progress} />
@@ -46,7 +45,7 @@ export default function DigitalizationProgress({
       <div className="mt-5 grid gap-4 sm:grid-cols-2">
         <div>
           <p className="mb-2 text-[11px] uppercase tracking-wider text-emerald-400/90">
-            Bereits erledigt
+            Already completed
           </p>
           <ul className="space-y-1.5">
             {[...checklistDone, ...newlyDone].map((item) => (
@@ -59,7 +58,7 @@ export default function DigitalizationProgress({
         </div>
         <div>
           <p className="mb-2 text-[11px] uppercase tracking-wider text-slate-500">
-            Noch offen
+            Still open
           </p>
           <ul className="space-y-1.5">
             {openRemaining.map((item) => (
@@ -69,9 +68,7 @@ export default function DigitalizationProgress({
               </li>
             ))}
             {openRemaining.length === 0 ? (
-              <li className="text-sm text-emerald-400">
-                Alle gelisteten Quellen verbunden
-              </li>
+              <li className="text-sm text-emerald-400">All listed sources connected</li>
             ) : null}
           </ul>
         </div>

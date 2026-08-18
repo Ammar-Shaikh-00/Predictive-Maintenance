@@ -1,7 +1,0 @@
-{
-  "_comment": "Plant tolerance policy for baseline bands. Edit here — not in Python. warning_delta/critical_delta are ± from baseline mean. Applied by: python storage/populate_baseline.py --refresh",
-  "temperature_mean": {
-    "warning_delta": 2.0,
-    "critical_delta": 4.0
-  }
-}

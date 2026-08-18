@@ -179,7 +179,7 @@ export default function LiveDeviationsPage() {
               className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-200 disabled:opacity-50"
             >
               <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
-              {t("common.refresh", { defaultValue: "Aktualisieren" })}
+              {t("common.refresh", { defaultValue: "Refresh" })}
             </button>
           </div>
         </div>

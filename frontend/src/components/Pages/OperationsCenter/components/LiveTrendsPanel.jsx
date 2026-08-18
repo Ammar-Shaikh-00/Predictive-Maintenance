@@ -1,6 +1,5 @@
 import { Link } from "react-router-dom";
 import CssSparkline from "./CssSparkline";
-import { localizeUiText } from "../buildOcCockpit";
 
 const SPARK = {
   green: "#94a3b8",
@@ -19,9 +18,9 @@ const DOT = {
 const LABEL_DE = {
   motor_load: "MOTORLAST",
   screw_speed: "SCHNECKENDREHZAHL",
-  melt_pressure: "EXTRUDERDRUCK",
+  melt_pressure: "EXTRUDER DRUCK",
   temp_avg: "SCHMELZTEMPERATUR",
-  zone3_temp: "ZONE-3-TEMPERATUR",
+  zone3_temp: "ZONE 3 TEMPERATUR",
   energy: "ENERGIEVERBRAUCH",
   throughput: "MATERIALDURCHSATZ",
   scrap: "AUSSCHUSSQUOTE",
@@ -30,13 +29,6 @@ const LABEL_DE = {
 const SUB_DE = {
   temp_avg: "Durchschnitt",
   zone3_temp: "Durchschnitt",
-};
-
-const UNIT_DE = {
-  rpm: "U/min",
-  amp: "A",
-  A: "A",
-  "U/min": "U/min",
 };
 
 const TREND_ORDER = [
@@ -75,7 +67,7 @@ export default function LiveTrendsPanel({ values = [] }) {
       <div className="mb-4 flex flex-wrap items-end justify-between gap-2">
         <h2 className="oc-section-title min-w-0">Live-Trends — Letzte 60 Minuten</h2>
         <Link to="/extruder-latest-values" className="oc-pill-btn shrink-0">
-          Alle Trends anzeigen →
+          Alle Live-Trends →
         </Link>
       </div>
 
@@ -89,10 +81,6 @@ export default function LiveTrendsPanel({ values = [] }) {
           const last = spark.length ? spark[spark.length - 1] : null;
           const showSpark = spark.length > 0;
           const showValueLocked = item.value === "—" && !showSpark;
-          const unit = UNIT_DE[item.unit] || item.unit || "";
-          const lockedHint = item.lockedHint
-            ? localizeUiText(item.lockedHint)
-            : "Kein Trend";
 
           return (
             <div
@@ -108,9 +96,9 @@ export default function LiveTrendsPanel({ values = [] }) {
               <div className="mt-3 flex min-w-0 flex-col items-stretch gap-2 min-[1025px]:flex-row min-[1025px]:items-end min-[1025px]:justify-between">
                 <p className="min-w-0 truncate text-2xl font-semibold tabular-nums text-white">
                   {item.value}
-                  {unit ? (
+                  {item.unit ? (
                     <span className="ml-1 text-sm font-normal text-slate-400">
-                      {unit}
+                      {item.unit}
                     </span>
                   ) : null}
                 </p>
@@ -132,12 +120,12 @@ export default function LiveTrendsPanel({ values = [] }) {
                   </div>
                 ) : showValueLocked ? (
                   <p className="text-[10px] leading-snug text-slate-500 min-[1025px]:max-w-[40%] min-[1025px]:shrink-0 min-[1025px]:text-right">
-                    {lockedHint}
+                    {item.lockedHint || "Kein Trend"}
                   </p>
                 ) : null}
               </div>
               <Link to="/machine" className="oc-pill-btn oc-pill-btn--sm mt-3">
-                Details anzeigen →
+                Details →
               </Link>
             </div>
           );

@@ -203,7 +203,7 @@ export default function TicketCenterPage() {
               to="/"
               className="rounded-xl border border-white/10 px-3 py-2 text-xs text-slate-300 hover:bg-white/5"
             >
-              ← Betriebszentrale
+              ← Operations Center
             </Link>
             <Link
               to="/maintenance-history"
@@ -218,7 +218,7 @@ export default function TicketCenterPage() {
               className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-200 disabled:opacity-50"
             >
               <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
-              {t("common.refresh", { defaultValue: "Aktualisieren" })}
+              {t("common.refresh", { defaultValue: "Refresh" })}
             </button>
             <button
               type="button"

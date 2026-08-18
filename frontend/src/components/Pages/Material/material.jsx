@@ -36,13 +36,13 @@ export default function MaterialProfiles() {
       }
 
       if (materialRes?.fallback) {
-        setError(materialRes.error || "Materialprofile konnten nicht geladen werden");
+        setError(materialRes.error || "Could not load material profiles");
         setMaterials([]);
       } else {
         setMaterials(Array.isArray(materialRes?.data) ? materialRes.data : []);
       }
     } catch (err) {
-      setError(err?.message || "Materialprofile konnten nicht geladen werden");
+      setError(err?.message || "Failed to load material profiles");
       setMaterials([]);
     } finally {
       setLoading(false);
@@ -61,7 +61,7 @@ export default function MaterialProfiles() {
           payload
         );
         if (res?.fallback) {
-          setError(res.error || "Aktualisierung fehlgeschlagen");
+          setError(res.error || "Update failed");
           return;
         }
         setMaterials((prev) =>
@@ -70,7 +70,7 @@ export default function MaterialProfiles() {
       } else {
         const res = await safeApi.post("/material-profiles", payload);
         if (res?.fallback) {
-          setError(res.error || "Erstellung fehlgeschlagen");
+          setError(res.error || "Create failed");
           return;
         }
         setMaterials((prev) => [...prev, res.data]);
@@ -78,7 +78,7 @@ export default function MaterialProfiles() {
       setShowForm(false);
       setEditingMaterial(null);
     } catch (err) {
-      setError(err?.response?.data?.detail || err?.message || "Speichern fehlgeschlagen");
+      setError(err?.response?.data?.detail || err?.message || "Save failed");
     }
   };
 
@@ -88,27 +88,27 @@ export default function MaterialProfiles() {
         `/material-profiles/${material.id}/toggle`
       );
       if (res?.fallback) {
-        setError(res.error || "Umschalten fehlgeschlagen");
+        setError(res.error || "Toggle failed");
         return;
       }
       // API may deactivate others when activating one — soft reload list
       await load({ soft: true });
     } catch (err) {
-      setError(err?.response?.data?.detail || err?.message || "Umschalten fehlgeschlagen");
+      setError(err?.response?.data?.detail || err?.message || "Toggle failed");
     }
   };
 
   const handleDelete = async (material) => {
-    if (!window.confirm(`Materialprofil „${material.name}“ löschen?`)) return;
+    if (!window.confirm(`Delete material profile "${material.name}"?`)) return;
     try {
       const res = await safeApi.delete(`/material-profiles/${material.id}`);
       if (res?.fallback) {
-        setError(res.error || "Löschen fehlgeschlagen");
+        setError(res.error || "Delete failed");
         return;
       }
       setMaterials((prev) => prev.filter((m) => m.id !== material.id));
     } catch (err) {
-      setError(err?.response?.data?.detail || err?.message || "Löschen fehlgeschlagen");
+      setError(err?.response?.data?.detail || err?.message || "Delete failed");
     }
   };
 
@@ -123,14 +123,14 @@ export default function MaterialProfiles() {
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <p className="text-[11px] uppercase tracking-[0.2em] text-emerald-400/90">
-              ZITTA · Modul 12
+              ZITTA · Module 12
             </p>
             <h1 className="mt-1 text-2xl font-semibold tracking-tight text-slate-50">
-              Materialprofile
+              Material profiles
             </h1>
             <p className="mt-1 text-sm text-slate-400">
-              Referenz-Sensorfenster pro Material. Energie / Ausschuss / Optima
-              zeigen — bis verbunden. Keine erfundenen KI-Einstellungen.
+              Reference sensor windows per material. Energy / scrap / optima
+              show — until connected. No invented AI settings.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -138,13 +138,13 @@ export default function MaterialProfiles() {
               to="/"
               className="rounded-xl border border-white/10 px-3 py-2 text-xs text-slate-300 hover:bg-white/5"
             >
-              ← Betriebszentrale
+              ← Operations Center
             </Link>
             <Link
               to="/material-batches"
               className="rounded-xl border border-white/10 px-3 py-2 text-xs text-slate-300 hover:bg-white/5"
             >
-              Importierte Chargen
+              Imported lots
             </Link>
             <button
               type="button"
@@ -153,7 +153,7 @@ export default function MaterialProfiles() {
               className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-200 disabled:opacity-50"
             >
               <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
-              Aktualisieren
+              Refresh
             </button>
             <button
               type="button"
@@ -163,7 +163,7 @@ export default function MaterialProfiles() {
               }}
               className="rounded-xl bg-emerald-600 px-3 py-2 text-xs font-medium text-white hover:bg-emerald-500"
             >
-              + Erstellen
+              + Create
             </button>
           </div>
         </div>
@@ -172,10 +172,10 @@ export default function MaterialProfiles() {
 
       <div className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
         {[
-          ["Profile", materials.length],
-          ["Aktiv", activeCount],
-          ["Inaktiv", Math.max(0, materials.length - activeCount)],
-          ["Sensoren im Formular", sensors.length],
+          ["Profiles", materials.length],
+          ["Active", activeCount],
+          ["Inactive", Math.max(0, materials.length - activeCount)],
+          ["Sensors in form", sensors.length],
         ].map(([label, value]) => (
           <div
             key={label}
@@ -201,10 +201,10 @@ export default function MaterialProfiles() {
       />
 
       {loading && materials.length === 0 ? (
-        <p className="py-10 text-center text-sm text-slate-500">Wird geladen…</p>
+        <p className="py-10 text-center text-sm text-slate-500">Loading…</p>
       ) : materials.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-white/10 bg-[#141820] px-4 py-10 text-center">
-          <p className="text-sm text-slate-300">Noch keine Materialprofile</p>
+          <p className="text-sm text-slate-300">No material profiles yet</p>
           <button
             type="button"
             onClick={() => {
@@ -213,7 +213,7 @@ export default function MaterialProfiles() {
             }}
             className="mt-3 text-xs text-emerald-300 underline"
           >
-            + Erstes Profil erstellen
+            + Create first profile
           </button>
         </div>
       ) : (

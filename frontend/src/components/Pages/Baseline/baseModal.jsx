@@ -90,7 +90,7 @@ const BaselineModal = ({
         // ✅ NEW VALIDATION BLOCK
         for (const [stateId, sensors] of Object.entries(stateData)) {
             if (!sensors?.mappings || sensors.mappings.length === 0) {
-                toast.error(t("messages.state_no_sensor") || `Status ${stateId} hat keine Sensoren.`);
+                toast.error(`State ${stateId} has no sensors.`);
                 return;
             }
 

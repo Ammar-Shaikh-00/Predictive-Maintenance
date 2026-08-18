@@ -90,7 +90,7 @@ export function MachineModal({
 
           {/* Description */}
           <textarea
-            placeholder="Beschreibung"
+            placeholder="Description"
             value={formData.description}
             onChange={(e) =>
               setFormData({ ...formData, description: e.target.value })
@@ -110,10 +110,10 @@ export function MachineModal({
             disabled={isLoading}
             id="selectStatus"
           >
-            <option value="online">Verbunden</option>
-            <option value="offline">Getrennt</option>
-            <option value="maintenance">Wartung</option>
-            <option value="degraded">Eingeschränkt</option>
+            <option value="online">Online</option>
+            <option value="offline">Offline</option>
+            <option value="maintenance">Maintenance</option>
+            <option value="degraded">Degraded</option>
           </select>
 
           {/* Criticality */}
@@ -127,9 +127,9 @@ export function MachineModal({
             disabled={isLoading}
             id="selectCriticality"
           >
-            <option value="low">Niedrig</option>
-            <option value="medium">Mittel</option>
-            <option value="high">Hoch</option>
+            <option value="low">Low</option>
+            <option value="medium">Medium</option>
+            <option value="high">High</option>
           </select>
 
           {/* Buttons */}

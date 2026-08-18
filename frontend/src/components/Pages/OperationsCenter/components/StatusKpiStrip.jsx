@@ -8,12 +8,12 @@ const STATUS_STYLES = {
 };
 
 const STATUS_LABELS = {
-  PRODUCTION: "Produktion läuft",
-  READY: "Bereit",
-  HEATING: "Linie heizt auf",
-  COOLING: "Kühlt ab",
-  FAULT: "Störung",
-  STOPPED: "Produktion gestoppt",
+  PRODUCTION: "Production running",
+  READY: "Ready",
+  HEATING: "Line is heating up",
+  COOLING: "Cooling down",
+  FAULT: "Fault",
+  STOPPED: "Production stopped",
 };
 
 function Kpi({ label, value, hint }) {
@@ -49,33 +49,33 @@ export default function StatusKpiStrip({
           {statusLabel}
         </span>
         <span className="text-xs text-slate-500">
-          Status alle 10–30 s · Stage-1-Demo
+          Status updates every 10–30s · Stage 1 demo config
         </span>
       </div>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-6">
         <Kpi
-          label="Verbundene Maschinen"
-          value={`${connectedMachines} von ${totalMachines}`}
-          hint="1 Extruder live angebunden"
+          label="Connected machines"
+          value={`${connectedMachines} of ${totalMachines}`}
+          hint="1 extruder live footprint"
         />
         <Kpi
-          label="Digitalisierung"
+          label="Digitalization"
           value={`${digitalizationProgress}%`}
-          hint="Infrastruktur + Quellen"
+          hint="Infrastructure + sources"
         />
         <Kpi
-          label="Vorhersagebereitschaft"
+          label="Prediction Readiness"
           value={`${predictionReadiness}%`}
-          hint="Keine Genauigkeit"
+          hint="Not Accuracy"
         />
         <Kpi
-          label="Datenqualität"
+          label="Data quality"
           value={`${dataQuality}%`}
-          hint="Vollständigkeit / Aktualität"
+          hint="Completeness / freshness"
         />
-        <Kpi label="Aktive Warnungen" value={activeWarnings} />
-        <Kpi label="Erwartete Risiken" value={activeRisks} hint="Demo-Vorhersagen" />
+        <Kpi label="Active warnings" value={activeWarnings} />
+        <Kpi label="Expected risks" value={activeRisks} hint="Demo predictions" />
       </div>
     </section>
   );

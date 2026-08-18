@@ -4,28 +4,20 @@ import { sourceLabel } from "../../../../utils/capabilityEngine";
 
 const STATUS_UI = {
   locked: {
-    badge: "Gesperrt",
+    badge: "Locked",
     className: "border-white/10 bg-[#1a1f27] text-slate-300",
     Icon: Lock,
   },
   partially_available: {
-    badge: "In Bearbeitung",
+    badge: "In progress",
     className: "border-amber-500/30 bg-amber-500/5 text-amber-100",
     Icon: Lock,
   },
   active: {
-    badge: "Aktiv",
+    badge: "Active",
     className: "border-emerald-500/40 bg-emerald-500/10 text-emerald-100",
     Icon: Unlock,
   },
-};
-
-const BACKEND_STATUS_DE = {
-  LOCKED: "Gesperrt",
-  COLLECTING_DATA: "Daten werden erfasst",
-  PARTIALLY_AVAILABLE: "Teilweise verfügbar",
-  ACTIVE: "Aktiv",
-  IN_PROGRESS: "In Bearbeitung",
 };
 
 const FEATURE_LINKS = {
@@ -40,21 +32,19 @@ export default function LockedFeatures({ features = [] }) {
   return (
     <section className="rounded-2xl border border-white/10 bg-[#141820] p-4 sm:p-5">
       <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-300">
-        Freischaltbare Funktionen
+        Unlockable features
       </h2>
       <p className="mt-1 text-xs text-slate-500">
-        Status aus der Capability-Engine — Freischaltung bei verbundenen Quellen
+        Status from capability engine — unlocks when required sources connect
       </p>
 
       <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
         {features.map((feature) => {
           const ui = STATUS_UI[feature.status] || STATUS_UI.locked;
           const Icon = ui.Icon;
-          const backendKey = String(feature.backendStatus || "").toUpperCase();
           const badge =
             feature.backendStatus && feature.status === "partially_available"
-              ? BACKEND_STATUS_DE[backendKey] ||
-                String(feature.backendStatus).replace(/_/g, " ")
+              ? String(feature.backendStatus).replace(/_/g, " ")
               : ui.badge;
           const href = FEATURE_LINKS[feature.key];
           return (
@@ -74,17 +64,17 @@ export default function LockedFeatures({ features = [] }) {
               <p className="mt-2 text-xs opacity-80">{feature.benefit}</p>
               {feature.missingSources?.length > 0 ? (
                 <p className="mt-2 text-[11px] opacity-70">
-                  Erfordert:{" "}
+                  Requires:{" "}
                   {feature.missingSources.map(sourceLabel).join(", ")}
                 </p>
               ) : (
                 <p className="mt-2 text-[11px] text-emerald-300">
-                  Anforderungen erfüllt
+                  Requirements met
                   {href ? (
                     <>
                       {" · "}
                       <Link to={href} className="underline hover:text-emerald-200">
-                        Modul öffnen
+                        Open module
                       </Link>
                     </>
                   ) : null}

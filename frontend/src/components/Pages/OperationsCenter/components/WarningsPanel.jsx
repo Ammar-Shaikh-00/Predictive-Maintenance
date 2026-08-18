@@ -4,7 +4,7 @@ export default function WarningsPanel({ warnings = [] }) {
   return (
     <section className="rounded-2xl border border-white/10 bg-[#141820] p-4 sm:p-5 h-full">
       <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-300">
-        Aktuelle Warnungen
+        Current warnings
       </h2>
       <ul className="mt-3 space-y-3">
         {warnings.map((w) => (
@@ -19,7 +19,7 @@ export default function WarningsPanel({ warnings = [] }) {
           </li>
         ))}
         {warnings.length === 0 ? (
-          <li className="text-sm text-slate-500">Keine aktiven Warnungen</li>
+          <li className="text-sm text-slate-500">No active warnings</li>
         ) : null}
       </ul>
     </section>

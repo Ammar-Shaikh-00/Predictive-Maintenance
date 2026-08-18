@@ -11,10 +11,10 @@ export default function ProcessTab({ runId }) {
 
   return (
     <div>
-      <h3 className="font-bold mb-2">Prozessdaten</h3>
+      <h3 className="font-bold mb-2">Process Data</h3>
       {data.map((row) => (
         <div key={row.id} className="border p-2 mb-2">
-          Druck: {row.avg_pressure} | Geschwindigkeit: {row.avg_speed}
+          Pressure: {row.avg_pressure} | Speed: {row.avg_speed}
         </div>
       ))}
     </div>

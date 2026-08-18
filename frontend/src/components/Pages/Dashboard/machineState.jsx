@@ -32,7 +32,7 @@ const machineState = ({machineState, baseLineStatus, profileId, profileStatus}) 
               </div>
               {/* Baseline Status */}
                 <div className="mt-3 text-sm">
-                  <span className="text-slate-600">Basislinie:</span> 
+                  <span className="text-slate-600">Baseline:</span> 
                   <span className={`ml-2 ${
                     baseLineStatus === 'ready' ? 'text-emerald-600' : 
                     baseLineStatus === 'not_ready' ? 'text-amber-600' : 
