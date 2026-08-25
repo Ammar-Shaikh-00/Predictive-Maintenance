@@ -9,8 +9,52 @@ import {
   SOURCE_LABELS,
 } from "../config/operationsCenterDemo";
 
+/** Not data sources in this product — never show as digitalization checks. */
+export const COSMETIC_SOURCE_KEYS = new Set([
+  "vpn",
+  "sql_database",
+  "user_management",
+]);
+
+const CHECKLIST_EXTRA_KEYS = ["opc_ua", "erp"];
+
 export function sourceLabel(key) {
   return SOURCE_LABELS[key] || key.replace(/_/g, " ");
+}
+
+/**
+ * Honest checklist from backend connected/missing sources.
+ * Never marks VPN, SQL-Datenbank, or Benutzerverwaltung as done.
+ */
+export function buildDigitalizationChecklist(
+  connectedSources = [],
+  missingSources = []
+) {
+  const connected = new Set(
+    (connectedSources || []).filter((key) => !COSMETIC_SOURCE_KEYS.has(key))
+  );
+  const catalog = [
+    ...Object.keys(DIGITALIZATION_WEIGHTS),
+    ...CHECKLIST_EXTRA_KEYS,
+    ...(missingSources || []),
+    ...connected,
+  ];
+  const seen = new Set();
+  const keys = [];
+  for (const key of catalog) {
+    if (!key || COSMETIC_SOURCE_KEYS.has(key) || seen.has(key)) continue;
+    seen.add(key);
+    keys.push(key);
+  }
+
+  const done = keys
+    .filter((key) => connected.has(key))
+    .map((key) => ({ key, label: sourceLabel(key) }));
+  const open = keys
+    .filter((key) => !connected.has(key))
+    .map((key) => ({ key, label: sourceLabel(key) }));
+
+  return { done, open };
 }
 
 /**

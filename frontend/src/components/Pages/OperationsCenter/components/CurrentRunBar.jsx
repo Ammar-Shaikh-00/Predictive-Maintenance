@@ -1,75 +1,59 @@
 /**
- * PDF Produktionslauf card — bottom sticky, rounded panel like other OC cards.
+ * Bottom footer — current order (Ereignisverlauf is a separate bar).
  */
-export default function CurrentRunBar({ run = null, dataCurrent = null }) {
-  const order = displayText(run?.order_label) || (run?.id != null ? `#${run.id}` : "—");
-  const line = displayText(run?.line_label);
-  const orderText = line ? `${order} | ${line}` : order;
-  const produced = formatKg(run?.produced);
-  const scrap = formatPct(run?.scrap);
-  const oee = formatPct(run?.oee);
+export default function CurrentRunBar({
+  run = null,
+  dataCurrent = null,
+}) {
+  const material =
+    displayText(run?.material) ||
+    displayText(run?.order_label) ||
+    (run?.id != null ? `Lauf #${run.id}` : "—");
+  const progress = asPct(run?.progress);
+  const remaining =
+    displayText(run?.remaining) ||
+    displayText(run?.runtime) ||
+    "—";
 
   return (
-    <div className="oc-run-bar sticky bottom-0 z-20 mt-4 w-full min-w-0 px-0 pb-1 pt-1 sm:pb-2">
-      <div className="oc-run-card w-full min-w-0">
-        <div className="grid grid-cols-2 gap-x-3 gap-y-2 text-sm sm:grid-cols-3 lg:flex lg:flex-wrap lg:items-center lg:justify-between lg:gap-x-6">
-          <Metric
-            label="Produktionslauf"
-            value={orderText}
-            labelTone="text-emerald-400"
-          />
-          <Metric label="Laufzeit" value={displayText(run?.runtime) || "—"} />
-          <Metric label="Produziert" value={produced} />
-          <Metric
-            label="Ausschuss"
-            value={scrap}
-            labelTone="text-rose-400"
-          />
-          <Metric
-            label="OEE"
-            value={oee}
-            valueTone={oee !== "—" ? "text-emerald-400" : undefined}
-          />
-          <div className="inline-flex min-w-0 items-center gap-2">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">
-              Daten aktuell
+    <div className="oc-footer-bar">
+      <div className="oc-footer-bar__inner">
+        <div className="oc-footer-order">
+          <span className="oc-footer-title">Aktueller Auftrag</span>
+          <div className="oc-footer-field">
+            <span className="oc-footer-field__label">Material</span>
+            <span className="oc-footer-field__value">{material}</span>
+          </div>
+          <div className="oc-footer-field oc-footer-field--progress">
+            <span className="oc-footer-field__label">Fortschritt</span>
+            <div className="oc-footer-progress">
+              <div
+                className="oc-footer-progress__fill"
+                style={{ width: `${progress ?? 0}%` }}
+              />
+            </div>
+            <span className="oc-footer-field__value tabular-nums">
+              {progress != null ? `${progress}%` : "—"}
             </span>
-            <span className="font-semibold tabular-nums text-slate-100">
-              {dataCurrent
-                ? dataCurrent.toLocaleTimeString("de-DE", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                    second: "2-digit",
-                  })
-                : "—"}
-            </span>
-            <span className="relative flex h-2 w-2 shrink-0">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
+          </div>
+          <div className="oc-footer-field">
+            <span className="oc-footer-field__label">Restzeit</span>
+            <span className="oc-footer-field__value tabular-nums">
+              {remaining}
             </span>
           </div>
         </div>
-      </div>
-    </div>
-  );
-}
 
-function Metric({ label, value, labelTone, valueTone }) {
-  return (
-    <div className="inline-flex min-w-0 flex-col gap-0.5 sm:flex-row sm:flex-wrap sm:items-baseline sm:gap-2">
-      <span
-        className={`text-[11px] font-semibold uppercase tracking-[0.12em] ${
-          labelTone || "text-slate-500"
-        }`}
-      >
-        {label}
-      </span>
-      <span
-        className={`truncate font-semibold tabular-nums ${valueTone || "text-slate-100"}`}
-        title={typeof value === "string" ? value : undefined}
-      >
-        {value}
-      </span>
+        {dataCurrent ? (
+          <span className="oc-footer-tick" title="Daten aktuell">
+            {dataCurrent.toLocaleTimeString("de-DE", {
+              hour: "2-digit",
+              minute: "2-digit",
+              second: "2-digit",
+            })}
+          </span>
+        ) : null}
+      </div>
     </div>
   );
 }
@@ -80,14 +64,8 @@ function displayText(v) {
   return String(v);
 }
 
-function formatKg(v) {
+function asPct(v) {
   const n = Number(v);
-  if (!Number.isFinite(n)) return "—";
-  return `${n.toLocaleString("de-DE")} kg`;
-}
-
-function formatPct(v) {
-  const n = Number(v);
-  if (!Number.isFinite(n)) return "—";
-  return `${n}%`;
+  if (!Number.isFinite(n)) return null;
+  return Math.max(0, Math.min(100, Math.round(n)));
 }

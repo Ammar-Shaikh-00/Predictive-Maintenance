@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 80" fill="none">
+  <rect width="120" height="80" rx="8" fill="#12161e"/>
+  <rect x="28" y="22" width="64" height="36" rx="4" stroke="#94a3b8" stroke-width="2"/>
+  <path d="M40 22v36M60 22v36M80 22v36" stroke="#64748b" stroke-width="1.4" opacity=".8"/>
+  <circle cx="36" cy="30" r="2" fill="#34d399"/>
+  <circle cx="36" cy="50" r="2" fill="#34d399"/>
+  <text x="60" y="72" text-anchor="middle" fill="#64748b" font-size="8" font-family="system-ui">Die / Düse</text>
+</svg>

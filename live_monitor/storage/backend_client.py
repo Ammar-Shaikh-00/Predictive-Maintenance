@@ -115,6 +115,87 @@ class BackendClient:
         data = self.get("/baseline-registry", params=params)
         return data if isinstance(data, list) else []
 
+    def get_machine_raw_page(
+        self,
+        machine_id: str,
+        line_id: int,
+        date_from: str,
+        date_to: str,
+        *,
+        limit: int = 1000,
+        offset: int = 0,
+        sort: str = "asc",
+        timeout: float | None = None,
+    ) -> dict[str, Any]:
+        """Paginated GET /machine-raw-data/ for training history."""
+        response = requests.get(
+            self._url("/machine-raw-data/"),
+            params={
+                "machine_id": machine_id,
+                "line_id": line_id,
+                "datefrom": date_from,
+                "dateTo": date_to,
+                "limit": limit,
+                "offset": offset,
+                "sort": sort,
+            },
+            timeout=timeout if timeout is not None else self.timeout,
+        )
+        if response.status_code >= 400:
+            logging.warning(
+                "Backend GET /machine-raw-data/ failed: %s %s",
+                response.status_code,
+                response.text[:300],
+            )
+            response.raise_for_status()
+        data = response.json() if response.content else {}
+        return data if isinstance(data, dict) else {"items": [], "has_more": False}
+
+    def list_live_process_windows(
+        self,
+        *,
+        limit: int = 20,
+        offset: int = 0,
+        production_run_id: int | None = None,
+    ) -> list[dict]:
+        params: dict[str, Any] = {"limit": limit, "offset": offset}
+        if production_run_id is not None:
+            params["production_run_id"] = production_run_id
+        data = self.get("/live-process-windows", params=params)
+        return data if isinstance(data, list) else []
+
+    def list_live_run_evaluations(
+        self,
+        *,
+        limit: int = 20,
+        offset: int = 0,
+        live_process_window_id: int | None = None,
+        production_run_id: int | None = None,
+    ) -> list[dict]:
+        params: dict[str, Any] = {"limit": limit, "offset": offset}
+        if live_process_window_id is not None:
+            params["live_process_window_id"] = live_process_window_id
+        if production_run_id is not None:
+            params["production_run_id"] = production_run_id
+        data = self.get("/live-run-evaluations", params=params)
+        return data if isinstance(data, list) else []
+
+    def list_live_feature_evaluations(
+        self,
+        *,
+        limit: int = 100,
+        offset: int = 0,
+        live_run_evaluation_id: int | None = None,
+        live_process_window_id: int | None = None,
+    ) -> list[dict]:
+        params: dict[str, Any] = {"limit": limit, "offset": offset}
+        if live_run_evaluation_id is not None:
+            params["live_run_evaluation_id"] = live_run_evaluation_id
+        if live_process_window_id is not None:
+            params["live_process_window_id"] = live_process_window_id
+        data = self.get("/live-feature-evaluations", params=params)
+        return data if isinstance(data, list) else []
+
     # --- writes ---
     def create_machine_raw(self, payload: dict) -> dict | None:
         return self.post("/machine-raw-data/", payload)
@@ -127,3 +208,6 @@ class BackendClient:
 
     def create_live_feature_evaluation(self, payload: dict) -> dict | None:
         return self.post("/live-feature-evaluations", payload)
+
+    def create_baseline_registry(self, payload: dict) -> dict | None:
+        return self.post("/baseline-registry", payload)

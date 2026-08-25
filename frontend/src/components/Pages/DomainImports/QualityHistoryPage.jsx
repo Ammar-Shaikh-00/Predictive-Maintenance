@@ -1,31 +1,31 @@
 import DomainImportPage from "./DomainImportPage";
 
 const COLUMNS = [
-  { key: "event_at", label: "When" },
-  { key: "machine_id", label: "Machine" },
-  { key: "external_run_key", label: "Run key" },
+  { key: "event_at", label: "Wann" },
+  { key: "machine_id", label: "Maschine" },
+  { key: "external_run_key", label: "Laufschlüssel" },
   {
     key: "production_run_id",
-    label: "Run ID",
+    label: "Lauf-ID",
     render: (row) => row.production_run_id ?? "—",
   },
-  { key: "material_batch", label: "Batch" },
+  { key: "material_batch", label: "Charge" },
   {
     key: "quality_value",
-    label: "QC value",
+    label: "QC-Wert",
     render: (row) =>
       row.quality_value != null ? Number(row.quality_value).toFixed(3) : "—",
   },
   { key: "approval_status", label: "Status" },
   {
     key: "scrap",
-    label: "Scrap",
+    label: "Ausschuss",
     render: (row) => (row.scrap != null ? Number(row.scrap).toFixed(2) : "—"),
   },
   {
     key: "promoted_to_quality_record",
-    label: "Linked",
-    render: (row) => row.promoted_to_quality_record || "no",
+    label: "Verknüpft",
+    render: (row) => row.promoted_to_quality_record || "nein",
   },
 ];
 
@@ -33,8 +33,8 @@ const COLUMNS = [
 export default function QualityHistoryPage() {
   return (
     <DomainImportPage
-      title="Quality history"
-      subtitle="Imported QC events from the Setup Wizard connector"
+      title="Qualitätshistorie"
+      subtitle="Importierte QC-Ereignisse vom Setup-Assistenten-Connector"
       sourceKey="quality_data"
       endpoint="/operations-hardening/domain-imports/quality"
       columns={COLUMNS}

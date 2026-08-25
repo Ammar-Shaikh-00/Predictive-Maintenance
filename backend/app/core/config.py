@@ -20,8 +20,12 @@ class  Settings(BaseSettings):
     # postgres_host: str = "100.119.197.81"
     postgres_port: int = 5432
 
-    # AI service
+    # AI / live-monitor serving URL. Scorecard probes {AI_SERVICE_URL}/health
+    # (ml_models_loaded, classifier). Comma-separated fallbacks allowed.
     ai_service_url: str = "http://ai-service:8000"
+
+    # Single source of truth for capability scorecard (Docs JSON)
+    capability_catalog_path: str = ""
 
     # Auth / Security
     jwt_secret: str = "change-me"
@@ -42,6 +46,16 @@ class  Settings(BaseSettings):
     
     # Refresh token
     refresh_token_exp_days: int = 30
+
+    # CORS — comma-separated browser origins (e.g. http://localhost:5173,http://192.168.100.24:5173)
+    cors_origins: str = (
+        "http://localhost:5173,"
+        "http://127.0.0.1:5173,"
+        "http://192.168.100.24:5173,"
+        "http://100.119.197.81:3000,"
+        "http://100.119.197.81:3001,"
+        "http://100.67.139.6:5173"
+    )
 
     # TimescaleDB (main source for extruder sensor data / live charts)
     tsdb_host: str = ""

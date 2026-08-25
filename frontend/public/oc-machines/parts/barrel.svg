@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 80" fill="none">
+  <rect width="120" height="80" rx="8" fill="#12161e"/>
+  <path d="M18 28h84v24c0 4-4 8-8 8H26c-4 0-8-4-8-8V28Z" stroke="#94a3b8" stroke-width="2"/>
+  <path d="M30 28v24M50 28v24M70 28v24M90 28v24" stroke="#64748b" stroke-width="1.5" opacity=".7"/>
+  <path d="M18 36h84M18 44h84" stroke="#475569" stroke-width="1" opacity=".5"/>
+  <text x="60" y="72" text-anchor="middle" fill="#64748b" font-size="8" font-family="system-ui">Barrel / Zylinder</text>
+</svg>

@@ -61,6 +61,7 @@ from app.models.operations_hardening import (
     DataQualitySnapshot,
     SignalNormalizationMap,
     SourceImportRow,
+    MachinePredictionReadiness,
 )
 from app.models.imported_domain_events import (
     ImportedQualityEvent,

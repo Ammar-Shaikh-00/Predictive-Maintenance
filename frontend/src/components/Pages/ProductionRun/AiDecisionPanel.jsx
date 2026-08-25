@@ -13,14 +13,14 @@ export default function AiDecisionPanel({ aiSummary }) {
   const { t } = useTranslation();
 
   return (
-    <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+    <section className="rounded-xl border border-white/10 bg-[#12161e] p-6">
       <div className="flex items-start gap-4">
-        <div className="rounded-xl bg-violet-50 p-3 text-violet-600">
+        <div className="rounded-xl border border-emerald-400/20 bg-emerald-500/10 p-3 text-emerald-400">
           <Sparkles size={26} />
         </div>
         <div>
-          <h2 className="text-lg font-bold text-slate-950">{t("productionRun.aiUnderstanding.title")}</h2>
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-700">
+          <h2 className="text-lg font-semibold text-white">{t("productionRun.aiUnderstanding.title")}</h2>
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-400">
             {t("productionRun.aiUnderstanding.description")}
           </p>
         </div>
@@ -31,11 +31,11 @@ export default function AiDecisionPanel({ aiSummary }) {
         <StatTile label={t("productionRun.ai.activeRegime")} value={aiSummary.regime} icon={<Gauge size={18} />} />
         <StatTile label={t("productionRun.ai.driftScore")} value={numberOrDash(aiSummary.drift, 2)} icon={<AlertTriangle size={18} />} />
         <StatTile label={t("productionRun.ai.anomalyScore")} value={numberOrDash(aiSummary.anomaly, 2)} icon={<ClipboardCheck size={18} />} />
-    </div>
+      </div>
 
-    <div className="mt-6 rounded-lg border border-emerald-100 bg-emerald-50 p-4 text-sm leading-6 text-emerald-900">
-      {aiSummary.explanation || t("productionRun.ai.noExplanation")}
-    </div>
-  </section>
-);
+      <div className="mt-6 rounded-lg border border-emerald-400/20 bg-emerald-500/10 p-4 text-sm leading-6 text-emerald-100">
+        {aiSummary.explanation || t("productionRun.ai.noExplanation")}
+      </div>
+    </section>
+  );
 }

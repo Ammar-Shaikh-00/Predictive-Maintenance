@@ -8,8 +8,6 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from sqlalchemy import select
-from sqlalchemy.orm import Session
 
 # ensure live_monitor root is available when run as script
 _LIVE_MONITOR_ROOT = Path(__file__).resolve().parent.parent
@@ -17,7 +15,7 @@ if str(_LIVE_MONITOR_ROOT) not in sys.path:
     sys.path.insert(0, str(_LIVE_MONITOR_ROOT))
 
 import config  # noqa: E402
-from storage.db_writer import MachineSensorRaw, engine  # noqa: E402
+from storage.backend_history import fetch_raw_sensor_dataframe  # noqa: E402
 
 TEMP_COLS = [
     "Val_7",
@@ -161,33 +159,13 @@ def _print_empty_summary(output_path: str) -> None:
 def main() -> pd.DataFrame:
     output_path = config.LIVE_WINDOWS_CSV
 
-    # step 1: load historical + live rows from machine_sensor_raw ordered by time
-    with Session(engine) as session:
-        stmt = (
-            select(
-                MachineSensorRaw.trend_date,
-                MachineSensorRaw.Val_1,
-                MachineSensorRaw.Val_5,
-                MachineSensorRaw.Val_6,
-                MachineSensorRaw.Val_7,
-                MachineSensorRaw.Val_8,
-                MachineSensorRaw.Val_9,
-                MachineSensorRaw.Val_10,
-                MachineSensorRaw.Val_11,
-                MachineSensorRaw.Val_27,
-                MachineSensorRaw.Val_28,
-                MachineSensorRaw.Val_29,
-                MachineSensorRaw.Val_30,
-                MachineSensorRaw.Val_31,
-                MachineSensorRaw.Val_32,
-                MachineSensorRaw.source,
-            )
-            .where(
-                MachineSensorRaw.source.in_(["historical_import", "live_api"])
-            )
-            .order_by(MachineSensorRaw.trend_date.asc())
-        )
-        df = pd.DataFrame(session.execute(stmt).all(), columns=RAW_COLS)
+    # step 1: load raw history from backend Postgres (not SQLite)
+    df = fetch_raw_sensor_dataframe()
+    missing = [c for c in RAW_COLS if c not in df.columns]
+    for col in missing:
+        df[col] = pd.NA
+    if not df.empty:
+        df = df[RAW_COLS].copy()
 
     if df.empty:
         os.makedirs(config.ML_OUTPUT_DIR, exist_ok=True)

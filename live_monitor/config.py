@@ -67,8 +67,12 @@ LINE_ID = int(os.getenv("LINE_ID")) if os.getenv("LINE_ID", "").strip() else Non
 MACHINE_NAME = os.getenv("MACHINE_NAME", "Extruder").strip() or None
 CONTEXT_REFRESH_SECONDS = int(os.getenv("CONTEXT_REFRESH_SECONDS", "60"))
 
-# Local SQLite only for offline/legacy ML scripts (not used for live pipeline writes)
-DB_CONNECTION_STRING = os.getenv("DB_CONNECTION_STRING", "sqlite:///live_monitor.db")
+# Postgres history for ML training / retrain (GET /machine-raw-data/)
+# Prefer HISTORY_DATE_FROM; otherwise look back HISTORY_LOOKBACK_DAYS from now.
+HISTORY_DATE_FROM = os.getenv("HISTORY_DATE_FROM", "").strip() or None
+HISTORY_LOOKBACK_DAYS = int(os.getenv("HISTORY_LOOKBACK_DAYS", "365"))
+RAW_PAGE_SIZE = int(os.getenv("RAW_PAGE_SIZE", "1000"))  # backend max page is 10000
+HISTORY_TIMEOUT_SECONDS = float(os.getenv("HISTORY_TIMEOUT_SECONDS", "60"))
 
 # single source of truth for regime thresholds across all modules
 REGIME_LOW_MAX = 280.0
@@ -76,28 +80,17 @@ REGIME_MID_MIN = 280.0
 REGIME_MID_MAX = 320.0
 REGIME_HIGH_MIN = 320.0
 
-# ML data paths (relative to project root)
-WINDOWED_FEATURES_CSV = os.path.join(_TSDB_RESULTS, "windowed_features.csv")
+# Offline segmentation CSVs (used by storage.populate_baseline)
 STABLE_RUNS_CSV = os.path.join(_TSDB_RESULTS, "stable_runs.csv")
 ML_OUTPUT_DIR = os.path.join(_PROJECT_ROOT, "live_monitor", "ml_data")
-
-# 30-min windows for ML Layer 2 (anomaly detection, clustering, LSTM)
-ML_WINDOW_MINUTES = int(os.getenv("ML_WINDOW_MINUTES", "30"))
-ML_WINDOW_MIN_ROWS = int(os.getenv("ML_WINDOW_MIN_ROWS", "10"))
-ML_30MIN_MATRIX_CSV = os.path.join(ML_OUTPUT_DIR, "ml_feature_matrix_30min.csv")
 
 # 5-min windows for live-scale classifier training (storage.build_live_windows)
 LIVE_WINDOW_MINUTES = int(os.getenv("LIVE_WINDOW_MINUTES", "5"))
 LIVE_WINDOW_MIN_ROWS = int(os.getenv("LIVE_WINDOW_MIN_ROWS", "3"))
 LIVE_WINDOWS_CSV = os.path.join(ML_OUTPUT_DIR, "ml_live_windows.csv")
 LIVE_LABELED_CSV = os.path.join(ML_OUTPUT_DIR, "ml_live_labeled.csv")
-# 5-min windows match live pipeline scale (BUFFER_MAX_POINTS polls at POLL_INTERVAL_SECONDS)
 
-# historical stable run thresholds (align with offline segmentation gates)
-STABLE_SPEED_MEAN_MIN = float(os.getenv("STABLE_SPEED_MEAN_MIN", "20.0"))
-STABLE_SPEED_DELTA_MAX = float(os.getenv("STABLE_SPEED_DELTA_MAX", "8.0"))
-
-# Isolation Forest — train_anomaly_production, train_anomaly_off (override via env)
+# Isolation Forest — train_anomaly_* (override via env)
 _anomaly_if_contamination_raw = os.getenv("ANOMALY_IF_CONTAMINATION", "auto").strip().lower()
 ANOMALY_IF_CONTAMINATION = "auto" if _anomaly_if_contamination_raw == "auto" else float(_anomaly_if_contamination_raw)
 ANOMALY_IF_RANDOM_STATE = int(os.getenv("ANOMALY_IF_RANDOM_STATE", "42"))
@@ -111,11 +104,21 @@ ANOMALY_MIN_SAMPLES_LOW_PRODUCTION = int(os.getenv("ANOMALY_MIN_SAMPLES_LOW_PROD
 ANOMALY_MIN_SAMPLES_COOLING = int(os.getenv("ANOMALY_MIN_SAMPLES_COOLING", "50"))
 ANOMALY_MIN_SAMPLES_READY = int(os.getenv("ANOMALY_MIN_SAMPLES_READY", "50"))
 
-# background ML retrain scheduler (ml.retrain_scheduler)
-RETRAIN_INTERVAL_HOURS = int(os.getenv("RETRAIN_INTERVAL_HOURS", "24"))  # retrain every 24 hours if new data exists
-RETRAIN_MIN_NEW_ROWS = int(os.getenv("RETRAIN_MIN_NEW_ROWS", "500"))  # minimum new live_api rows before retraining
+# Offline retrain on PC only (run_retrain.py). live_monitor main.py never starts it.
+RETRAIN_INTERVAL_HOURS = int(os.getenv("RETRAIN_INTERVAL_HOURS", "24"))
+RETRAIN_MIN_NEW_ROWS = int(os.getenv("RETRAIN_MIN_NEW_ROWS", "500"))
 
 # drift detection (ml.drift_detector)
-DRIFT_WINDOW_COUNT = int(os.getenv("DRIFT_WINDOW_COUNT", "10"))  # number of recent windows to compare against baseline mean
-DRIFT_ALERT_ZSCORE = float(os.getenv("DRIFT_ALERT_ZSCORE", "2.5"))  # z-score threshold for drift alert, learned from data spread
+DRIFT_WINDOW_COUNT = int(os.getenv("DRIFT_WINDOW_COUNT", "10"))
+DRIFT_ALERT_ZSCORE = float(os.getenv("DRIFT_ALERT_ZSCORE", "2.5"))
+
+# Generic z fallback only when baseline warning/critical bands are missing
+FEATURE_Z_WARNING = float(os.getenv("FEATURE_Z_WARNING", "1.5"))
+FEATURE_Z_CRITICAL = float(os.getenv("FEATURE_Z_CRITICAL", "2.5"))
+
+# Optional plant policy file for baseline band refresh (evaluator stays free of feature hardcode).
+BASELINE_BAND_POLICY_PATH = os.getenv(
+    "BASELINE_BAND_POLICY_PATH",
+    os.path.join(ML_OUTPUT_DIR, "baseline_band_policy.json"),
+)
 

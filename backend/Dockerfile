@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1
 # FROM python:3.11-slim
 
 # ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -55,6 +56,9 @@ COPY app ./app
 COPY alembic ./alembic
 COPY alembic.ini .
 COPY scripts ./scripts
+RUN mkdir -p /app/catalogs
+# Catalog is mounted at runtime from ../Docs (see docker-compose.yml).
+# Do not COPY --from=catalog: edge docker-compose v1 rejects additional_contexts.
 
 # Run Alembic migration commands
 # RUN alembic revision --autogenerate -m "fresh_init"

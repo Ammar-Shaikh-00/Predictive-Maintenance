@@ -1,4 +1,5 @@
 {
-  "live_api_row_count": 8809,
-  "retrained_at": "2026-05-21T09:28:17.650741+00:00"
+  "backend_raw_row_count": 66443,
+  "live_api_row_count": 66443,
+  "retrained_at": "2026-08-18T12:02:33.476291+00:00"
 }

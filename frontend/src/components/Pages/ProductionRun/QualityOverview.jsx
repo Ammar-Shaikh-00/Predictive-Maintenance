@@ -31,31 +31,31 @@ const qualityFlags = [
 
 const InfoBlock = ({ label, value }) => (
   <div>
-    <div className="text-sm text-slate-500">{label}</div>
-    <div className="mt-1 font-semibold text-slate-950">{value || "--"}</div>
+    <div className="text-sm text-slate-400">{label}</div>
+    <div className="mt-1 font-semibold text-slate-100">{value || "--"}</div>
   </div>
 );
 
 const EditInput = ({ field, value, onChange, t }) => (
   <div className="flex flex-col">
-    <label className="mb-1 text-xs font-semibold text-slate-500">{t(field.labelKey)}</label>
+    <label className="mb-1 text-xs font-semibold text-slate-400">{t(field.labelKey)}</label>
     <input
       name={field.name}
       value={value || ""}
       onChange={onChange}
-      className="rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none transition focus:border-violet-400 focus:ring-2 focus:ring-violet-100"
+      className="rounded-lg border border-white/10 bg-[#0b0d11] px-3 py-2 text-sm text-slate-100 outline-none transition focus:border-emerald-400/50 focus:ring-2 focus:ring-emerald-500/20"
     />
   </div>
 );
 
 const EditCheckbox = ({ field, checked, onChange, t }) => (
-  <label className="flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700">
+  <label className="flex items-center gap-2 rounded-lg border border-white/10 bg-[#1a1f27] px-3 py-2 text-sm text-slate-300">
     <input
       type="checkbox"
       name={field.name}
       checked={Boolean(checked)}
       onChange={onChange}
-      className="h-4 w-4 accent-violet-600"
+      className="h-4 w-4 accent-emerald-500"
     />
     {t(field.labelKey)}
   </label>
@@ -103,9 +103,9 @@ export default function QualityOverview({
   };
 
   return (
-    <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+    <section className="rounded-xl border border-white/10 bg-[#12161e] p-6">
       <div className="flex items-center justify-between gap-3">
-        <h2 className="text-lg font-bold text-slate-950">{t("productionRun.quality.title")}</h2>
+        <h2 className="text-lg font-semibold text-white">{t("productionRun.quality.title")}</h2>
         <div className="flex items-center gap-2">
           <span className={`rounded-full border px-3 py-1 text-xs font-bold uppercase ${getStatusTone(quality.quality_status || "ok")}`}>
             {quality.quality_status || "OK"}
@@ -114,7 +114,7 @@ export default function QualityOverview({
           {editable && !editing && (
             <button
               onClick={startEdit}
-              className="inline-flex items-center gap-2 rounded-lg border border-violet-200 px-3 py-2 text-sm font-semibold text-violet-700 transition hover:bg-violet-50"
+              className="inline-flex items-center gap-2 rounded-lg border border-emerald-400/30 px-3 py-2 text-sm font-semibold text-emerald-300 transition hover:bg-emerald-500/10"
             >
               <Edit3 size={15} />
               {t("productionRun.actions.edit")}
@@ -124,7 +124,7 @@ export default function QualityOverview({
       </div>
 
       {!editable && (
-        <div className="mt-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-500">
+        <div className="mt-3 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-slate-400">
           {t("productionRun.quality.readOnly")}
         </div>
       )}
@@ -156,21 +156,21 @@ export default function QualityOverview({
           </div>
 
           <div>
-            <label className="mb-1 block text-xs font-semibold text-slate-500">
+            <label className="mb-1 block text-xs font-semibold text-slate-400">
               {t("productionRun.quality.fields.notes")}
             </label>
             <textarea
               name="notes"
               value={form.notes || ""}
               onChange={handleChange}
-              className="min-h-24 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none transition focus:border-violet-400 focus:ring-2 focus:ring-violet-100"
+              className="min-h-24 w-full rounded-lg border border-white/10 bg-[#0b0d11] px-3 py-2 text-sm text-slate-100 outline-none transition focus:border-emerald-400/50 focus:ring-2 focus:ring-emerald-500/20"
             />
           </div>
 
           <div className="flex justify-end gap-2">
             <button
               onClick={() => setEditing(false)}
-              className="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-50"
+              className="inline-flex items-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-sm font-semibold text-slate-300 transition hover:bg-white/5"
             >
               <X size={15} />
               {t("productionRun.actions.cancel")}
@@ -178,7 +178,7 @@ export default function QualityOverview({
             <button
               onClick={handleSave}
               disabled={saving}
-              className="inline-flex items-center gap-2 rounded-lg bg-violet-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-violet-700 disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-60"
             >
               <Save size={15} />
               {saving ? t("productionRun.actions.saving") : t("productionRun.quality.actions.save")}
@@ -189,27 +189,27 @@ export default function QualityOverview({
         <>
           <div className="mt-6 grid grid-cols-3 gap-4">
             <div>
-              <div className="text-sm text-slate-500">{t("productionRun.quality.fields.scrapPercent")}</div>
-              <div className="mt-2 text-3xl font-bold text-emerald-600">{numberOrDash(quality.scrap_percentage, 2)} %</div>
+              <div className="text-sm text-slate-400">{t("productionRun.quality.fields.scrapPercent")}</div>
+              <div className="mt-2 text-3xl font-bold text-emerald-400">{numberOrDash(quality.scrap_percentage, 2)} %</div>
             </div>
             <div>
-              <div className="text-sm text-slate-500">{t("productionRun.quality.fields.scrapAmount")}</div>
-              <div className="mt-2 text-2xl font-bold text-slate-950">{numberOrDash(quality.scrap_amount, 1)} kg</div>
+              <div className="text-sm text-slate-400">{t("productionRun.quality.fields.scrapAmount")}</div>
+              <div className="mt-2 text-2xl font-bold text-white">{numberOrDash(quality.scrap_amount, 1)} kg</div>
             </div>
             <div>
-              <div className="text-sm text-slate-500">{t("productionRun.quality.fields.totalDefects")}</div>
-              <div className="mt-2 text-2xl font-bold text-slate-950">{quality.defect_count ?? quality.defects_total ?? "--"}</div>
+              <div className="text-sm text-slate-400">{t("productionRun.quality.fields.totalDefects")}</div>
+              <div className="mt-2 text-2xl font-bold text-white">{quality.defect_count ?? quality.defects_total ?? "--"}</div>
             </div>
           </div>
 
-          <div className="mt-6 grid gap-4 border-t border-slate-100 pt-5 md:grid-cols-3">
+          <div className="mt-6 grid gap-4 border-t border-white/10 pt-5 md:grid-cols-3">
             <InfoBlock label={t("productionRun.quality.fields.mainReason")} value={quality.defect_type} />
             <InfoBlock label={t("productionRun.quality.fields.lastQcCheck")} value={formatDateTime(quality.updated_at || quality.last_qc_check)} />
             <InfoBlock label={t("productionRun.quality.fields.internalQc")} value={quality.internal_qc_result} />
           </div>
 
           {expanded && (
-            <div className="mt-6 rounded-lg bg-slate-50 p-4 text-sm leading-6 text-slate-700">
+            <div className="mt-6 rounded-lg border border-white/10 bg-white/5 p-4 text-sm leading-6 text-slate-300">
               {quality.notes || t("productionRun.quality.noNotes")}
             </div>
           )}

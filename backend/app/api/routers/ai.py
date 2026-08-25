@@ -1,4 +1,3 @@
-import httpx
 from typing import Dict, Any, List
 from datetime import datetime
 
@@ -8,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.dependencies import get_session, get_current_user, require_admin, require_engineer, require_viewer
 from app.core.config import get_settings
 from app.models.user import User
+from app.services.ai_service_health import probe_ai_service_health
 
 router = APIRouter(prefix="/ai", tags=["ai"])
 
@@ -20,36 +20,18 @@ async def get_ai_status(
     # Any authenticated user (viewer/engineer/admin) can see AI status
     # current_user: User = Depends(require_viewer),
 ):
-    """Get AI service status and health"""
-    try:
-        async with httpx.AsyncClient(timeout=5.0) as client:
-            response = await client.get(f"{settings.ai_service_url}/health")
-            if response.status_code == 200:
-                data = response.json()
-                ai_status = data.get("status")  # assuming response has a 'status' key
-
-                if not ai_status or ai_status == "unavailable":
-                    color = "text-rose-600"
-                elif ai_status in ["healthy", "operational"]:
-                    color = "text-emerald-600"
-                else:
-                    color = "text-amber-600"
-
-                # Add color to response data
-                data["color"] = color
-                return data
-            else:
-                return {
-                    "status": "unhealthy",
-                    "color":'text-rose-600',
-                    "error": f"AI service returned {response.status_code}",
-                }
-    except Exception as e:
-        return {
-            "status": "unreachable",
-            "color": "text-rose-600",
-            "error": str(e),
-        }
+    """Get AI service status and health from AI_SERVICE_URL/health."""
+    health = await probe_ai_service_health()
+    if health.healthy:
+        data = dict(health.details or {})
+        data["status"] = health.status
+        data["color"] = "text-emerald-600"
+        return data
+    return {
+        "status": health.status or "unhealthy",
+        "color": "text-rose-600",
+        "error": health.error or f"AI service returned {health.http_status}",
+    }
 
 
 @router.post("/retrain")

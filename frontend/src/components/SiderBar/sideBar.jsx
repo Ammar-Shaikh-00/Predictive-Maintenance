@@ -70,11 +70,16 @@ export default function Sidebar({
   };
 
   return (
-    <div className="w-0 shrink-0 overflow-hidden lg:w-[240px] lg:overflow-visible">
+    <>
+      {/* Reserves horizontal space; actual sidebar is viewport-fixed and never scrolls */}
+      <div
+        className="pointer-events-none hidden w-[240px] shrink-0 lg:block"
+        aria-hidden
+      />
       <aside
-        className={`fixed left-0 top-0 z-40 flex h-screen w-[240px] flex-col transition-transform duration-300 ease-in-out
+        className={`fixed left-0 top-0 z-40 flex h-dvh max-h-dvh w-[240px] flex-col transition-transform duration-300 ease-in-out
           ${mobileSideBar ? "translate-x-0" : "-translate-x-full"}
-          lg:sticky lg:translate-x-0
+          lg:translate-x-0
           ${industrial ? "bg-[#0a0e14] border-r border-white/[0.06]" : "bg-white"}`}
       >
       {/* Mobile close */}
@@ -223,7 +228,7 @@ export default function Sidebar({
             <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-white text-[#1e3a5f]">
               <Plus size={12} strokeWidth={3} />
             </span>
-            <span>New Production Run</span>
+            <span>Neuer Produktionslauf</span>
           </Link>
         </div>
 
@@ -258,6 +263,6 @@ export default function Sidebar({
         </div>
       </div>
       </aside>
-    </div>
+    </>
   );
 }

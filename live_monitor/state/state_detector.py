@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 import os
 
 import joblib
@@ -78,8 +79,11 @@ class StateDetector:
         return str(predicted)
 
     def confirm_state(self, candidate_state: str) -> str | None:
-        """Confirm a state only when recent candidate windows agree."""
-        # 3-window confirmation still applies on ML predictions
+        """Confirm a state only when recent candidate windows agree.
+
+        MIN_STATE_WINDOWS is time spent in the *current* confirmed state (every
+        cycle), so a fast move to a new candidate cannot freeze transitions forever.
+        """
         self.candidate_history.append(candidate_state)
         self.candidate_history = self.candidate_history[-self.confirmation_windows :]
 
@@ -91,31 +95,57 @@ class StateDetector:
         else:
             new_confirmed = None
 
-        if new_confirmed is None:
-            # keep current state if no new consensus
-            return self.current_confirmed_state
-
-        # first state ever confirmed:
+        # First confirmation ever
         if self.current_confirmed_state is None:
+            if new_confirmed is None:
+                return None
             self.current_confirmed_state = new_confirmed
-            self.state_window_count = 0
+            self.state_window_count = 1
             return self.current_confirmed_state
 
-        if new_confirmed == self.current_confirmed_state:
-            self.state_window_count += 1
-            return self.current_confirmed_state
-            # staying in same state
+        # Count time in the active confirmed state every cycle (anti-flicker timer)
+        self.state_window_count += 1
 
+        if new_confirmed is None or new_confirmed == self.current_confirmed_state:
+            return self.current_confirmed_state
+
+        # New consensus differs — allow transition only after minimum dwell time
         if self.state_window_count >= config.MIN_STATE_WINDOWS:
-            # enough time in current state, allow transition
+            logging.info(
+                "State transition %s → %s after %s windows",
+                self.current_confirmed_state,
+                new_confirmed,
+                self.state_window_count,
+            )
             self.current_confirmed_state = new_confirmed
             self.state_window_count = 0
             return self.current_confirmed_state
 
-        # too soon to transition, stay in current state
+        logging.info(
+            "Hold %s (want %s) — dwell %s/%s windows",
+            self.current_confirmed_state,
+            new_confirmed,
+            self.state_window_count,
+            config.MIN_STATE_WINDOWS,
+        )
         return self.current_confirmed_state
 
     def get_current_confirmed(self) -> str | None:
         """Return the last confirmed machine state, if available."""
-        # used by other modules to read current machine state
         return self.current_confirmed_state
+
+    def reload_models(self) -> bool:
+        """Hot-reload classifier + scaler from disk after retrain (no pipeline restart)."""
+        classifier_path = os.path.join(config.ML_OUTPUT_DIR, "state_classifier.pkl")
+        scaler_path = os.path.join(config.ML_OUTPUT_DIR, "state_classifier_scaler.pkl")
+        if not (os.path.isfile(classifier_path) and os.path.isfile(scaler_path)):
+            logging.warning("StateDetector reload skipped — model files missing")
+            return False
+        try:
+            self.classifier = joblib.load(classifier_path)
+            self.scaler = joblib.load(scaler_path)
+            logging.info("StateDetector models hot-reloaded from %s", config.ML_OUTPUT_DIR)
+            return True
+        except Exception:
+            logging.exception("StateDetector reload failed")
+            return False

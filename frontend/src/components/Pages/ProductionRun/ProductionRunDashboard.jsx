@@ -26,17 +26,17 @@ const CreateProductionRun = ({ newRun, onChange, handleCreate, setNewRun }) => {
   }, [t]);
 
   return (
-    <section className="rounded-xl border border-violet-200 bg-white p-5 shadow-sm">
+    <section className="rounded-xl border border-white/10 bg-[#12161e] p-5">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h3 className="text-lg font-bold text-slate-950">
+          <h3 className="text-lg font-semibold text-white">
             {t("productionRunDashboard.create.title")}
           </h3>
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="mt-1 text-sm text-slate-400">
             {t("productionRunDashboard.create.description")}
           </p>
         </div>
-        <div className="hidden rounded-xl bg-violet-50 p-3 text-violet-600 sm:block">
+        <div className="hidden rounded-xl border border-emerald-400/20 bg-emerald-500/10 p-3 text-emerald-400 sm:block">
           <Plus size={22} />
         </div>
       </div>
@@ -50,7 +50,7 @@ const CreateProductionRun = ({ newRun, onChange, handleCreate, setNewRun }) => {
         />
 
         <div className="flex flex-col">
-          <label className="mb-1 text-sm text-gray-600">
+          <label className="mb-1 text-sm text-slate-400">
             {t("productionRunDashboard.fields.machine")}
           </label>
           <select
@@ -61,7 +61,7 @@ const CreateProductionRun = ({ newRun, onChange, handleCreate, setNewRun }) => {
                 machine_id: e.target.value,
               }))
             }
-            className="rounded border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-violet-400"
+            className="rounded-lg border border-white/10 bg-[#0b0d11] px-3 py-2 text-sm text-slate-100 outline-none focus:border-emerald-400/50 focus:ring-2 focus:ring-emerald-500/20"
           >
             <option value="">{t("productionRunDashboard.fields.selectMachine")}</option>
             {machines.map((machine) => (
@@ -80,7 +80,7 @@ const CreateProductionRun = ({ newRun, onChange, handleCreate, setNewRun }) => {
         />
 
         <div className="flex flex-col">
-          <label className="mb-1 text-sm text-gray-600">
+          <label className="mb-1 text-sm text-slate-400">
             {t("productionRunDashboard.fields.startTime")}
           </label>
           <input
@@ -92,7 +92,7 @@ const CreateProductionRun = ({ newRun, onChange, handleCreate, setNewRun }) => {
                 start_time: e.target.value,
               }))
             }
-            className="rounded border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-violet-400"
+            className="rounded-lg border border-white/10 bg-[#0b0d11] px-3 py-2 text-sm text-slate-100 outline-none focus:border-emerald-400/50 focus:ring-2 focus:ring-emerald-500/20 [color-scheme:dark]"
           />
         </div>
       </div>
@@ -113,7 +113,7 @@ const CreateProductionRun = ({ newRun, onChange, handleCreate, setNewRun }) => {
 
           handleCreate();
         }}
-        className="mt-5 inline-flex items-center gap-2 rounded-lg bg-violet-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-violet-700"
+        className="mt-5 inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-500"
       >
         <Plus size={16} />
         {t("productionRunDashboard.create.button")}
@@ -198,10 +198,8 @@ export default function ProductionRunDashboard() {
   };
 
   return (
-    <div className="space-y-5 px-2 pb-6 sm:px-0">
-      <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-        <ProductionRunPage runId={currentRunId} />
-      </section>
+    <div className="space-y-5 px-2 pb-6 text-slate-100 sm:px-0">
+      <ProductionRunPage runId={currentRunId} />
 
       {showCreate && (
         <CreateProductionRun

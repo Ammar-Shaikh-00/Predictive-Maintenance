@@ -1,237 +1,111 @@
-import { Link } from "react-router-dom";
-import plantIcon from "../../../../assets/operationCenterIcons/plant.svg";
-import brainIcon from "../../../../assets/operationCenterIcons/brain.svg";
-import clockIcon from "../../../../assets/operationCenterIcons/clock.svg";
-import maintenanceIcon from "../../../../assets/operationCenterIcons/maintenance.svg";
-import alarmIcon from "../../../../assets/operationCenterIcons/alarm.svg";
+/**
+ * Top KPI strip — matches production-ready homepage mockup.
+ * PRODUKTION · VORHERSAGEBEREITSCHAFT · OEE · WARTUNG · WARNUNGEN
+ * Never invent Accuracy % — readiness shows — until AI/ML reports.
+ */
 
 const STATUS_DE = {
-  PRODUCTION: "PRODUKTION",
+  PRODUCTION: "LÄUFT",
+  LOW_PRODUCTION: "NIEDRIGE PROD.",
   READY: "BEREIT",
   HEATING: "AUFHEIZEN",
   COOLING: "ABKÜHLEN",
   FAULT: "STÖRUNG",
   STOPPED: "GESTOPPT",
+  OFF: "AUS",
 };
 
-/**
- * Top KPI strip — matches Operations Center design screenshot.
- * Outer card → label → inner glow panel (value + pill | icon).
- * "AI Genauigkeit" visual title; value remains Prediction Readiness (honest).
- */
 export default function OcHeroKpis({
-  plantStatus = "PRODUCTION",
-  online = true,
-  lastTick = null,
+  plantStatus = "STOPPED",
+  online = false,
   readiness = null,
-  readinessDelta = null,
+  readinessHint = null,
   oee = null,
-  oeeDelta = null,
+  oeeHint = null,
   nextMaintenanceDays = null,
-  maintenanceDelta = null,
   maintenanceHint = null,
   alarmsCritical = 0,
   alarmsWarning = 0,
 }) {
-  const statusLabel =
-    STATUS_DE[String(plantStatus).toUpperCase()] || plantStatus || "—";
-  const since = lastTick
-    ? lastTick.toLocaleTimeString("de-DE", {
-        hour: "2-digit",
-        minute: "2-digit",
-      })
-    : null;
+  const statusKey = String(plantStatus || "").toUpperCase();
+  const statusLabel = STATUS_DE[statusKey] || statusKey || "—";
+  const running = ["PRODUCTION", "READY", "HEATING", "COOLING", "LOW_PRODUCTION"].includes(statusKey);
   const readinessValue =
     readiness != null && Number.isFinite(Number(readiness))
       ? Math.round(Number(readiness))
       : null;
   const alarmTotal = (alarmsCritical || 0) + (alarmsWarning || 0);
+  const hasMaintenance =
+    nextMaintenanceDays != null && Number.isFinite(Number(nextMaintenanceDays));
 
   return (
-    <div className="oc-kpi-strip">
-      <article className="oc-kpi">
-        <p className="oc-kpi__label">Anlagenstatus</p>
-        <div className="oc-kpi__panel">
-          <div className="oc-kpi__main">
-            <p className="oc-kpi__value oc-kpi__value--status">{statusLabel}</p>
-            <div className="oc-kpi__meta">
-              <span
-                className={`oc-kpi__pill ${
-                  online ? "oc-kpi__pill--green-solid" : "oc-kpi__pill--muted"
-                }`}
-              >
-                <span className="oc-kpi__pill-dot" />
-                {online ? "Online" : "Offline"}
-              </span>
-              {since ? (
-                <span className="oc-kpi__hint">Seit {since} Uhr</span>
-              ) : null}
-            </div>
-          </div>
-          <span className="oc-kpi__icon" aria-hidden>
-            <img src={plantIcon} alt="" className="oc-kpi__glyph" />
-          </span>
-        </div>
+    <div className="oc-kpi-strip oc-kpi-strip--mock">
+      <article className="oc-kpi-m">
+        <p className="oc-kpi-m__label">Produktion</p>
+        <p
+          className={`oc-kpi-m__value ${
+            running ? "oc-kpi-m__value--ok" : "oc-kpi-m__value--stop"
+          }`}
+        >
+          <span
+            className={`oc-kpi-m__dot ${running ? "oc-kpi-m__dot--ok" : "oc-kpi-m__dot--off"}`}
+          />
+          {statusLabel}
+        </p>
       </article>
 
-      <article className="oc-kpi">
-        <p className="oc-kpi__label">AI Genauigkeit</p>
-        <div className="oc-kpi__panel">
-          <div className="oc-kpi__main">
-            <p className="oc-kpi__value">
-              {readinessValue != null ? `${readinessValue}%` : "—"}
-            </p>
-            <div className="oc-kpi__meta">
-              {readinessDelta != null ? (
-                <>
-                  <span
-                    className={`oc-kpi__pill ${
-                      readinessDelta >= 0
-                        ? "oc-kpi__pill--green"
-                        : "oc-kpi__pill--red"
-                    }`}
-                  >
-                    <TrendIcon up={readinessDelta >= 0} />
-                    {Math.abs(readinessDelta)}%
-                  </span>
-                  <span className="oc-kpi__hint">diese Woche</span>
-                </>
-              ) : (
-                <span className="oc-kpi__hint">Vorhersagebereitschaft</span>
-              )}
-            </div>
-          </div>
-          <span className="oc-kpi__icon" aria-hidden>
-            <img src={brainIcon} alt="" className="oc-kpi__glyph" />
-          </span>
-        </div>
+      <article className="oc-kpi-m">
+        <p className="oc-kpi-m__label">Vorhersagebereitschaft</p>
+        <p className="oc-kpi-m__value">
+          {readinessValue != null ? `${readinessValue} %` : "—"}
+        </p>
+        <p className="oc-kpi-m__hint">
+          {readinessValue != null
+            ? readinessHint || "AI/ML-Dienst"
+            : "AI/ML · noch nicht gemeldet"}
+        </p>
       </article>
 
-      <article className="oc-kpi">
-        <p className="oc-kpi__label">OEE (Gesamt)</p>
-        <div className="oc-kpi__panel">
-          <div className="oc-kpi__main">
-            <p className="oc-kpi__value">
-              {oee != null ? Number(oee).toFixed(1) : "—"}
-            </p>
-            <div className="oc-kpi__meta">
-              {oeeDelta != null ? (
-                <>
-                  <span
-                    className={`oc-kpi__pill ${
-                      oeeDelta >= 0 ? "oc-kpi__pill--green" : "oc-kpi__pill--red"
-                    }`}
-                  >
-                    <TrendIcon up={oeeDelta >= 0} />
-                    {oeeDelta >= 0 ? "" : "-"}
-                    {Math.abs(Number(oeeDelta)).toFixed(1)}%
-                  </span>
-                  <span className="oc-kpi__hint">diese Woche</span>
-                </>
-              ) : (
-                <Link to="/executive" className="oc-pill-btn oc-pill-btn--sm">
-                  Details →
-                </Link>
-              )}
-            </div>
-          </div>
-          <span className="oc-kpi__icon" aria-hidden>
-            <img src={clockIcon} alt="" className="oc-kpi__glyph" />
-          </span>
-        </div>
+      <article className="oc-kpi-m" title={oee == null ? oeeHint || undefined : undefined}>
+        <p className="oc-kpi-m__label">OEE</p>
+        <p className="oc-kpi-m__value">
+          {oee != null ? `${Number(oee).toFixed(0)} %` : "—"}
+        </p>
+        {oee == null ? (
+          <p className="oc-kpi-m__hint">{oeeHint || "Quelle fehlt"}</p>
+        ) : null}
       </article>
 
-      <article className="oc-kpi">
-        <p className="oc-kpi__label">Nächste Wartung</p>
-        <div className="oc-kpi__panel">
-          <div className="oc-kpi__main">
-            <p className="oc-kpi__value">
-              {nextMaintenanceDays != null ? (
-                <>
-                  {nextMaintenanceDays}{" "}
-                  <span className="oc-kpi__unit">TAGE</span>
-                </>
-              ) : (
-                "—"
-              )}
-            </p>
-            <div className="oc-kpi__meta">
-              {maintenanceDelta != null ? (
-                <>
-                  <span className="oc-kpi__pill oc-kpi__pill--red">
-                    <TrendIcon up />
-                    {Math.abs(Number(maintenanceDelta))}%
-                  </span>
-                  <span className="oc-kpi__hint">
-                    {maintenanceHint || "Empfohlen"}
-                  </span>
-                </>
-              ) : nextMaintenanceDays != null ? (
-                <span className="oc-kpi__hint">
-                  {maintenanceHint || "Empfohlen"}
-                </span>
-              ) : (
-                <Link to="/maintenance" className="oc-pill-btn oc-pill-btn--sm">
-                  Details →
-                </Link>
-              )}
-            </div>
-          </div>
-          <span className="oc-kpi__icon" aria-hidden>
-            <img src={maintenanceIcon} alt="" className="oc-kpi__glyph" />
-          </span>
-        </div>
+      <article
+        className="oc-kpi-m"
+        title={!hasMaintenance ? maintenanceHint || undefined : undefined}
+      >
+        <p className="oc-kpi-m__label">Nächste Wartung</p>
+        <p className="oc-kpi-m__value">
+          {hasMaintenance ? (
+            <>
+              {Number(nextMaintenanceDays)}{" "}
+              <span className="oc-kpi-m__unit">Tage</span>
+            </>
+          ) : (
+            "—"
+          )}
+        </p>
+        {!hasMaintenance && maintenanceHint ? (
+          <p className="oc-kpi-m__hint oc-kpi-m__hint--clamp">{maintenanceHint}</p>
+        ) : null}
       </article>
 
-      <article className="oc-kpi">
-        <p className="oc-kpi__label">Aktive Alarme</p>
-        <div className="oc-kpi__panel">
-          <div className="oc-kpi__main">
-            <p
-              className={`oc-kpi__value ${
-                alarmTotal > 0 ? "oc-kpi__value--alarm" : ""
-              }`}
-            >
-              {alarmTotal}
-            </p>
-            <div className="oc-kpi__meta">
-              <span className="oc-kpi__pill oc-kpi__pill--red oc-kpi__pill--wide">
-                <TrendIcon up={alarmTotal > 0} />
-                Kritisch: {alarmsCritical} · Warnung: {alarmsWarning}
-              </span>
-            </div>
-          </div>
-          <span className="oc-kpi__icon" aria-hidden>
-            <img src={alarmIcon} alt="" className="oc-kpi__glyph" />
-          </span>
-        </div>
+      <article className="oc-kpi-m">
+        <p className="oc-kpi-m__label">Aktive Warnungen</p>
+        <p
+          className={`oc-kpi-m__value ${
+            alarmTotal > 0 ? "oc-kpi-m__value--warn" : ""
+          }`}
+        >
+          {alarmTotal}
+        </p>
       </article>
     </div>
-  );
-}
-
-function TrendIcon({ up = true }) {
-  return (
-    <svg viewBox="0 0 16 16" className="oc-kpi__trend" aria-hidden>
-      {up ? (
-        <path
-          d="M2 11l4-4 3 2 5-6"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.6"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      ) : (
-        <path
-          d="M2 5l4 4 3-2 5 6"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.6"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      )}
-    </svg>
   );
 }

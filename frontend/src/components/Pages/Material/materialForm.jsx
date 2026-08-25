@@ -61,7 +61,7 @@ const MaterialForm = ({
   return (
     <div className="mb-4 rounded-2xl border border-white/10 bg-[#141820] p-4 sm:p-5 space-y-4">
       <h2 className="text-sm font-semibold text-slate-100">
-        {editingMaterial ? "Edit material profile" : "Create material profile"}
+        {editingMaterial ? "Materialprofil bearbeiten" : "Materialprofil erstellen"}
       </h2>
 
       <label className="block text-sm">
@@ -71,7 +71,7 @@ const MaterialForm = ({
         <input
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="Material name"
+          placeholder="Materialname"
           className="mt-1 w-full rounded-lg border border-white/10 bg-[#0f1218] px-3 py-2 text-sm text-slate-100"
         />
       </label>
@@ -79,7 +79,7 @@ const MaterialForm = ({
       <div className="space-y-3 max-h-72 overflow-y-auto pr-1">
         {thresholds.length === 0 ? (
           <p className="text-xs text-slate-500">
-            No sensors available for threshold mapping.
+            Keine Sensoren für Schwellwert-Zuordnung verfügbar.
           </p>
         ) : (
           thresholds.map((t, index) => {
@@ -124,14 +124,14 @@ const MaterialForm = ({
           onClick={onClose}
           className="rounded-xl border border-white/10 px-4 py-2 text-sm text-slate-300 hover:bg-white/5"
         >
-          Cancel
+          Abbrechen
         </button>
         <button
           type="button"
           onClick={handleSubmit}
           className="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-500"
         >
-          Save
+          Speichern
         </button>
       </div>
     </div>

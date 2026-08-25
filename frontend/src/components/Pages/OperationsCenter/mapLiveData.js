@@ -83,7 +83,7 @@ function metricCard({
         ? VALUE_SOURCES.RULE_BASED
         : VALUE_SOURCES.LIVE
       : VALUE_SOURCES.LIVE,
-    lockedHint: hasLive ? undefined : "Waiting for live sensor data",
+    lockedHint: hasLive ? undefined : "Warte auf Live-Sensordaten",
     spark: spark?.length ? spark : sparkFallback || [],
   };
 }
@@ -95,7 +95,6 @@ export function buildLiveMachineValues({
   currentDashboard,
   derived,
   machineState,
-  demoFallbackValues = [],
 }) {
   const metrics = currentDashboard?.metrics || {};
   const rows = derived?.rows || [];
@@ -104,23 +103,23 @@ export function buildLiveMachineValues({
   const cards = [
     metricCard({
       key: "motor_load",
-      label: "Motor load",
+      label: "Motorlast",
       metric: metrics.Motor_load,
-      unit: "amp",
+      unit: "A",
       spark: sparkFromRows(rows, "MotorLoad_amp"),
       inProduction,
     }),
     metricCard({
       key: "screw_speed",
-      label: "Screw speed",
+      label: "Schneckendrehzahl",
       metric: metrics.ScrewSpeed_rpm,
-      unit: "rpm",
+      unit: "U/min",
       spark: sparkFromRows(rows, "ScrewSpeed_rpm"),
       inProduction,
     }),
     metricCard({
       key: "melt_pressure",
-      label: "Extruder pressure",
+      label: "Extruderdruck",
       metric: metrics.Pressure_bar,
       unit: "bar",
       spark: sparkFromRows(rows, "Pressure_bar"),
@@ -128,7 +127,7 @@ export function buildLiveMachineValues({
     }),
     metricCard({
       key: "temp_avg",
-      label: "Avg. temperature",
+      label: "Durchschnittstemperatur",
       metric: metrics.Temp_Avg,
       unit: "°C",
       spark: sparkFromRows(rows, "Temp_Avg"),
@@ -136,7 +135,7 @@ export function buildLiveMachineValues({
     }),
     metricCard({
       key: "zone3_temp",
-      label: "Zone 3 temperature",
+      label: "Zone-3-Temperatur",
       metric: null,
       unit: "°C",
       spark: sparkFromRows(rows, "Zone3_C").length
@@ -163,7 +162,7 @@ export function buildLiveMachineValues({
 
   cards[4] = {
     key: "zone3_temp",
-    label: "Zone 3 temperature",
+    label: "Zone-3-Temperatur",
     value: zone3Latest != null ? formatValue(zone3Latest) : "—",
     unit: zone3Latest != null ? "°C" : "",
     traffic:
@@ -181,37 +180,24 @@ export function buildLiveMachineValues({
     deviation: null,
     value_source:
       zone3Latest != null ? VALUE_SOURCES.LIVE : VALUE_SOURCES.LIVE,
-    lockedHint: zone3Latest != null ? undefined : "Waiting for live sensor data",
+    lockedHint: zone3Latest != null ? undefined : "Warte auf Live-Sensordaten",
     spark: zone3Spark,
   };
 
   // Energy stays locked until energy_data exists
   cards.push({
     key: "energy",
-    label: "Energy",
+    label: "Energie",
     value: "—",
     unit: "",
     traffic: "grey",
     normalMin: null,
     normalMax: null,
     deviation: null,
-    value_source: VALUE_SOURCES.SIMULATED,
-    lockedHint: "Requires energy_data",
+    value_source: VALUE_SOURCES.LIVE,
+    lockedHint: "Erfordert Energiedaten",
     spark: [],
   });
-
-  const hasAnyLive = cards.some(
-    (c) => c.value !== "—" && c.key !== "energy"
-  );
-
-  if (!hasAnyLive && demoFallbackValues.length) {
-    // Soft fallback only if APIs returned nothing — keep labels honest
-    return demoFallbackValues.map((v) => ({
-      ...v,
-      value_source:
-        v.key === "energy" ? VALUE_SOURCES.SIMULATED : VALUE_SOURCES.SIMULATED,
-    }));
-  }
 
   return cards;
 }
@@ -229,7 +215,7 @@ export function buildLiveWarnings({ alarms = [], currentDashboard, extruderStatu
     for (const alarm of alarms.slice(0, 8)) {
       warnings.push({
         id: String(alarm.id || alarm.message),
-        text: alarm.message || "Active alarm",
+        text: alarm.message || "Aktiver Alarm",
         value_source: VALUE_SOURCES.LIVE,
         display_label: "LIVE",
         severity: alarm.severity,
@@ -240,14 +226,14 @@ export function buildLiveWarnings({ alarms = [], currentDashboard, extruderStatu
   if (extruderStatus?.last_error) {
     warnings.push({
       id: "extruder-feed-error",
-      text: `Data feed issue: ${extruderStatus.last_error}`,
+      text: `Datenfeed-Problem: ${extruderStatus.last_error}`,
       value_source: VALUE_SOURCES.DERIVED,
       display_label: "Abgeleitet",
     });
   } else if (extruderStatus && extruderStatus.configured === false) {
     warnings.push({
       id: "extruder-not-configured",
-      text: "Extruder data source is not fully configured.",
+      text: "Extruder-Datenquelle ist nicht vollständig konfiguriert.",
       value_source: VALUE_SOURCES.DERIVED,
       display_label: "Abgeleitet",
     });
@@ -259,7 +245,7 @@ export function buildLiveWarnings({ alarms = [], currentDashboard, extruderStatu
       id: "overall-risk",
       text:
         currentDashboard?.explanation_text ||
-        `Overall process risk is ${overall}.`,
+        `Gesamtes Prozessrisiko: ${overall}.`,
       value_source: VALUE_SOURCES.RULE_BASED,
       display_label: "Regelbasierte Warnung",
     });

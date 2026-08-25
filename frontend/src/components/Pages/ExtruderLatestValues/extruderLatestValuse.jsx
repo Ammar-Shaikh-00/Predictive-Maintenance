@@ -186,7 +186,7 @@ const ExtruderLatestValues = () => {
 
     } catch (err) {
       console.error(err);
-      setError("Failed to fetch latest values");
+      setError("Aktuelle Werte konnten nicht geladen werden");
     } finally {
       setLoading(false);
     }
@@ -201,18 +201,17 @@ const ExtruderLatestValues = () => {
 
   // ---------------- UI STATES ----------------
   if (loading) {
-    return <div className="p-4 text-center text-gray-500">Loading latest values...</div>;
+    return <div className="p-4 text-center text-slate-400">Aktuelle Werte werden geladen...</div>;
   }
 
   if (error) {
-    return <div className="p-4 text-center text-red-500 font-medium">{error}</div>;
+    return <div className="p-4 text-center font-medium text-red-400">{error}</div>;
   }
 
-  const formattedDate = new Date(latestValues?.TrendDate).toLocaleString("en-GB", {
+  const formattedDate = new Date(latestValues?.TrendDate).toLocaleString("de-DE", {
     timeZone: "UTC"
   });
-  console.log(formattedDate,latestValues?.TrendDate);
-  // 🔥 Create mapping: Val_X → Sensor Name
+  // Create mapping: Val_X → Sensor Name
   const mappedSensors = {};
   sensorMap.forEach(sensor => {
     mappedSensors[sensor.map_val] = `${sensor.map_val} ➜ ${sensor.name}`;
@@ -241,14 +240,14 @@ const ExtruderLatestValues = () => {
       <div
         key={key}
         className={`
-          rounded-2xl p-4 border transition-all duration-500
-          ${isChanged 
-            ? "bg-green-100 border-green-400 scale-105" 
-            : "bg-white border-gray-200"}
+          rounded-2xl border bg-[#141820] p-4 transition-all duration-500
+          ${isChanged
+            ? "scale-105 border-emerald-400/60 bg-emerald-500/15"
+            : "border-white/10"}
         `}
       >
-        <p className="text-xs text-gray-500">{displayName}</p>
-        <p className="text-lg font-semibold text-gray-800">
+        <p className="text-xs text-slate-400">{displayName}</p>
+        <p className="mt-1 text-lg font-semibold text-slate-50">
           {typeof value === "number" ? value.toFixed(2) : value}
         </p>
       </div>
@@ -256,22 +255,22 @@ const ExtruderLatestValues = () => {
   };
 
   return (
-    <div className="p-4 space-y-4">
+    <div className="space-y-4 p-4 text-slate-100">
       {/* HEADER */}
-      <div className="flex justify-between items-center">
-        <h2 className="text-xl font-semibold text-gray-800">
-          Extruder Latest Values
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-semibold tracking-tight text-slate-50">
+          Extruder Live-Werte
         </h2>
-        <span className="text-sm text-gray-500">{formattedDate}</span>
+        <span className="text-sm text-slate-400">{formattedDate}</span>
       </div>
 
       {/* 🔥 MAPPED SENSOR VALUES */}
       <div>
-        <h3 className="text-md font-semibold mb-2 text-gray-700">
-          Main Sensors
+        <h3 className="mb-2 text-md font-semibold text-slate-300">
+          Hauptsensoren
         </h3>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-6">
           {mappedEntries.map(([key, value]) => renderCard(key, value))}
         </div>
       </div>
@@ -279,21 +278,22 @@ const ExtruderLatestValues = () => {
       {/* 🔥 TOGGLE BUTTON */}
       <div className="text-center">
         <button
+          type="button"
           onClick={() => setShowMore(!showMore)}
-          className="px-4 py-2 rounded-lg bg-blue-500 text-white text-sm hover:bg-blue-600 transition"
+          className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-200 transition hover:bg-emerald-500/20"
         >
-          {showMore ? "Hide Values" : "More Values"}
+          {showMore ? "Werte ausblenden" : "Weitere Werte"}
         </button>
       </div>
 
       {/* 🔥 OTHER VALUES */}
       {showMore && (
         <div>
-          <h3 className="text-md font-semibold mb-2 text-gray-700">
-            Other Values
+          <h3 className="mb-2 text-md font-semibold text-slate-300">
+            Weitere Werte
           </h3>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-6">
             {otherEntries.map(([key, value]) => renderCard(key, value))}
           </div>
         </div>

@@ -55,13 +55,13 @@ export function SensorModal({
 
     if (!formData.name.trim()) {
       return alert(
-        "Sensor name required"
+        "Sensorname erforderlich"
       );
     }
 
     if (!formData.machine_id) {
       return alert(
-        "Please select machine"
+        "Bitte Maschine auswählen"
       );
     }
     console.log(formData);
@@ -98,8 +98,8 @@ export function SensorModal({
         ">
           {
             isEditing
-            ? "Edit Sensor"
-            : "Create Sensor"
+            ? "Sensor bearbeiten"
+            : "Sensor erstellen"
           }
         </h2>
 
@@ -117,7 +117,7 @@ export function SensorModal({
               text-slate-400
               block mb-1
             ">
-              Sensor Name
+              Sensorname
             </label>
 
             <input
@@ -152,7 +152,7 @@ export function SensorModal({
               text-slate-400
               block mb-1
             ">
-              Map Value
+              Zuordnungswert
             </label>
 
             <input
@@ -187,7 +187,7 @@ export function SensorModal({
               text-slate-400
               block mb-1
             ">
-              Machine
+              Maschine
             </label>
 
             <select
@@ -209,7 +209,7 @@ export function SensorModal({
             >
 
               <option value="">
-                Select Machine
+                Maschine auswählen
               </option>
 
               {machines.map((m)=>(
@@ -231,7 +231,7 @@ export function SensorModal({
               text-slate-400
               block mb-1
             ">
-              Unit
+              Einheit
             </label>
 
             <input
@@ -242,7 +242,7 @@ export function SensorModal({
                   unit:e.target.value
                 })
               }
-              placeholder="unit"
+              placeholder="Einheit"
               className="
               w-full
               p-3
@@ -262,7 +262,7 @@ export function SensorModal({
               text-slate-400
               block mb-1
             ">
-              description
+              Beschreibung
             </label>
 
             <input
@@ -273,7 +273,7 @@ export function SensorModal({
                   description:e.target.value
                 })
               }
-              placeholder="description"
+              placeholder="Beschreibung"
               className="
               w-full
               p-3
@@ -307,7 +307,7 @@ export function SensorModal({
               text-white
               "
             >
-              Cancel
+              Abbrechen
             </button>
 
 
@@ -328,13 +328,13 @@ export function SensorModal({
                 isLoading
                 ? (
                     isEditing
-                    ? "Updating..."
-                    : "Creating..."
+                    ? "Aktualisiert…"
+                    : "Erstellt…"
                   )
                 : (
                     isEditing
-                    ? "Update"
-                    : "Create"
+                    ? "Aktualisieren"
+                    : "Erstellen"
                   )
               }
 

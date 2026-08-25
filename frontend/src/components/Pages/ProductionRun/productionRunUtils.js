@@ -1,8 +1,8 @@
 export const tabs = [
-  { id: "context", label: "Context" },
-  { id: "process", label: "Process" },
-  { id: "quality", label: "Quality" },
-  { id: "ai", label: "AI Insights" },
+  { id: "context", label: "Kontext" },
+  { id: "process", label: "Prozess" },
+  { id: "quality", label: "Qualität" },
+  { id: "ai", label: "KI-Einblicke" },
   { id: "material", label: "Material" },
 ];
 
@@ -34,20 +34,20 @@ export const getStatusTone = (status = "") => {
   const normalized = status.toString().toLowerCase();
 
   if (["running", "active", "normal", "stable", "ok", "healthy"].includes(normalized)) {
-    return "bg-emerald-50 text-emerald-700 border-emerald-200";
+    return "bg-emerald-500/15 text-emerald-300 border-emerald-400/30";
   }
 
   if (["completed", "complete"].includes(normalized)) {
-    return "bg-sky-50 text-sky-700 border-sky-200";
+    return "bg-sky-500/15 text-sky-300 border-sky-400/30";
   }
 
   if (["warning", "paused", "hold"].includes(normalized)) {
-    return "bg-amber-50 text-amber-700 border-amber-200";
+    return "bg-amber-500/15 text-amber-300 border-amber-400/30";
   }
 
   if (["critical", "stopped", "failed", "unstable"].includes(normalized)) {
-    return "bg-rose-50 text-rose-700 border-rose-200";
+    return "bg-rose-500/15 text-rose-300 border-rose-400/30";
   }
 
-  return "bg-slate-50 text-slate-600 border-slate-200";
+  return "bg-white/5 text-slate-300 border-white/10";
 };

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 80" fill="none">
+  <rect width="120" height="80" rx="8" fill="#12161e"/>
+  <path d="M16 40h88" stroke="#94a3b8" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M28 30l6 10-6 10M44 30l6 10-6 10M60 30l6 10-6 10M76 30l6 10-6 10M92 30l6 10-6 10" stroke="#64748b" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="16" cy="40" r="3" fill="#34d399"/>
+  <text x="60" y="72" text-anchor="middle" fill="#64748b" font-size="8" font-family="system-ui">Screw / Schnecke</text>
+</svg>

@@ -18,7 +18,7 @@ function Bar({ label, value, hint }) {
 }
 
 /**
- * Prediction Readiness — never labeled Accuracy in Stage 1.
+ * Vorhersagebereitschaft — niemals als Genauigkeit in Stage 1 bezeichnen.
  */
 export default function PredictionReadiness({
   readiness,
@@ -28,15 +28,15 @@ export default function PredictionReadiness({
   return (
     <section className="rounded-2xl border border-white/10 bg-[#141820] p-4 sm:p-5 h-full">
       <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-300">
-        Prediction Readiness
+        Vorhersagebereitschaft
       </h2>
       <p className="mt-1 text-xs text-slate-500">
-        Foundation for learning — not validated model accuracy
+        Aus verbundenen Datenquellen.
       </p>
 
       <div className="mt-4 flex items-end gap-2">
         <p className="text-3xl font-semibold text-slate-50">{readiness}%</p>
-        <p className="pb-1 text-xs text-teal-400/90">AI Readiness</p>
+        <p className="pb-1 text-xs text-teal-400/90">KI-Bereitschaft</p>
       </div>
 
       <div className="mt-4 space-y-3">
@@ -45,29 +45,29 @@ export default function PredictionReadiness({
             key={bar.key}
             label={bar.label}
             value={bar.value}
-            hint="These data improve prediction quality"
+            hint="Diese Daten verbessern die Vorhersagequalität"
           />
         ))}
       </div>
 
       <div className="mt-5 rounded-xl border border-white/5 bg-black/20 p-3 space-y-1.5">
         <p className="text-[11px] uppercase tracking-wider text-slate-500">
-          Estimated Potential
+          Geschätztes Potenzial
         </p>
         <p className="text-xs text-slate-300">
-          After quality data:{" "}
+          Nach Qualitätsdaten:{" "}
           <span className="font-semibold text-slate-100">
             {potentials.after_quality ?? "—"}%
           </span>
         </p>
         <p className="text-xs text-slate-300">
-          After maintenance data:{" "}
+          Nach Wartungsdaten:{" "}
           <span className="font-semibold text-slate-100">
             {potentials.after_maintenance ?? "—"}%
           </span>
         </p>
         <p className="text-xs text-slate-300">
-          After all machines:{" "}
+          Nach allen Maschinen:{" "}
           <span className="font-semibold text-slate-100">
             {potentials.after_all_machines ?? "—"}%
           </span>

@@ -5,13 +5,15 @@
 const EVENT_TYPE_DE = {
   PROGRESS_RECOMPUTE: "Fortschritt neu berechnet",
   PROGRESS_RECOMPUTED: "Fortschritt neu berechnet",
-  RUN_STARTED: "Lauf gestartet",
+  RUN_STARTED: "Produktion gestartet",
   RUN_STOPPED: "Lauf gestoppt",
   RUN_PAUSED: "Lauf pausiert",
   ALARM_RAISED: "Alarm ausgelöst",
   ALARM_CLEARED: "Alarm quittiert",
   IMPORT_COMPLETED: "Import abgeschlossen",
   STATE_CHANGE: "Statuswechsel",
+  MATERIAL_CHANGE: "Materialwechsel",
+  MATERIAL_CHANGED: "Materialwechsel",
 };
 
 function humanizeEventType(raw) {
@@ -23,18 +25,28 @@ function humanizeEventType(raw) {
   return spaced.charAt(0).toUpperCase() + spaced.slice(1).toLowerCase();
 }
 
+function eventActor(actor, source) {
+  const raw = String(actor || source || "").toLowerCase();
+  if (
+    /operator|bediener|user|manual|operator_events/.test(raw)
+  ) {
+    return "Operator";
+  }
+  return "System";
+}
+
 export function buildReadinessFactors(connectedSources = [], dataQuality = null) {
   const has = (k) => connectedSources.includes(k);
   return [
-    { key: "volume", label: "Sensor Datenmenge", value: has("live_sensors") ? 100 : 0 },
+    { key: "volume", label: "Sensordatenmenge", value: has("live_sensors") ? 100 : 0 },
     {
       key: "sensor_q",
-      label: "Sensor Qualität",
+      label: "Sensorqualität",
       value: dataQuality != null ? Math.round(Number(dataQuality)) : has("live_sensors") ? 70 : 0,
     },
     {
       key: "history",
-      label: "Prozess Historia",
+      label: "Prozesshistorie",
       value: has("production_history") ? 100 : has("machine_state") ? 40 : 0,
     },
     { key: "quality", label: "Qualitätsdaten", value: has("quality_data") ? 100 : 0 },
@@ -46,8 +58,38 @@ export function buildReadinessFactors(connectedSources = [], dataQuality = null)
   ];
 }
 
+/** Only accept Vorhersagebereitschaft when AI/ML explicitly reported it (not legacy formula). */
+export function resolveMlPredictionReadiness(data) {
+  const meta = data?.prediction_readiness_meta;
+  const raw = data?.prediction_readiness;
+  const available = meta?.available === true;
+  const source = String(meta?.value_source || "").toUpperCase();
+  if (!available || source !== "AI_SERVICE") {
+    return {
+      value: null,
+      hint:
+        meta?.hint ||
+        "Vorhersagebereitschaft kommt vom AI/ML-Dienst — noch kein Score gemeldet.",
+      meta: meta || null,
+    };
+  }
+  if (raw == null || !Number.isFinite(Number(raw))) {
+    return {
+      value: null,
+      hint: meta?.hint || "Noch kein AI/ML-Score für diese Maschine.",
+      meta,
+    };
+  }
+  return {
+    value: Number(raw),
+    hint: null,
+    meta,
+  };
+}
+
 const PLANT_STATUS_DE = {
   PRODUCTION: "PRODUKTION",
+  LOW_PRODUCTION: "Niedrige Produktion",
   READY: "BEREIT",
   HEATING: "AUFHEIZEN",
   COOLING: "ABKÜHLEN",
@@ -84,6 +126,7 @@ export function buildTimelineEvents({
       sortAt: Number.isFinite(ts) ? ts : null,
       title: humanizeEventType(e.event_type),
       subtitle: e.source ? String(e.source) : null,
+      actor: eventActor(e.actor, e.source),
       tone: "info",
       value_source: "DERIVED",
     });
@@ -105,6 +148,7 @@ export function buildTimelineEvents({
       time: formatTime(now) || "—",
       title: "Anlagenstatus",
       subtitle: PLANT_STATUS_DE[key] || String(plantStatus),
+      actor: "System",
       tone: key === "FAULT" ? "alarm" : "info",
       value_source: "LIVE",
     });
@@ -122,19 +166,23 @@ export function buildTimelineEvents({
       time: formatTime(w.created_at || w.timestamp || w.triggered_at) || "—",
       title: sev.includes("crit") || sev.includes("alarm") ? "Alarm" : "Warnung",
       subtitle: localizeRecommendationText(w.text),
+      actor: eventActor(w.actor, w.source),
       tone: sev.includes("crit") || sev.includes("alarm") ? "alarm" : "warn",
       value_source: w.value_source || "LIVE",
     });
   }
 
-  for (const r of risks.slice(0, 1)) {
+  for (const r of risks
+    .filter((x) => String(x?.value_source || "").toUpperCase() !== "SIMULATED")
+    .slice(0, 1)) {
     events.push({
       id: `risk-${r.id}`,
       time: formatTime(r.created_at || r.timestamp) || "—",
       title: "KI-Hinweis",
       subtitle: localizeRecommendationText(r.text),
+      actor: "System",
       tone: "ai",
-      value_source: r.value_source || "SIMULATED",
+      value_source: r.value_source || "RULE_BASED",
     });
   }
 
@@ -143,6 +191,7 @@ export function buildTimelineEvents({
     time: formatTime(now) || "—",
     title: "Jetzt",
     subtitle: null,
+    actor: "System",
     tone: "now",
     value_source: "LIVE",
   });
@@ -151,12 +200,16 @@ export function buildTimelineEvents({
 }
 
 export function pickRecommendation(risks = [], warnings = []) {
-  const r = risks.find((x) => x.text) || null;
+  const r =
+    risks.find(
+      (x) =>
+        x.text && String(x.value_source || "").toUpperCase() !== "SIMULATED"
+    ) || null;
   if (r) {
     return {
       text: localizeRecommendationText(r.text),
       action: r.action ? localizeRecommendationText(r.action) : null,
-      value_source: r.value_source || "SIMULATED",
+      value_source: r.value_source || "RULE_BASED",
       display_label: localizeProvenanceLabel(r.display_label, r.value_source),
     };
   }
@@ -182,6 +235,18 @@ const REC_TEXT_DE = {
     "Werkzeug erreicht voraussichtlich in 34 Tagen den Wartungsbereich.",
   "machine network not yet connected for remaining lines.":
     "Maschinennetzwerk für weitere Linien noch nicht verbunden.",
+  "machine network not yet connected for remaining lines":
+    "Maschinennetzwerk für weitere Linien noch nicht verbunden",
+  "quality connection missing": "Qualitätsanbindung fehlt",
+  "maintenance connection missing": "Wartungsanbindung fehlt",
+  "waiting for live sensor data": "Warte auf Live-Sensordaten",
+  "requires energy_data": "Erfordert Energiedaten",
+  "motor load": "Motorlast",
+  "screw speed": "Schneckendrehzahl",
+  "extruder pressure": "Extruderdruck",
+  "avg. temperature": "Durchschnittstemperatur",
+  "zone 3 temperature": "Zone-3-Temperatur",
+  energy: "Energie",
 };
 
 const PROVENANCE_LABEL_DE = {
@@ -190,10 +255,14 @@ const PROVENANCE_LABEL_DE = {
   "rule-based warning": "Regelbasierte Warnung",
 };
 
-function localizeRecommendationText(text) {
+export function localizeUiText(text) {
   if (!text) return text;
   const mapped = REC_TEXT_DE[String(text).trim().toLowerCase()];
   return mapped || text;
+}
+
+function localizeRecommendationText(text) {
+  return localizeUiText(text);
 }
 
 function localizeProvenanceLabel(label, source) {
@@ -255,10 +324,27 @@ export function mapOrderBoardToRunBar(board) {
   const scrap = asFinite(fieldValue("scrap") ?? run.scrap_percentage);
   const oee = asFinite(fieldValue("oee") ?? run.oee);
 
+  const material =
+    asText(fieldValue("material")) ||
+    asText(run.material_name) ||
+    asText(run.material_grade) ||
+    null;
+
+  const progress =
+    asFinite(fieldValue("progress") ?? run.derived_progress_pct ?? run.progress_pct);
+
+  const remainingRaw =
+    asText(fieldValue("eta")) ||
+    asText(fieldValue("remaining")) ||
+    null;
+
   return {
     id: run.id,
     order_label: order,
     line_label: line,
+    material,
+    progress,
+    remaining: remainingRaw,
     runtime: elapsedMin != null ? formatRuntime(elapsedMin) : null,
     produced,
     scrap,
@@ -277,16 +363,24 @@ function formatRuntime(minutes) {
   return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 }
 
+/**
+ * Count real alarms only for the Aktive-Alarme KPI.
+ * Skips DERIVED network/setup notes (e.g. “Maschinennetzwerk noch nicht verbunden”).
+ */
 export function countAlarmSeverities(warnings = []) {
   let critical = 0;
   let warning = 0;
   for (const w of warnings) {
+    const id = String(w.id || "");
+    const source = String(w.value_source || "").toUpperCase();
+    // Informational OC notes — not plant alarms
+    if (id === "network-note" || id.startsWith("machine-offline-")) continue;
+    if (source === "DERIVED" && !w.severity && !w.level) continue;
+
     const s = String(w.severity || w.level || "").toLowerCase();
     if (s.includes("crit") || s.includes("high") || s.includes("alarm")) critical += 1;
-    else warning += 1;
-  }
-  if (warnings.length && critical === 0 && warning === 0) {
-    warning = warnings.length;
+    else if (s.includes("warn") || s.includes("medium") || s.includes("low") || s) warning += 1;
+    else if (source === "LIVE") warning += 1;
   }
   return { critical, warning };
 }

@@ -18,7 +18,7 @@ import QualityOverview from "./QualityOverview";
 import ReferenceTable from "./ReferenceTable";
 import AiDecisionPanel from "./AiDecisionPanel";
 import safeApi from "../../../api/safeApi";
-import { isRunCompleted, numberOrDash, tabs } from "./productionRunUtils";
+import { numberOrDash, tabs } from "./productionRunUtils";
 
 export default function ProductionRunPage({ runId }) {
   const { t } = useTranslation();
@@ -30,7 +30,6 @@ export default function ProductionRunPage({ runId }) {
   const [featureEvaluations, setFeatureEvaluations] = useState([]);
   const [machineName, setMachineName] = useState("");
   const [loading, setLoading] = useState(false);
-  const [completing, setCompleting] = useState(false);
 
   const fetchProductionRun = useCallback(async (run_id) => {
     if (!run_id) return;
@@ -142,7 +141,6 @@ export default function ProductionRunPage({ runId }) {
   }, [aiData, runData]);
 
   const qualitySummary = qualityData || {};
-  // const editable = runData ? !isRunCompleted(runData.status) : false;
   const editable = true;
 
   const getFeatureEvaluation = (featureName) =>
@@ -171,7 +169,7 @@ export default function ProductionRunPage({ runId }) {
       digits: 1,
       rangeDigits: 1,
       icon: <Activity size={16} />,
-      color: "text-teal-600",
+      color: "text-teal-400",
     },
     {
       featureName: "screw_speed_mean",
@@ -181,7 +179,7 @@ export default function ProductionRunPage({ runId }) {
       digits: 1,
       rangeDigits: 1,
       icon: <Gauge size={16} />,
-      color: "text-sky-600",
+      color: "text-sky-400",
     },
     {
       featureName: "temperature_mean",
@@ -192,7 +190,7 @@ export default function ProductionRunPage({ runId }) {
       digits: 1,
       rangeDigits: 1,
       icon: <Thermometer size={16} />,
-      color: "text-violet-600",
+      color: "text-amber-400",
     },
     {
       featureName: "load_mean",
@@ -202,7 +200,7 @@ export default function ProductionRunPage({ runId }) {
       digits: 1,
       rangeDigits: 1,
       icon: <Factory size={16} />,
-      color: "text-amber-600",
+      color: "text-emerald-400",
     },
     {
       featureName: "temp_spread",
@@ -213,7 +211,7 @@ export default function ProductionRunPage({ runId }) {
       digits: 2,
       rangeDigits: 2,
       icon: <Waves size={16} />,
-      color: "text-teal-600",
+      color: "text-cyan-400",
     },
     {
       featureName: "pressure_per_rpm",
@@ -223,7 +221,7 @@ export default function ProductionRunPage({ runId }) {
       digits: 2,
       rangeDigits: 2,
       icon: <LineChart size={16} />,
-      color: "text-pink-600",
+      color: "text-sky-400",
     },
   ];
 
@@ -260,31 +258,9 @@ export default function ProductionRunPage({ runId }) {
     };
   });
 
-  const handleCompleteRun = async () => {
-    if (!runData || isRunCompleted(runData.status)) return;
-
-    setCompleting(true);
-
-    try {
-      const payload = {
-        ...runData,
-        status: "COMPLETED",
-      };
-
-      const res = await safeApi.put(`/production-run/${runData.id}`, payload);
-      setRunData(res.data || payload);
-      toast.success(t("productionRun.messages.completed"));
-    } catch (error) {
-      console.error(error);
-      toast.error(t("productionRun.messages.completeFailed"));
-    } finally {
-      setCompleting(false);
-    }
-  };
-
   if (!runId) {
     return (
-      <div className="rounded-xl border border-dashed border-slate-300 bg-white p-10 text-center text-slate-500">
+      <div className="rounded-xl border border-dashed border-white/15 bg-[#12161e] p-10 text-center text-slate-400">
         {t("productionRun.empty")}
       </div>
     );
@@ -292,7 +268,7 @@ export default function ProductionRunPage({ runId }) {
 
   if (loading && !runData) {
     return (
-      <div className="rounded-xl border border-slate-200 bg-white p-10 text-center text-slate-500">
+      <div className="rounded-xl border border-white/10 bg-[#12161e] p-10 text-center text-slate-400">
         {t("productionRun.loading")}
       </div>
     );
@@ -301,15 +277,13 @@ export default function ProductionRunPage({ runId }) {
   if (!runData) return null;
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 text-slate-100">
       <RunHeader
         runData={runData}
         machineName={machineName}
-        completing={completing}
-        onComplete={handleCompleteRun}
       />
 
-      <div className="rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div className="rounded-xl border border-white/10 bg-[#12161e]">
         <div className="flex overflow-x-auto">
           {tabs.map((tab) => (
             <button
@@ -317,8 +291,8 @@ export default function ProductionRunPage({ runId }) {
               onClick={() => setActiveTab(tab.id)}
               className={`min-w-36 border-b-2 px-6 py-4 text-sm font-semibold uppercase tracking-wide transition ${
                 activeTab === tab.id
-                  ? "border-violet-600 text-violet-700"
-                  : "border-transparent text-slate-500 hover:bg-slate-50 hover:text-slate-800"
+                  ? "border-emerald-400 text-emerald-300"
+                  : "border-transparent text-slate-500 hover:bg-white/5 hover:text-slate-200"
               }`}
             >
               {t(`productionRun.tabs.${tab.id}`)}
@@ -365,7 +339,7 @@ export default function ProductionRunPage({ runId }) {
       )}
       {activeTab === "ai" && <AiDecisionPanel aiSummary={aiSummary} />}
       {activeTab === "material" && (
-        <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <section className="rounded-xl border border-white/10 bg-[#12161e] p-6">
           <MaterialProfileTab runId={runId} />
         </section>
       )}

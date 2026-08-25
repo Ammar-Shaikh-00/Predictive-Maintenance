@@ -2,11 +2,16 @@ version: "3.9"
 
 services:
   backend-prod:
-    build: .
+    build:
+      context: .
     container_name: pm-prod-backend
     restart: unless-stopped
     env_file:
       - .env
+    environment:
+      CAPABILITY_CATALOG_PATH: /app/catalogs/capability_component_catalog.json
+    volumes:
+      - ../Docs/capability_component_catalog.json:/app/catalogs/capability_component_catalog.json:ro
     ports:
       - "8000:8002"
     command: >

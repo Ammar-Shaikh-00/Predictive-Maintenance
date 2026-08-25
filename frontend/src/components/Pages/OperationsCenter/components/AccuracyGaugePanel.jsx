@@ -1,12 +1,13 @@
 import { Link } from "react-router-dom";
 
 /**
- * PDF Accuracy-Quotient panel — matches Figma layout.
- * Value shown is Prediction Readiness (honest); visual title matches design.
+ * PDF panel — titled for design, value is Prediction Readiness from AI/ML only.
+ * Module 5 (validated Accuracy) stays locked until model_versions exist.
  */
 export default function AccuracyGaugePanel({
   readiness = null,
   factors = [],
+  accuracyLocked = true,
 }) {
   const value =
     readiness != null && Number.isFinite(Number(readiness))
@@ -17,10 +18,18 @@ export default function AccuracyGaugePanel({
     <section className="oc-accuracy-panel h-full min-w-0">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2 sm:mb-5">
         <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-white">
-          Genauigkeitsquotient
+          {accuracyLocked ? "Vorhersagebereitschaft" : "Genauigkeitsquotient"}
         </h2>
-        <Link to="/executive" className="oc-accuracy-pill shrink-0">
-          Gesamtgenauigkeit
+        <Link
+          to="/executive"
+          className="oc-accuracy-pill shrink-0"
+          title={
+            accuracyLocked
+              ? "Genauigkeit nach validierten Modellen"
+              : "Gesamtgenauigkeit"
+          }
+        >
+          {accuracyLocked ? "Modul 5 gesperrt" : "Gesamtgenauigkeit"}
           <span aria-hidden>→</span>
         </Link>
       </div>
@@ -28,7 +37,9 @@ export default function AccuracyGaugePanel({
       <div className="oc-accuracy-body min-w-0">
         <div className="min-w-0">
           <p className="mb-3 text-sm text-white sm:mb-4">
-            Was beeinflusst die Genauigkeit?
+            {accuracyLocked
+              ? "Verbundene Datenquellen"
+              : "Was beeinflusst die Genauigkeit?"}
           </p>
           <ul className="space-y-3 sm:space-y-3.5">
             {factors.map((f) => {
@@ -65,8 +76,13 @@ export default function AccuracyGaugePanel({
 
         <div className="oc-accuracy-divider" aria-hidden />
 
-        <div className="flex min-w-0 items-center justify-center py-2 lg:py-2 lg:pl-2">
+        <div className="flex min-w-0 flex-col items-center justify-center py-2 lg:py-2 lg:pl-2">
           <AccuracyGauge value={value} />
+          {accuracyLocked ? (
+            <p className="mt-2 max-w-[14rem] text-center text-[10px] leading-snug text-slate-500">
+              Vorhersagebereitschaft vom KI-Dienst, sobald verfügbar.
+            </p>
+          ) : null}
         </div>
       </div>
 
@@ -89,8 +105,9 @@ export default function AccuracyGaugePanel({
               Merkhilfe
             </p>
             <p className="mt-1 break-words text-[12px] leading-relaxed text-slate-300 sm:text-[13px]">
-              Je mehr Datenquellen Sie anbinden, desto präziser werden die
-              Vorhersagen.
+              {value != null
+                ? "Wert vom AI/ML-Dienst für die ausgewählte Maschine (Vorhersagebereitschaft)."
+                : "Genauigkeit erscheint nach validierten Modellen. Bis dahin Vorhersagebereitschaft, sofern der KI-Dienst sie liefert."}
             </p>
           </div>
         </div>

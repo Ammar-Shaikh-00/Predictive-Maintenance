@@ -38,13 +38,16 @@ async def get_all_runs(
 @router.get("/order-board", response_model=ProductionRunOrderBoard)
 async def get_order_board(
     run_id: int | None = Query(None),
+    machine_id: str | None = Query(None),
     db: AsyncSession = Depends(get_session),
 ):
     """
     Module 8 — Current Order cockpit payload.
     Reuses production_run + machine; never invents ETA/progress from ML.
     """
-    board = await production_run_service.build_current_order_board(db, run_id=run_id)
+    board = await production_run_service.build_current_order_board(
+        db, run_id=run_id, machine_id=machine_id
+    )
     return ProductionRunOrderBoard.model_validate(board)
 
 

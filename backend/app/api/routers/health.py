@@ -1,11 +1,11 @@
 from datetime import datetime
-import httpx
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.dependencies import get_session
 from app.core.config import get_settings
+from app.services.ai_service_health import probe_ai_service_health
 
 router = APIRouter(tags=["health"])
 settings = get_settings()
@@ -95,32 +95,22 @@ async def system_status(session: AsyncSession = Depends(get_session)):
         status["database"]["status"] = "disconnected"
         status["database"]["message"] = f"❌ Database connection failed: {str(e)}"
     
-    # Check AI Service
-    try:
-        async with httpx.AsyncClient(timeout=5.0) as client:
-            try:
-                response = await client.get(f"{settings.ai_service_url}/health")
-                if response.status_code == 200:
-                    status["ai_service"]["status"] = "running"
-                    status["ai_service"]["message"] = "✅ AI service is operational"
-                    try:
-                        ai_data = response.json()
-                        if isinstance(ai_data, dict):
-                            status["ai_service"]["details"] = ai_data
-                    except:
-                        pass
-                else:
-                    status["ai_service"]["status"] = "unhealthy"
-                    status["ai_service"]["message"] = f"⚠️ AI service returned status {response.status_code}"
-            except httpx.TimeoutException:
-                status["ai_service"]["status"] = "timeout"
-                status["ai_service"]["message"] = "⏱️ AI service request timed out"
-            except httpx.ConnectError:
-                status["ai_service"]["status"] = "unreachable"
-                status["ai_service"]["message"] = "❌ AI service is unreachable"
-    except Exception as e:
-        status["ai_service"]["status"] = "error"
-        status["ai_service"]["message"] = f"❌ AI service check failed: {str(e)}"
-    
+    health = await probe_ai_service_health()
+    status["ai_service"]["url"] = health.url or settings.ai_service_url
+    if health.healthy:
+        status["ai_service"]["status"] = "running"
+        status["ai_service"]["message"] = "✅ AI service is operational"
+        if health.details:
+            status["ai_service"]["details"] = health.details
+    elif health.status == "unreachable":
+        status["ai_service"]["status"] = "unreachable"
+        status["ai_service"]["message"] = "❌ AI service is unreachable"
+    else:
+        status["ai_service"]["status"] = health.status or "unhealthy"
+        extra = health.error or (
+            f"status {health.http_status}" if health.http_status else health.status
+        )
+        status["ai_service"]["message"] = f"⚠️ AI service check failed: {extra}"
+
     return status
 

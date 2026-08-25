@@ -10,6 +10,24 @@ function statusTone(status) {
   return "border-white/15 bg-white/5 text-slate-400";
 }
 
+function statusLabel(status) {
+  const s = String(status || "").toLowerCase();
+  if (s === "online") return "Verbunden";
+  if (s === "offline") return "Getrennt";
+  if (s === "maintenance") return "Wartung";
+  if (s === "degraded") return "Eingeschränkt";
+  if (!status) return "Unbekannt";
+  return String(status);
+}
+
+function criticalityLabel(value) {
+  const c = String(value || "").toLowerCase();
+  if (c === "low") return "Niedrig";
+  if (c === "medium") return "Mittel";
+  if (c === "high") return "Hoch";
+  return value;
+}
+
 function Field({ label, value, source = "LIVE", muted = false }) {
   const display =
     value === null || value === undefined || value === "" ? "—" : String(value);
@@ -24,7 +42,7 @@ function Field({ label, value, source = "LIVE", muted = false }) {
               : "border-emerald-500/30 text-emerald-400/90"
           }`}
         >
-          {display === "—" ? "N/A" : source}
+          {display === "—" ? "k. A." : source}
         </span>
       </div>
       <p
@@ -86,7 +104,7 @@ export default function MachineCard({
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center text-xs text-slate-500">
-            No photo · —
+            Kein Foto · —
           </div>
         )}
         <span
@@ -94,7 +112,7 @@ export default function MachineCard({
             machine.status
           )}`}
         >
-          {machine.status || "unknown"}
+          {statusLabel(machine.status)}
         </span>
       </div>
 
@@ -105,7 +123,7 @@ export default function MachineCard({
               {machine.name || "—"}
             </h3>
             <p className="mt-0.5 text-xs text-slate-400">
-              {machine.location || "No location"}
+              {machine.location || "Kein Standort"}
             </p>
           </div>
           {machine.criticality ? (
@@ -113,15 +131,15 @@ export default function MachineCard({
               className="shrink-0 rounded-full px-2 py-0.5 text-[10px] text-white/90"
               style={{ backgroundColor: criticalBg || "#475569" }}
             >
-              {machine.criticality}
+              {criticalityLabel(machine.criticality)}
             </span>
           ) : null}
         </div>
 
         <div className="grid grid-cols-2 gap-3">
-          <Field label="Serial (SN)" value={serial} muted={!serial} />
+          <Field label="Seriennr. (SN)" value={serial} muted={!serial} />
           <Field
-            label="Sensors"
+            label="Sensoren"
             value={sensorCount > 0 ? sensorCount : null}
             source="LIVE"
             muted={sensorCount <= 0}
@@ -133,18 +151,18 @@ export default function MachineCard({
             muted={!score}
           />
           <Field
-            label="Online / offline"
-            value={machine.status}
+            label="Verbunden / getrennt"
+            value={statusLabel(machine.status)}
             source="LIVE"
           />
           <Field
-            label="AI status"
+            label="KI-Status"
             value={aiStatus}
             source="LIVE"
             muted={!aiStatus}
           />
           <Field
-            label="Remaining runtime"
+            label="Restlaufzeit"
             value={
               remainingRuntime != null ? `${remainingRuntime}` : null
             }
@@ -172,13 +190,13 @@ export default function MachineCard({
             to={`/sensor`}
             className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-xs text-emerald-200"
           >
-            Sensors
+            Sensoren
           </Link>
           <Link
             to="/production-run"
             className="rounded-lg border border-white/10 px-3 py-1.5 text-xs text-slate-300 hover:bg-white/5"
           >
-            Current order
+            Aktueller Auftrag
           </Link>
         </div>
       </div>

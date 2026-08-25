@@ -14,7 +14,7 @@ function Field({ label, value, source, emptyHint }) {
               : "border-emerald-500/30 text-emerald-400/90"
           }`}
         >
-          {empty ? "N/A" : source || "LIVE"}
+          {empty ? "k. A." : source || "LIVE"}
         </span>
       </div>
       <p className={`mt-1 text-sm font-medium ${empty ? "text-slate-500" : "text-slate-100"}`}>
@@ -31,7 +31,7 @@ function formatThresholds(sensor) {
   const parts = [];
   if (sensor.min_threshold != null) parts.push(`min ${sensor.min_threshold}`);
   if (sensor.warning_threshold != null) parts.push(`warn ${sensor.warning_threshold}`);
-  if (sensor.critical_threshold != null) parts.push(`crit ${sensor.critical_threshold}`);
+  if (sensor.critical_threshold != null) parts.push(`krit ${sensor.critical_threshold}`);
   if (sensor.max_threshold != null) parts.push(`max ${sensor.max_threshold}`);
   return parts.length ? parts.join(" · ") : null;
 }
@@ -39,7 +39,7 @@ function formatThresholds(sensor) {
 function formatWhen(iso) {
   if (!iso) return null;
   try {
-    return new Date(iso).toLocaleString("en-GB", {
+    return new Date(iso).toLocaleString("de-DE", {
       day: "2-digit",
       month: "short",
       hour: "2-digit",
@@ -66,7 +66,7 @@ export default function SensorCard({
       <article className="rounded-2xl border border-white/10 bg-[#141820] p-4">
         <h3 className="text-sm font-semibold text-slate-50">{sensor.name || "—"}</h3>
         <p className="mt-1 text-xs text-slate-400">
-          Map: {sensor.map_val || "—"} · {machineName || "No machine"}
+          Zuordnung: {sensor.map_val || "—"} · {machineName || "Keine Maschine"}
         </p>
         <p className="mt-1 text-xs text-slate-500">
           {sensor.unit || "—"} {sensor.description ? `· ${sensor.description}` : ""}
@@ -77,14 +77,14 @@ export default function SensorCard({
             onClick={onEdit}
             className="rounded-lg border border-white/10 px-3 py-1.5 text-xs text-slate-200 hover:bg-white/5"
           >
-            Edit
+            Bearbeiten
           </button>
           <button
             type="button"
             onClick={onDelete}
             className="rounded-lg border border-rose-500/30 px-3 py-1.5 text-xs text-rose-200 hover:bg-rose-500/10"
           >
-            Delete
+            Löschen
           </button>
         </div>
       </article>
@@ -107,7 +107,7 @@ export default function SensorCard({
             {sensor.name || "—"}
           </h3>
           <p className="mt-0.5 text-xs text-slate-400">
-            {machineName || "Unassigned machine"} · {sensor.sensor_type || "type —"}
+            {machineName || "Keine Maschine zugewiesen"} · {sensor.sensor_type || "Typ —"}
           </p>
         </div>
         <span className="shrink-0 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-[10px] text-emerald-300">
@@ -117,32 +117,32 @@ export default function SensorCard({
 
       <div className="mt-3 grid grid-cols-2 gap-3">
         <Field
-          label="Last value"
+          label="Letzter Wert"
           value={lastVal}
           source={latest?.value_source || "LIVE"}
-          emptyHint="No reading yet"
+          emptyHint="Noch kein Messwert"
         />
         <Field
-          label="Last time"
+          label="Letzter Zeitpunkt"
           value={formatWhen(latest?.timestamp)}
           source="LIVE"
         />
         <Field
-          label="Thresholds"
+          label="Schwellenwerte"
           value={formatThresholds(sensor)}
           source="LIVE"
-          emptyHint="Not configured"
+          emptyHint="Nicht konfiguriert"
         />
-        <Field label="Unit" value={sensor.unit} source="LIVE" />
+        <Field label="Einheit" value={sensor.unit} source="LIVE" />
         <Field
-          label="Calibration"
+          label="Kalibrierung"
           value={null}
-          emptyHint="Not connected"
+          emptyHint="Nicht angebunden"
         />
         <Field
-          label="Signal quality"
+          label="Signalqualität"
           value={null}
-          emptyHint="Not connected"
+          emptyHint="Nicht angebunden"
         />
       </div>
 
@@ -151,13 +151,13 @@ export default function SensorCard({
           to={historyHref}
           className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-xs text-emerald-200"
         >
-          History on demand
+          Historie auf Abruf
         </Link>
         <Link
           to="/machine"
           className="rounded-lg border border-white/10 px-3 py-1.5 text-xs text-slate-300 hover:bg-white/5"
         >
-          Machines
+          Maschinen
         </Link>
       </div>
     </article>

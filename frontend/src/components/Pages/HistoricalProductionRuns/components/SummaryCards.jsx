@@ -41,55 +41,55 @@ export default function SummaryCards() {
   /* 🔥 FORMAT DURATION */
   const formatDuration = (seconds) => {
 
-    if (!seconds) return "0m";
+    if (!seconds) return "0 Min.";
 
     const hrs = Math.floor(seconds / 3600);
 
     const mins = Math.floor((seconds % 3600) / 60);
 
-    return `${hrs}h ${mins}m`;
+    return `${hrs} Std. ${mins} Min.`;
   };
 
   return (
 <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-6 gap-5">
 
   <SummaryCard
-    title="Total Runs"
+    title="Läufe gesamt"
     value={stats.total_runs}
     color="text-violet-600"
     strokeColor="#7c3aed"
   />
 
   <SummaryCard
-    title="Average Scrap %"
+    title="Durchschn. Ausschuss %"
     value={`${stats.Average_scrap?.toFixed(2)}%`}
     color="text-green-600"
     strokeColor="#16a34a"
   />
 
   <SummaryCard
-    title="Average Run Time"
+    title="Durchschn. Laufzeit"
     value={formatDuration(stats.Average_duration)}
     color="text-blue-600"
     strokeColor="#2563eb"
   />
 
   <SummaryCard
-    title="Normal Runs"
+    title="Normale Läufe"
     value={stats.normal_runs}
     color="text-green-600"
     strokeColor="#16a34a"
   />
 
   <SummaryCard
-    title="Warnings"
+    title="Warnungen"
     value={stats.warning_runs}
     color="text-yellow-600"
     strokeColor="#ca8a04"
   />
 
   <SummaryCard
-    title="Critical Runs"
+    title="Kritische Läufe"
     value={stats.critical_runs}
     color="text-red-600"
     strokeColor="#dc2626"

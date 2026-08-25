@@ -12,25 +12,25 @@ const DEFAULT_POLL_MS = 15000;
 
 /**
  * Stage 2 live feed for Operations Center.
- * One combined poll cycle (no per-sensor storms). Falls back to demo values if APIs fail.
+ * One combined poll cycle (no per-sensor storms). No SIMULATED demo values.
  */
 export default function useOperationsCenterLive(pollIntervalMs = DEFAULT_POLL_MS) {
   const demo = operationsCenterDemo;
   const [live, setLive] = useState({
     loading: true,
     error: null,
-    plantStatus: demo.plantStatus,
+    plantStatus: "STOPPED",
     machineState: null,
     machineValues: demo.machineValues,
-    warnings: demo.warnings,
-    risks: demo.risks,
+    warnings: [],
+    risks: [],
     connectedMachine: demo.machines.find((m) => m.connected),
     greyMachines: demo.machines.filter((m) => !m.connected),
-    connectedMachines: demo.connectedMachines,
+    connectedMachines: 0,
     totalMachines: demo.totalMachines,
     liveFeedOk: false,
     lastUpdated: null,
-    dataQualityHint: demo.dataQuality,
+    dataQualityHint: null,
   });
 
   const inFlight = useRef(false);
@@ -79,23 +79,13 @@ export default function useOperationsCenterLive(pollIntervalMs = DEFAULT_POLL_MS
         currentDashboard,
         derived,
         machineState,
-        demoFallbackValues: demo.machineValues,
       });
 
-      const liveWarnings = buildLiveWarnings({
+      const warnings = buildLiveWarnings({
         alarms,
         currentDashboard,
         extruderStatus,
       });
-
-      // Keep structural / network notes as derived; merge with live alarms
-      const structuralNotes = (demo.warnings || []).filter(
-        (w) => w.id === "w2" || w.value_source === "DERIVED"
-      );
-      const warnings =
-        liveWarnings.length > 0
-          ? [...liveWarnings, ...structuralNotes.filter((s) => !liveWarnings.find((l) => l.id === s.id))]
-          : demo.warnings;
 
       const connectedFromApi = machinesList.filter(
         (m) =>
@@ -108,7 +98,7 @@ export default function useOperationsCenterLive(pollIntervalMs = DEFAULT_POLL_MS
 
       const connectedMachines = Math.max(
         connectedFromApi || 0,
-        machineState ? 1 : demo.connectedMachines
+        machineState ? 1 : 0
       );
 
       const totalMachines = Math.max(
@@ -129,13 +119,12 @@ export default function useOperationsCenterLive(pollIntervalMs = DEFAULT_POLL_MS
         loading: false,
         error: liveFeedOk
           ? null
-          : currentRes?.error || derivedRes?.error || "Live feed unavailable — showing demo fallback",
+          : currentRes?.error || derivedRes?.error || "Live-Feed nicht verfügbar",
         plantStatus,
         machineState,
         machineValues,
         warnings,
-        // Risks stay demo until validated models exist
-        risks: demo.risks,
+        risks: [],
         connectedMachine: buildConnectedMachineView({
           machineState: machineState || "NOT_CONNECTED",
           currentDashboard,
@@ -146,16 +135,18 @@ export default function useOperationsCenterLive(pollIntervalMs = DEFAULT_POLL_MS
         totalMachines,
         liveFeedOk,
         lastUpdated: new Date(),
-        dataQualityHint: liveFeedOk
-          ? Math.min(98, Math.max(70, demo.dataQuality))
-          : demo.dataQuality,
+        dataQualityHint: liveFeedOk ? demo.dataQuality : null,
       });
     } catch (err) {
       setLive((prev) => ({
         ...prev,
         loading: false,
-        error: err?.message || "Failed to load live Operations Center data",
+        error: err?.message || "Live-Daten der Betriebszentrale konnten nicht geladen werden",
         liveFeedOk: false,
+        machineValues: demo.machineValues,
+        warnings: [],
+        risks: [],
+        plantStatus: "STOPPED",
         lastUpdated: new Date(),
       }));
     } finally {

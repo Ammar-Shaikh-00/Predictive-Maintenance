@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildDigitalizationChecklist,
   computeDigitalizationProgress,
   computePredictionReadiness,
   evaluateFeatures,
@@ -65,5 +66,20 @@ describe("capabilityEngine", () => {
     const next = toggleSource("quality_data", ["machine_data"], ["quality_data"]);
     expect(next.connectedSources).toContain("quality_data");
     expect(next.missingSources).not.toContain("quality_data");
+  });
+
+  it("never checks VPN or other cosmetic keys", () => {
+    const { done, open } = buildDigitalizationChecklist(
+      ["ai_server", "live_sensors", "vpn", "sql_database", "user_management"],
+      ["quality_data", "vpn"]
+    );
+    const keys = [...done, ...open].map((item) => item.key);
+    expect(keys).not.toContain("vpn");
+    expect(keys).not.toContain("sql_database");
+    expect(keys).not.toContain("user_management");
+    expect(done.map((item) => item.key)).toEqual(
+      expect.arrayContaining(["ai_server", "live_sensors"])
+    );
+    expect(open.map((item) => item.key)).toContain("quality_data");
   });
 });

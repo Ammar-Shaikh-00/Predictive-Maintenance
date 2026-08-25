@@ -17,19 +17,19 @@ const contextFields = [
 
 const InfoRow = ({ label, value }) => (
   <div className="grid grid-cols-[140px_1fr] gap-3">
-    <div className="text-slate-500">{label}</div>
-    <div className="font-medium text-slate-950">{value || "--"}</div>
+    <div className="text-slate-400">{label}</div>
+    <div className="font-medium text-slate-100">{value || "--"}</div>
   </div>
 );
 
 const EditInput = ({ field, value, onChange, t }) => (
   <div className="flex flex-col">
-    <label className="mb-1 text-xs font-semibold text-slate-500">{t(field.labelKey)}</label>
+    <label className="mb-1 text-xs font-semibold text-slate-400">{t(field.labelKey)}</label>
     <input
       name={field.name}
       value={value || ""}
       onChange={onChange}
-      className="rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none transition focus:border-violet-400 focus:ring-2 focus:ring-violet-100"
+      className="rounded-lg border border-white/10 bg-[#0b0d11] px-3 py-2 text-sm text-slate-100 outline-none transition focus:border-emerald-400/50 focus:ring-2 focus:ring-emerald-500/20"
     />
   </div>
 );
@@ -67,14 +67,14 @@ export default function ContextOverview({ runData, editable, onRunUpdate }) {
   };
 
   return (
-    <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+    <section className="rounded-xl border border-white/10 bg-[#12161e] p-6">
       <div className="flex items-center justify-between gap-3">
-        <h2 className="text-lg font-bold text-slate-950">{t("productionRun.context.title")}</h2>
+        <h2 className="text-lg font-semibold text-white">{t("productionRun.context.title")}</h2>
 
         {editable && !editing && (
           <button
             onClick={startEdit}
-            className="inline-flex items-center gap-2 rounded-lg border border-violet-200 px-3 py-2 text-sm font-semibold text-violet-700 transition hover:bg-violet-50"
+            className="inline-flex items-center gap-2 rounded-lg border border-emerald-400/30 px-3 py-2 text-sm font-semibold text-emerald-300 transition hover:bg-emerald-500/10"
           >
             <Edit3 size={15} />
             {t("productionRun.actions.edit")}
@@ -83,7 +83,7 @@ export default function ContextOverview({ runData, editable, onRunUpdate }) {
       </div>
 
       {!editable && (
-        <div className="mt-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-500">
+        <div className="mt-3 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-slate-400">
           {t("productionRun.context.readOnly")}
         </div>
       )}
@@ -115,7 +115,7 @@ export default function ContextOverview({ runData, editable, onRunUpdate }) {
           </div>
         )}
 
-        <div className="flex min-h-36 items-center justify-center rounded-xl bg-violet-50 text-violet-500">
+        <div className="flex min-h-36 items-center justify-center rounded-xl border border-white/10 bg-[#1a1f27] text-emerald-400">
           <Factory size={74} strokeWidth={1.4} />
         </div>
       </div>
@@ -124,7 +124,7 @@ export default function ContextOverview({ runData, editable, onRunUpdate }) {
         <div className="mt-5 flex justify-end gap-2">
           <button
             onClick={() => setEditing(false)}
-            className="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-50"
+            className="inline-flex items-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-sm font-semibold text-slate-300 transition hover:bg-white/5"
           >
             <X size={15} />
             {t("productionRun.actions.cancel")}
@@ -132,7 +132,7 @@ export default function ContextOverview({ runData, editable, onRunUpdate }) {
           <button
             onClick={handleSave}
             disabled={saving}
-            className="inline-flex items-center gap-2 rounded-lg bg-violet-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-violet-700 disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-60"
           >
             <Save size={15} />
             {saving ? t("productionRun.actions.saving") : t("productionRun.context.actions.save")}

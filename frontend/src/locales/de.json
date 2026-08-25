@@ -95,11 +95,11 @@
   "alarmTriggers": "Alarmauslöser",
 
   "baseline": {
-  "title": "Basislinie",
-  "description": "Baseline-Zuordnungen verwalten",
+  "title": "Basislinien-Manager",
+  "description": "Goldstandard-Sensorfenster pro Maschinenstatus — Referenz für Live-Abweichungen",
   "create": "Basislinie erstellen",
   "edit": "Basislinie bearbeiten",
-  "no_data": "Keine Basislinien gefunden",
+  "no_data": "Noch keine Basislinien",
   "id": "ID",
   "name_placeholder": "Name der Basislinie",
   "select_sensor": "Sensor auswählen",
@@ -113,12 +113,15 @@
     "save": "Speichern",
     "saving": "Speichern...",
     "cancel": "Abbrechen",
-    "loading": "Laden..."
+    "loading": "Wird geladen…",
+    "refresh": "Aktualisieren",
+    "backToOperations": "← Betriebszentrale"
     },
   "messages": {
     "load_failed": "Daten konnten nicht geladen werden",
     "created": "Erfolgreich erstellt",
     "updated": "Erfolgreich aktualisiert",
+    "deleted": "Gelöscht",
     "name_required": "Bitte geben Sie einen Namen ein.",
     "sensor_required": "Bitte fügen Sie mindestens einen Sensor hinzu.",
     "sensor_invalid": "Bitte alle Sensorfelder ausfüllen (Sensor, Min, Max).",
@@ -126,7 +129,7 @@
       },
   "tickets": {
     "title": "Ticket-Center",
-    "description": "Priorität, Verantwortlicher, Status und geschätzte Stillstandskosten — keine erfundenen Werte.",
+    "description": "Priorität, Verantwortlicher, Status und geschätzte Stillstandskosten.",
     "create": "Ticket erstellen",
     "empty": "Keine Tickets für diesen Filter.",
     "loadFailed": "Tickets konnten nicht geladen werden",
@@ -189,7 +192,7 @@
       "dueDate": "Fällig am",
       "downtimeCost": "Geschätzte Stillstandskosten (€)",
       "downtimeCostPlaceholder": "Leer lassen wenn unbekannt",
-      "downtimeCostHint": "Zeigt — bis ein realer Wert erfasst ist. Keine erfundenen Zahlen.",
+      "downtimeCostHint": "Leer lassen, wenn die Kosten unbekannt sind.",
       "resolutionNotes": "Lösungsnotizen"
     }
   },
@@ -597,6 +600,51 @@
         "unmappedColumns": "Datenfelder, die keiner bekannten Sensorzuordnung im System entsprechen.",
         "flatSignals": "Signale mit ungewöhnlich geringer Variation über längere Zeiträume. Dies kann auf eingefrorene oder fehlerhafte Sensoren hinweisen."
       }
+    }
+  },
+  "provenance": {
+    "title": "Provenienz",
+    "LIVE": "LIVE",
+    "RULE_BASED": "REGELBASIERT",
+    "DERIVED": "ABGELEITET",
+    "SIMULATED": "SIMULIERT",
+    "MODEL_PREDICTION": "KI-VORHERSAGE",
+    "MANUAL": "MANUELL"
+  },
+  "aiAnalysis": {
+    "title": "Live KI-Analyse · Modul 7",
+    "noData": "Noch keine Live-Bewertung für diese Maschine.",
+    "action": "Empfohlene Aktion",
+    "link": "Vorhersagen & Aktionen",
+    "status": {
+      "CRITICAL": "KRITISCH",
+      "WARNING": "WARNUNG",
+      "NORMAL": "NORMAL"
+    },
+    "state": "ZUSTAND",
+    "regime": "REGIME",
+    "anomaly": "ANOMALIE",
+    "drift": "DRIFT",
+    "stability": {
+      "STABLE": "STABIL",
+      "UNSTABLE": "INSTABIL",
+      "DEGRADING": "VERSCHLECHTERND",
+      "IMPROVING": "VERBESSERND",
+      "UNKNOWN": "UNBEKANNT"
+    }
+  },
+  "scorecard": {
+    "title": "Digitalisierungsfortschritt",
+    "of": "von",
+    "sourcesConnected": "Quellen verbunden",
+    "sourcesOpen": "Quellen offen",
+    "machines": "Maschinen",
+    "models": "Modelle",
+    "mlLayer": "KI-Schicht",
+    "meta": {
+      "providedBy": "bereitgestellt von",
+      "mlProvidesNow": "ML liefert jetzt",
+      "expectedNow": "Soll jetzt"
     }
   },
   "login": {
