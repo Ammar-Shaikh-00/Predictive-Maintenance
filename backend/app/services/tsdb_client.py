@@ -34,14 +34,13 @@ async def _get_tsdb_connection() -> asyncpg.Connection:
     """Create a single connection to TimescaleDB. Caller must close it."""
     s = get_settings()
     return await asyncpg.connect(
-        # host=(s.tsdb_host or "localhost").strip(),
-        host="100.119.197.81",
+        host=(s.tsdb_host or "localhost").strip(),
         port=int(s.tsdb_port or 5433),
         database=(s.tsdb_database or "timeseries").strip(),
         user=(s.tsdb_user or "").strip(),
-        # password=(s.tsdb_password or "").strip(),
-        password=(s.tsdb_password).strip(),
-        command_timeout=30,
+        password=(s.tsdb_password or "").strip(),
+        timeout=3.0,  # connection timeout — fail fast when edge is down
+        command_timeout=5,
     )
 
 

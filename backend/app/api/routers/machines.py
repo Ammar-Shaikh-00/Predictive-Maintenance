@@ -114,7 +114,7 @@ async def get_machine_summary(
     total_readings = await session.scalar(
         select(func.count(SensorData.id)).where(SensorData.machine_id == machine_id)
     )
-    active_alarms_list = list(active_alarms.scalars().all())
+    active_alarms_list = list(active_alarms.all())
     
     return {
         "machine": {
@@ -136,7 +136,7 @@ async def get_machine_summary(
             "model_version": last_prediction.model_version if last_prediction else None,
         } if last_prediction else None,
         "activeAlarms": len(active_alarms_list),
-        "uptimePercent": 95.0 if machine.status == "online" else 0.0,  # Simplified calculation
+        "uptimePercent": 95.0 if machine_dict.get("status") == "online" else 0.0,  # Simplified calculation
     }
 
 

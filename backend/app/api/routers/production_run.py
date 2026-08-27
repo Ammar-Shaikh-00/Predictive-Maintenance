@@ -115,7 +115,10 @@ async def upsert_quality(
 
 @router.get("/{run_id}/quality", response_model=QualityResponse)
 async def get_quality(run_id: int, db: AsyncSession = Depends(get_session)):
-    return await quality_service.get_quality_by_run(db, run_id)
+    quality = await quality_service.get_quality_by_run(db, run_id)
+    if quality is None:
+        raise HTTPException(status_code=404, detail="Quality record not found for this run")
+    return quality
 
 
 
@@ -132,7 +135,10 @@ async def get_ai(
     run_id: int,
     db: AsyncSession = Depends(get_session),
 ):
-    return await ai_analysis_service.get_ai_by_run(db, run_id)
+    analysis = await ai_analysis_service.get_ai_by_run(db, run_id)
+    if analysis is None:
+        raise HTTPException(status_code=404, detail="AI analysis not found for this run")
+    return analysis
 
 
 

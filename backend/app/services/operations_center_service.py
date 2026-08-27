@@ -5,6 +5,7 @@ Combines live plant signals + hardening progress into one cached payload.
 
 from __future__ import annotations
 
+import asyncio
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -354,11 +355,16 @@ async def _load_live_machine_values(
 
     if tsdb_client.tsdb_configured():
         try:
-            rows = await tsdb_client.fetch_extruder_latest_from_tsdb(limit=80)
+            # Fail soft when edge/TSDB is unreachable — do not block overview.
+            rows = await asyncio.wait_for(
+                tsdb_client.fetch_extruder_latest_from_tsdb(limit=80),
+                timeout=3.0,
+            )
             live_ok = bool(rows)
         except Exception as exc:  # noqa: BLE001
             feed_error = str(exc)
             rows = []
+            live_ok = False
     else:
         feed_error = "TimescaleDB nicht konfiguriert"
 
