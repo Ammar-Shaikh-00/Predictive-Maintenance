@@ -151,29 +151,6 @@ Operations Center digitalization is **not** a hardcoded UI percentage.
 
 ---
 
-## Run (local)
-
-Live-monitor needs the backend up and a reachable latest-values API.
-
-```bash
-# live-monitor
-set PYTHONPATH=.;live_monitor
-set BACKEND_BASE_URL=http://127.0.0.1:8002
-python -u live_monitor/main.py
-```
-
-```bash
-# retrain on PC only, after history is in Postgres
-set PYTHONPATH=.;live_monitor
-python live_monitor/run_retrain.py
-```
-
-Key env vars: `API_URL`, `BACKEND_BASE_URL`, `MACHINE_ID`, `POLL_INTERVAL_SECONDS`.
-
-Details: [`live_monitor/README.md`](live_monitor/README.md).
-
----
-
 ## License
 
 Proprietary. Contact the repository owner for usage terms.
