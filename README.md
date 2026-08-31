@@ -1,112 +1,179 @@
 # Predictive Maintenance — Extruder Live Monitor
 
-Industrial **predictive maintenance** platform for plastic extrusion lines. The system polls live machine sensors, detects operational states with machine learning, scores anomalies per state, and compares live behavior against historical baselines.
+Industrial **predictive maintenance** for a plastic extruder. The live pipeline polls machine sensors, classifies operating state, scores anomalies for that state, and compares live features to historical baselines.
+
+Results are stored in **PostgreSQL through the backend HTTP APIs**. Live-monitor does not write SQLite as the source of truth.
 
 Repository: [github.com/Ammar-Shaikh-00/Predictive-Maintenance](https://github.com/Ammar-Shaikh-00/Predictive-Maintenance)
 
 ---
 
-## Overview
+## What it answers
 
-This project monitors an extruder in near real time and answers three questions:
+1. **What state is the machine in?** `OFF`, `HEATING`, `READY`, `LOW_PRODUCTION`, `PRODUCTION`, `COOLING`
+2. **Is this window unusual for that state?** per-state Isolation Forest
+3. **How does live behavior compare to history?** baseline registry, z-scores, drift
 
-1. **What state is the machine in?** (OFF, HEATING, COOLING, READY, PRODUCTION, LOW_PRODUCTION)
-2. **Is current behavior anomalous for that state?** (per-state Isolation Forest models)
-3. **How does live behavior compare to historical baselines?** (z-score evaluation and drift detection)
-
-Live sensor values are polled from the extruder dashboard API, aggregated into a rolling 5-minute window, and transformed into process features. A RandomForest classifier assigns the machine state; Isolation Forest models score anomalies within that state. Baseline comparison evaluates feature drift against historical registry baselines. Results are written to the backend Postgres database through HTTP APIs. Trained model artifacts remain local under `live_monitor/ml_data/`. A local FastAPI service on port **8001** exposes pipeline health and debug endpoints.
+It does **not** invent Accuracy % or remaining useful life. `/health` `prediction_readiness` is **serving health** (models loaded vs expected), not model accuracy.
 
 ---
 
 ## Architecture
 
 ```
-Live API
+Plant latest-values API
         │
         ▼
-  api_client.fetch_latest()
+  live_monitor (port 8001)
+        │  poll → 5-min window → features
+        │
+        ├── state classifier (RandomForest, 6 states)
+        ├── per-state Isolation Forest
+        ├── baseline / drift evaluation
         │
         ▼
-  window_buffer (5-min rolling window)
+  backend FastAPI  →  PostgreSQL
         │
         ▼
-  feature_engine (speed, pressure, load, temp, temp_spread, temperature_direction)
-        │
-        ├──► state_detector (RandomForest — 6 states)
-        │
-        ├──► anomaly_scorer (per-state Isolation Forest)
-        │
-        ├──► evaluation_guard / baseline_selector / feature_evaluator
-        │
-        └──► backend_writer → backend APIs → Postgres
+  frontend (operations, dashboards)
 ```
 
-**ML training pipeline** (offline, 5-minute windows):
+**Offline training (PC only):**
 
 ```
-machine_sensor_raw → build_live_windows → cluster_live_states
-  → map_live_cluster_states → train_state_classifier → train_anomaly_*.py
+GET /machine-raw-data  →  build_live_windows  →  cluster_live_states
+  →  map_live_cluster_states  →  train_state_classifier  →  train_anomaly_*.py
 ```
+
+Copy new `.pkl` files into `live_monitor/ml_data/`, then `POST /ml/reload-models`.  
+`POST /ml/trigger-retrain` returns **403** — Docker live-monitor is inference-only.
 
 ---
 
-## System Components
+## Repository layout
 
 | Path | Role |
 |------|------|
-| `live_monitor/` | Live polling pipeline, feature engine, ML inference, evaluation, backend persistence |
-| `live_monitor/ml/` | Offline training scripts, anomaly scorers, retrain orchestration |
-| `live_monitor/ml_data/` | Trained models (`.pkl`), labeled datasets, clustering diagnostics |
-| `backend/` | FastAPI application and Postgres domain APIs (machines, live windows, evaluations, baselines) |
-| `frontend/` | Web UI for operations, dashboards, and maintenance workflows |
-| `alertService/` | Alert delivery and notification services |
-| `machineStateService/` | Machine-state related service layer |
-| `historical_simulator/` | Historical data tooling |
-| `scripts/` | Utility scripts for data-source maintenance |
-| `timeSeriesDB/` | Historical extruder data and segmentation outputs |
-| `Docs/` | Architecture notes, briefs, and project documentation |
+| `live_monitor/` | Live poll loop, features, ML inference, evaluation, backend writes |
+| `live_monitor/ml/` | Offline train / cluster / retrain scripts |
+| `live_monitor/ml_data/` | Trained `.pkl` models and labeled window CSVs |
+| `live_monitor/run_retrain.py` | PC-only retrain entry (not started by `main.py`) |
+| `backend/` | FastAPI + Postgres domain APIs |
+| `frontend/` | Operations Center and dashboards |
+| `Docs/capability_component_catalog.json` | Capability scorecard formulas (ML-owned; backend executes) |
+| `Docs/` | Architecture and capability spec |
+| `timeSeriesDB/` | Historical segmentation outputs used for baseline tooling |
 
 ---
 
-## Machine States
+## Live pipeline (`live_monitor/`)
 
-| State | Description |
-|-------|-------------|
-| OFF | Machine idle / powered down |
-| HEATING | Temperature rising (`temperature_direction > 0`) |
+Default poll interval is **10 seconds**. A window is **5 minutes**, aligned with training.
+
+Each cycle:
+
+1. Fetch latest sensors (`API_URL`)
+2. Append to rolling buffer
+3. Compute features (speed, pressure, load, zone temperatures, `temp_spread`, `temperature_direction`, `valid_fraction`)
+4. Candidate + confirmed state (confirm after **3** matching windows)
+5. Write window to backend Postgres
+6. Guard → baseline → per-feature eval → overall run eval (anomaly + drift)
+7. Expose latest snapshot on port **8001**
+
+**Sensors used:** `Val_1` (screw speed), `Val_5` (load), `Val_6` (pressure), `Val_7`–`Val_11` and `Val_27`–`Val_32` (temperature zones).
+
+Default extruder: `machine_id=6f37c433-44e9-4a66-b019-cc342a95cc54`, `line_id=29`.
+
+### Persistence
+
+Live windows, run evaluations, feature evaluations, and baseline registry go to backend Postgres via `BACKEND_BASE_URL` (local default is often `http://127.0.0.1:8002`; plant LAN often `http://192.168.100.24:8002`).
+
+### Retrain vs serve
+
+| Where | What |
+|-------|------|
+| PC | `python live_monitor/run_retrain.py` |
+| Live-monitor / Docker | Load `.pkl` only; `POST /ml/reload-models` after copy |
+| Health | `retrain_mode: external_pc_only`, `scheduler_status: disabled` |
+
+---
+
+## Machine states
+
+| State | Meaning |
+|-------|---------|
+| OFF | Idle / powered down |
+| HEATING | Temperature rising |
 | COOLING | Temperature falling |
 | READY | Transitional / pre-production |
-| PRODUCTION | Normal production run |
+| PRODUCTION | Normal production |
 | LOW_PRODUCTION | Reduced throughput |
 
-State transitions are confirmed only after **three consecutive matching windows**, which reduces flicker from short-lived fluctuations.
+---
+
+## Machine learning
+
+| Model | Role |
+|-------|------|
+| RandomForest classifier | Window features → one of six states |
+| Isolation Forest (one per state) | Anomaly score/flag for the active state |
+| Drift detector | Feature z-scores vs baseline stats |
+
+Anomaly fields are stored on live run evaluations with the rest of the evaluation payload.
 
 ---
 
-## Feature Engineering
+## Capability scorecard
 
-Features shared by the state classifier and anomaly models include:
+Operations Center digitalization is **not** a hardcoded UI percentage.
 
-- Screw speed, pressure, and load (mean, standard deviation, slope)
-- Temperature mean and **temp_spread** (front zones Val_7–11 vs rear Val_27–32)
-- **temperature_direction** (second-half window mean minus first-half mean)
-- `valid_fraction` as a data-quality gate for incomplete windows
-
-Window duration is aligned between live inference and offline training at **5 minutes**.
+- ML owns weights and formulas in `Docs/capability_component_catalog.json`
+- Backend runs `GET /operations-center/capability`
+- Frontend only renders the payload
+- Catalog must be available to the backend (`CAPABILITY_CATALOG_PATH` or `Docs/` mount)
 
 ---
 
-## Machine Learning
+## Useful endpoints
 
-| Model | Purpose |
-|-------|---------|
-| RandomForest state classifier | Maps window features to one of six operational states |
-| Per-state Isolation Forest | Scores how unusual the current window is for the active state |
+**Live-monitor (8001)**
 
-Anomaly outputs (score and flag) are attached to live run evaluations and persisted with other evaluation fields. Baseline selection uses the backend baseline registry so live behavior can be compared against historical HIGH / LOW / NORMAL profiles.
+| Method | Path | Notes |
+|--------|------|--------|
+| GET | `/health` | Pipeline 2.3: models loaded, sensors expected, serving readiness |
+| GET | `/ml/model-status` | Per-state model files |
+| POST | `/ml/reload-models` | Hot-load `.pkl` after PC retrain |
+| POST | `/ml/trigger-retrain` | Always 403 |
+| GET | `/live/current-window` | 404 until first window is written |
+| GET | `/live/current-evaluation` | 404 until first evaluation |
+
+**Backend (8002)** — live ML tables include `/live-process-windows`, `/live-run-evaluations`, `/live-feature-evaluations`, `/production-run/`, `/operations-center/capability`.
+
+---
+
+## Run (local)
+
+Live-monitor needs the backend up and a reachable latest-values API.
+
+```bash
+# live-monitor
+set PYTHONPATH=.;live_monitor
+set BACKEND_BASE_URL=http://127.0.0.1:8002
+python -u live_monitor/main.py
+```
+
+```bash
+# retrain on PC only, after history is in Postgres
+set PYTHONPATH=.;live_monitor
+python live_monitor/run_retrain.py
+```
+
+Key env vars: `API_URL`, `BACKEND_BASE_URL`, `MACHINE_ID`, `POLL_INTERVAL_SECONDS`.
+
+Details: [`live_monitor/README.md`](live_monitor/README.md).
 
 ---
 
 ## License
 
-Proprietary — Standard project. Contact the repository owner for usage terms.
+Proprietary. Contact the repository owner for usage terms.
